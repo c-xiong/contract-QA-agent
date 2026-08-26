@@ -1,0 +1,1061 @@
+{
+  "manifest_version": 1,
+  "sampling_criterion": "CUAD v1. Target 40 contracts, round-robin across the 5 agreement types with the most eligible contracts, seed 20260825. A contract is eligible if its PDF resolves from master_clauses.csv and it carries verbatim clause spans in at least 4 of the 8 categories in scope (Cap On Liability, Change Of Control, Governing Law, Insurance, Non-Compete, Notice Period To Terminate Renewal, Termination For Convenience, Uncapped Liability). Within a type, contracts are ordered by descending category coverage and shuffled within each coverage tier.",
+  "documents": {
+    "doc-001": {
+      "document_id": "doc-001",
+      "source_filename": "RevolutionMedicinesInc_20200117_S-1_EX-10.1_11948417_EX-10.1_Development Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Development/RevolutionMedicinesInc_20200117_S-1_EX-10.1_11948417_EX-10.1_Development Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Development",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Insurance",
+        "Non-Compete",
+        "Termination For Convenience",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-002": {
+      "document_id": "doc-002",
+      "source_filename": "ZogenixInc_20190509_10-Q_EX-10.2_11663313_EX-10.2_Distributor Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Distributor/ZogenixInc_20190509_10-Q_EX-10.2_11663313_EX-10.2_Distributor Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Distributor",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Insurance",
+        "Non-Compete",
+        "Termination For Convenience",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-003": {
+      "document_id": "doc-003",
+      "source_filename": "2ThemartComInc_19990826_10-12G_EX-10.10_6700288_EX-10.10_Co-Branding Agreement_ Agency Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Co_Branding/2ThemartComInc_19990826_10-12G_EX-10.10_6700288_EX-10.10_Co-Branding Agreement_ Agency Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Co_Branding",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Non-Compete",
+        "Notice Period To Terminate Renewal",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-004": {
+      "document_id": "doc-004",
+      "source_filename": "INKTOMICORP_06_08_1998-EX-10.14-SOFTWARE HOSTING AGREEMENT.PDF",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_III/Hosting/INKTOMICORP_06_08_1998-EX-10.14-SOFTWARE HOSTING AGREEMENT.PDF",
+      "corpus_source": "cuad",
+      "agreement_type": "Hosting",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Insurance",
+        "Termination For Convenience",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-005": {
+      "document_id": "doc-005",
+      "source_filename": "CytodynInc_20200109_10-Q_EX-10.5_11941634_EX-10.5_License Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/License_Agreements/CytodynInc_20200109_10-Q_EX-10.5_11941634_EX-10.5_License Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "License_Agreements",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Insurance",
+        "Non-Compete",
+        "Termination For Convenience",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-006": {
+      "document_id": "doc-006",
+      "source_filename": "HarpoonTherapeuticsInc_20200312_10-K_EX-10.18_12051356_EX-10.18_Development Agreement.PDF",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Development/HarpoonTherapeuticsInc_20200312_10-K_EX-10.18_12051356_EX-10.18_Development Agreement_Option Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Development",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Insurance",
+        "Non-Compete",
+        "Termination For Convenience",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-007": {
+      "document_id": "doc-007",
+      "source_filename": "EUROPEANMICROHOLDINGSINC_03_06_1998-EX-10.6-DISTRIBUTOR AGREEMENT.PDF",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_III/Distributor/EUROPEANMICROHOLDINGSINC_03_06_1998-EX-10.6-DISTRIBUTOR AGREEMENT.PDF",
+      "corpus_source": "cuad",
+      "agreement_type": "Distributor",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Notice Period To Terminate Renewal",
+        "Termination For Convenience",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-008": {
+      "document_id": "doc-008",
+      "source_filename": "TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Co_Branding/TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Co_Branding",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Non-Compete",
+        "Notice Period To Terminate Renewal",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-009": {
+      "document_id": "doc-009",
+      "source_filename": "QuantumGroupIncFl_20090120_8-K_EX-99.2_3672910_EX-99.2_Hosting Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Hosting/QuantumGroupIncFl_20090120_8-K_EX-99.2_3672910_EX-99.2_Hosting Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Hosting",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Governing Law",
+        "Insurance",
+        "Termination For Convenience",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-010": {
+      "document_id": "doc-010",
+      "source_filename": "MorganStanleyDirectLendingFund_20191119_10-12GA_EX-10.5_11898508_EX-10.5_Trademark License Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/License_Agreements/MorganStanleyDirectLendingFund_20191119_10-12GA_EX-10.5_11898508_EX-10.5_Trademark License Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "License_Agreements",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Termination For Convenience",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-011": {
+      "document_id": "doc-011",
+      "source_filename": "AimmuneTherapeuticsInc_20200205_8-K_EX-10.3_11967170_EX-10.3_Development Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Development/AimmuneTherapeuticsInc_20200205_8-K_EX-10.3_11967170_EX-10.3_Development Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Development",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Governing Law",
+        "Insurance",
+        "Non-Compete",
+        "Termination For Convenience",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-012": {
+      "document_id": "doc-012",
+      "source_filename": "ENTERTAINMENTGAMINGASIAINC_02_15_2005-EX-10.5-DISTRIBUTOR AGREEMENT.PDF",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_III/Distributor/ENTERTAINMENTGAMINGASIAINC_02_15_2005-EX-10.5-DISTRIBUTOR AGREEMENT.PDF",
+      "corpus_source": "cuad",
+      "agreement_type": "Distributor",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Non-Compete",
+        "Notice Period To Terminate Renewal",
+        "Termination For Convenience"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-013": {
+      "document_id": "doc-013",
+      "source_filename": "RandWorldwideInc_20010402_8-KA_EX-10.2_2102464_EX-10.2_Co-Branding Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Co_Branding/RandWorldwideInc_20010402_8-KA_EX-10.2_2102464_EX-10.2_Co-Branding Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Co_Branding",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Non-Compete",
+        "Notice Period To Terminate Renewal",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-014": {
+      "document_id": "doc-014",
+      "source_filename": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement.PDF",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_III/Hosting/BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement.PDF",
+      "corpus_source": "cuad",
+      "agreement_type": "Hosting",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Governing Law",
+        "Notice Period To Terminate Renewal",
+        "Termination For Convenience",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-015": {
+      "document_id": "doc-015",
+      "source_filename": "PlayboyEnterprisesInc_20090220_10-QA_EX-10.2_4091580_EX-10.2_Content License Agreement_ Marketing Agreement_ Sales-Purchase Agreement1.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/License_Agreements/PlayboyEnterprisesInc_20090220_10-QA_EX-10.2_4091580_EX-10.2_Content License Agreement_ Marketing Agreement_ Sales-Purchase Agreement1.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "License_Agreements",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Governing Law",
+        "Insurance",
+        "Non-Compete",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-016": {
+      "document_id": "doc-016",
+      "source_filename": "LegacyEducationAllianceInc_20200330_10-K_EX-10.18_12090678_EX-10.18_Development Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Development/LegacyEducationAllianceInc_20200330_10-K_EX-10.18_12090678_EX-10.18_Development Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Development",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Governing Law",
+        "Insurance",
+        "Non-Compete",
+        "Notice Period To Terminate Renewal",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-017": {
+      "document_id": "doc-017",
+      "source_filename": "StaarSurgicalCompany_20180801_10-Q_EX-10.37_11289449_EX-10.37_Distributor Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Distributor/StaarSurgicalCompany_20180801_10-Q_EX-10.37_11289449_EX-10.37_Distributor Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Distributor",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Governing Law",
+        "Insurance",
+        "Non-Compete",
+        "Termination For Convenience",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-018": {
+      "document_id": "doc-018",
+      "source_filename": "EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Co_Branding/EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Co_Branding",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Non-Compete",
+        "Notice Period To Terminate Renewal",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-019": {
+      "document_id": "doc-019",
+      "source_filename": "CHANGEPOINTCORP_03_08_2000-EX-10.6-LICENSE AND HOSTING AGREEMENT.PDF",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_III/Hosting/CHANGEPOINTCORP_03_08_2000-EX-10.6-LICENSE AND HOSTING AGREEMENT.PDF",
+      "corpus_source": "cuad",
+      "agreement_type": "Hosting",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Governing Law",
+        "Non-Compete",
+        "Notice Period To Terminate Renewal",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-020": {
+      "document_id": "doc-020",
+      "source_filename": "VirtuosoSurgicalInc_20191227_1-A_EX1A-6 MAT CTRCT_11933379_EX1A-6 MAT CTRCT_License Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/License_Agreements/VirtuosoSurgicalInc_20191227_1-A_EX1A-6 MAT CTRCT_11933379_EX1A-6 MAT CTRCT_License Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "License_Agreements",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Insurance",
+        "Termination For Convenience"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-021": {
+      "document_id": "doc-021",
+      "source_filename": "FuelcellEnergyInc_20191106_8-K_EX-10.1_11868007_EX-10.1_Development Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Development/FuelcellEnergyInc_20191106_8-K_EX-10.1_11868007_EX-10.1_Development Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Development",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Non-Compete",
+        "Termination For Convenience",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-022": {
+      "document_id": "doc-022",
+      "source_filename": "NANOPHASETECHNOLOGIESCORP_11_01_2005-EX-99.1-DISTRIBUTOR AGREEMENT.PDF",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_III/Distributor/NANOPHASETECHNOLOGIESCORP_11_01_2005-EX-99.1-DISTRIBUTOR AGREEMENT.PDF",
+      "corpus_source": "cuad",
+      "agreement_type": "Distributor",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Governing Law",
+        "Insurance",
+        "Notice Period To Terminate Renewal",
+        "Termination For Convenience",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-023": {
+      "document_id": "doc-023",
+      "source_filename": "RaeSystemsInc_20001114_10-Q_EX-10.57_2631790_EX-10.57_Co-Branding Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Co_Branding/RaeSystemsInc_20001114_10-Q_EX-10.57_2631790_EX-10.57_Co-Branding Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Co_Branding",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Non-Compete",
+        "Termination For Convenience",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-024": {
+      "document_id": "doc-024",
+      "source_filename": "CORIOINC_07_20_2000-EX-10.5-LICENSE AND HOSTING AGREEMENT.PDF",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_III/Hosting/CORIOINC_07_20_2000-EX-10.5-LICENSE AND HOSTING AGREEMENT.PDF",
+      "corpus_source": "cuad",
+      "agreement_type": "Hosting",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Notice Period To Terminate Renewal",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-025": {
+      "document_id": "doc-025",
+      "source_filename": "AlliedEsportsEntertainmentInc_20190815_8-K_EX-10.19_11788293_EX-10.19_Content License Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/License_Agreements/AlliedEsportsEntertainmentInc_20190815_8-K_EX-10.19_11788293_EX-10.19_Content License Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "License_Agreements",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Governing Law",
+        "Insurance",
+        "Non-Compete",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-026": {
+      "document_id": "doc-026",
+      "source_filename": "CoherusBiosciencesInc_20200227_10-K_EX-10.29_12021376_EX-10.29_Development Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Development/CoherusBiosciencesInc_20200227_10-K_EX-10.29_12021376_EX-10.29_Development Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Development",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Non-Compete",
+        "Termination For Convenience",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-027": {
+      "document_id": "doc-027",
+      "source_filename": "NEONSYSTEMSINC_03_01_1999-EX-10.5-DISTRIBUTOR AGREEMENT_New.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_III/Distributor/NEONSYSTEMSINC_03_01_1999-EX-10.5-DISTRIBUTOR AGREEMENT_New.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Distributor",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Non-Compete",
+        "Notice Period To Terminate Renewal"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-028": {
+      "document_id": "doc-028",
+      "source_filename": "InvendaCorp_20000828_S-1A_EX-10.2_2588206_EX-10.2_Co-Branding Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Co_Branding/InvendaCorp_20000828_S-1A_EX-10.2_2588206_EX-10.2_Co-Branding Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Co_Branding",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Non-Compete",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-029": {
+      "document_id": "doc-029",
+      "source_filename": "AMERICASSHOPPINGMALLINC_12_10_1999-EX-10.2-SITE DEVELOPMENT AND HOSTING AGREEMENT.PDF",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_III/Hosting/AMERICASSHOPPINGMALLINC_12_10_1999-EX-10.2-SITE DEVELOPMENT AND HOSTING AGREEMENT.PDF",
+      "corpus_source": "cuad",
+      "agreement_type": "Hosting",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Governing Law",
+        "Non-Compete",
+        "Notice Period To Terminate Renewal"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-030": {
+      "document_id": "doc-030",
+      "source_filename": "EuromediaHoldingsCorp_20070215_10SB12G_EX-10.B(01)_525118_EX-10.B(01)_Content License Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/License_Agreements/EuromediaHoldingsCorp_20070215_10SB12G_EX-10.B(01)_525118_EX-10.B(01)_Content License Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "License_Agreements",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Governing Law",
+        "Notice Period To Terminate Renewal",
+        "Termination For Convenience",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-031": {
+      "document_id": "doc-031",
+      "source_filename": "EtonPharmaceuticalsInc_20191114_10-Q_EX-10.1_11893941_EX-10.1_Development Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Development/EtonPharmaceuticalsInc_20191114_10-Q_EX-10.1_11893941_EX-10.1_Development Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Development",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Insurance",
+        "Non-Compete",
+        "Termination For Convenience"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-032": {
+      "document_id": "doc-032",
+      "source_filename": "ETELOS,INC_03_09_2004-EX-10.8-DISTRIBUTOR AGREEMENT.PDF",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_III/Distributor/ETELOS,INC_03_09_2004-EX-10.8-DISTRIBUTOR AGREEMENT.PDF",
+      "corpus_source": "cuad",
+      "agreement_type": "Distributor",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Governing Law",
+        "Non-Compete",
+        "Notice Period To Terminate Renewal",
+        "Termination For Convenience"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-033": {
+      "document_id": "doc-033",
+      "source_filename": "NeoformaInc_19991202_S-1A_EX-10.26_5224521_EX-10.26_Co-Branding Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Co_Branding/NeoformaInc_19991202_S-1A_EX-10.26_5224521_EX-10.26_Co-Branding Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Co_Branding",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Governing Law",
+        "Non-Compete",
+        "Notice Period To Terminate Renewal",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-034": {
+      "document_id": "doc-034",
+      "source_filename": "HEALTHGATEDATACORP_11_24_1999-EX-10.1-HOSTING AND MANAGEMENT AGREEMENT (1).pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_II/Hosting/HEALTHGATEDATACORP_11_24_1999-EX-10.1-HOSTING AND MANAGEMENT AGREEMENT (1).pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Hosting",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Non-Compete"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-035": {
+      "document_id": "doc-035",
+      "source_filename": "GopageCorp_20140221_10-K_EX-10.1_8432966_EX-10.1_Content License Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/License_Agreements/GopageCorp_20140221_10-K_EX-10.1_8432966_EX-10.1_Content License Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "License_Agreements",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Notice Period To Terminate Renewal",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-036": {
+      "document_id": "doc-036",
+      "source_filename": "LiquidmetalTechnologiesInc_20200205_8-K_EX-10.1_11968198_EX-10.1_Development Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Development/LiquidmetalTechnologiesInc_20200205_8-K_EX-10.1_11968198_EX-10.1_Development Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Development",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Governing Law",
+        "Insurance",
+        "Notice Period To Terminate Renewal",
+        "Termination For Convenience"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-037": {
+      "document_id": "doc-037",
+      "source_filename": "ScansourceInc_20190822_10-K_EX-10.38_11793958_EX-10.38_Distributor Agreement1.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Distributor/ScansourceInc_20190822_10-K_EX-10.38_11793958_EX-10.38_Distributor Agreement1.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Distributor",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Governing Law",
+        "Insurance",
+        "Termination For Convenience",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-038": {
+      "document_id": "doc-038",
+      "source_filename": "PaperexchangeComInc_20000322_S-1A_EX-10.4_5202103_EX-10.4_Co-Branding Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/Co_Branding/PaperexchangeComInc_20000322_S-1A_EX-10.4_5202103_EX-10.4_Co-Branding Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "Co_Branding",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Governing Law",
+        "Non-Compete",
+        "Notice Period To Terminate Renewal",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-039": {
+      "document_id": "doc-039",
+      "source_filename": "BEYONDCOMCORP_08_03_2000-EX-10.2-CO-HOSTING AGREEMENT.PDF",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_III/Hosting/BEYONDCOMCORP_08_03_2000-EX-10.2-CO-HOSTING AGREEMENT.PDF",
+      "corpus_source": "cuad",
+      "agreement_type": "Hosting",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Governing Law",
+        "Non-Compete",
+        "Uncapped Liability"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-040": {
+      "document_id": "doc-040",
+      "source_filename": "HertzGroupRealtyTrustInc_20190920_S-11A_EX-10.8_11816941_EX-10.8_Trademark License Agreement.pdf",
+      "relative_path": "CUAD_v1/full_contract_pdf/Part_I/License_Agreements/HertzGroupRealtyTrustInc_20190920_S-11A_EX-10.8_11816941_EX-10.8_Trademark License Agreement.pdf",
+      "corpus_source": "cuad",
+      "agreement_type": "License_Agreements",
+      "annotated_categories": [
+        "Cap On Liability",
+        "Change Of Control",
+        "Governing Law",
+        "Termination For Convenience"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-041": {
+      "document_id": "doc-041",
+      "source_filename": "contractnli:134",
+      "relative_path": "contract-nli/JBF_NDA_rev-2017033-1.pdf",
+      "corpus_source": "contractnli",
+      "agreement_type": "Non-Disclosure Agreement",
+      "annotated_categories": [
+        "nda-1",
+        "nda-15",
+        "nda-17",
+        "nda-19",
+        "nda-2",
+        "nda-20",
+        "nda-3",
+        "nda-4",
+        "nda-5",
+        "nda-7",
+        "nda-8"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-042": {
+      "document_id": "doc-042",
+      "source_filename": "contractnli:222",
+      "relative_path": "contract-nli/NDA_22.pdf",
+      "corpus_source": "contractnli",
+      "agreement_type": "Non-Disclosure Agreement",
+      "annotated_categories": [
+        "nda-1",
+        "nda-10",
+        "nda-11",
+        "nda-12",
+        "nda-13",
+        "nda-15",
+        "nda-16",
+        "nda-17",
+        "nda-19",
+        "nda-2",
+        "nda-20",
+        "nda-4",
+        "nda-5",
+        "nda-7",
+        "nda-8"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-043": {
+      "document_id": "doc-043",
+      "source_filename": "contractnli:288",
+      "relative_path": "contract-nli/Non-Disclosure-Agreement-FORS-Cert-Body.pdf",
+      "corpus_source": "contractnli",
+      "agreement_type": "Non-Disclosure Agreement",
+      "annotated_categories": [
+        "nda-1",
+        "nda-13",
+        "nda-15",
+        "nda-17",
+        "nda-2",
+        "nda-20",
+        "nda-3",
+        "nda-4",
+        "nda-5",
+        "nda-7",
+        "nda-8"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-044": {
+      "document_id": "doc-044",
+      "source_filename": "contractnli:119",
+      "relative_path": "contract-nli/Grindrod%20SA%20Confidentiality%20and%20Non-Disclosure%20Undertaking.pdf",
+      "corpus_source": "contractnli",
+      "agreement_type": "Non-Disclosure Agreement",
+      "annotated_categories": [
+        "nda-1",
+        "nda-12",
+        "nda-19",
+        "nda-2",
+        "nda-3",
+        "nda-4",
+        "nda-5",
+        "nda-7"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-045": {
+      "document_id": "doc-045",
+      "source_filename": "contractnli:239",
+      "relative_path": "contract-nli/nda_19.pdf",
+      "corpus_source": "contractnli",
+      "agreement_type": "Non-Disclosure Agreement",
+      "annotated_categories": [
+        "nda-16",
+        "nda-17",
+        "nda-2",
+        "nda-20",
+        "nda-4",
+        "nda-5",
+        "nda-7"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-046": {
+      "document_id": "doc-046",
+      "source_filename": "contractnli:232",
+      "relative_path": "contract-nli/NDA_for_Raffles_Translation_Website.pdf",
+      "corpus_source": "contractnli",
+      "agreement_type": "Non-Disclosure Agreement",
+      "annotated_categories": [
+        "nda-1",
+        "nda-12",
+        "nda-13",
+        "nda-15",
+        "nda-17",
+        "nda-19",
+        "nda-2",
+        "nda-20",
+        "nda-3",
+        "nda-4",
+        "nda-5",
+        "nda-7",
+        "nda-8"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-047": {
+      "document_id": "doc-047",
+      "source_filename": "contractnli:358",
+      "relative_path": "contract-nli/US-Non-Disclosure-Agreement.pdf",
+      "corpus_source": "contractnli",
+      "agreement_type": "Non-Disclosure Agreement",
+      "annotated_categories": [
+        "nda-1",
+        "nda-12",
+        "nda-13",
+        "nda-15",
+        "nda-17",
+        "nda-19",
+        "nda-2",
+        "nda-20",
+        "nda-3",
+        "nda-4",
+        "nda-5",
+        "nda-7",
+        "nda-8"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-048": {
+      "document_id": "doc-048",
+      "source_filename": "contractnli:338",
+      "relative_path": "contract-nli/SINTEC-UK-LTD-Non-disclosure-agreement-2017.pdf",
+      "corpus_source": "contractnli",
+      "agreement_type": "Non-Disclosure Agreement",
+      "annotated_categories": [
+        "nda-15",
+        "nda-16",
+        "nda-17",
+        "nda-19",
+        "nda-2",
+        "nda-20",
+        "nda-3",
+        "nda-4",
+        "nda-5",
+        "nda-7"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-049": {
+      "document_id": "doc-049",
+      "source_filename": "contractnli:341",
+      "relative_path": "contract-nli/Sample NonDisclosure Agreement.pdf",
+      "corpus_source": "contractnli",
+      "agreement_type": "Non-Disclosure Agreement",
+      "annotated_categories": [
+        "nda-1",
+        "nda-10",
+        "nda-13",
+        "nda-15",
+        "nda-16",
+        "nda-19",
+        "nda-2",
+        "nda-20",
+        "nda-3",
+        "nda-4",
+        "nda-5",
+        "nda-7",
+        "nda-8"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-050": {
+      "document_id": "doc-050",
+      "source_filename": "contractnli:133",
+      "relative_path": "contract-nli/JB-Machine-LLC-NDA-1.pdf",
+      "corpus_source": "contractnli",
+      "agreement_type": "Non-Disclosure Agreement",
+      "annotated_categories": [
+        "nda-1",
+        "nda-12",
+        "nda-13",
+        "nda-15",
+        "nda-16",
+        "nda-17",
+        "nda-18",
+        "nda-19",
+        "nda-2",
+        "nda-20",
+        "nda-4",
+        "nda-5",
+        "nda-7"
+      ],
+      "added": "2026-08-25",
+      "is_synthetic": false,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-051": {
+      "document_id": "doc-051",
+      "source_filename": "synthetic:synthetic-001-conflicting_versions",
+      "relative_path": "synthetic/synthetic-001-conflicting_versions.json",
+      "corpus_source": "synthetic",
+      "agreement_type": "Development",
+      "annotated_categories": [],
+      "added": "2026-08-25",
+      "is_synthetic": true,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-052": {
+      "document_id": "doc-052",
+      "source_filename": "synthetic:synthetic-002-conflicting_versions",
+      "relative_path": "synthetic/synthetic-002-conflicting_versions.json",
+      "corpus_source": "synthetic",
+      "agreement_type": "Distributor",
+      "annotated_categories": [],
+      "added": "2026-08-25",
+      "is_synthetic": true,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-053": {
+      "document_id": "doc-053",
+      "source_filename": "synthetic:synthetic-003-prompt_injection",
+      "relative_path": "synthetic/synthetic-003-prompt_injection.json",
+      "corpus_source": "synthetic",
+      "agreement_type": "Development",
+      "annotated_categories": [],
+      "added": "2026-08-25",
+      "is_synthetic": true,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-054": {
+      "document_id": "doc-054",
+      "source_filename": "synthetic:synthetic-004-prompt_injection",
+      "relative_path": "synthetic/synthetic-004-prompt_injection.json",
+      "corpus_source": "synthetic",
+      "agreement_type": "Co_Branding",
+      "annotated_categories": [],
+      "added": "2026-08-25",
+      "is_synthetic": true,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-055": {
+      "document_id": "doc-055",
+      "source_filename": "synthetic:synthetic-005-near_duplicate",
+      "relative_path": "synthetic/synthetic-005-near_duplicate.json",
+      "corpus_source": "synthetic",
+      "agreement_type": "Development",
+      "annotated_categories": [],
+      "added": "2026-08-25",
+      "is_synthetic": true,
+      "retired": false,
+      "retired_reason": null
+    },
+    "doc-056": {
+      "document_id": "doc-056",
+      "source_filename": "synthetic:synthetic-006-near_duplicate",
+      "relative_path": "synthetic/synthetic-006-near_duplicate.json",
+      "corpus_source": "synthetic",
+      "agreement_type": "Hosting",
+      "annotated_categories": [],
+      "added": "2026-08-25",
+      "is_synthetic": true,
+      "retired": false,
+      "retired_reason": null
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "artboards": [
+    { "file": "Running.dc.html", "x": 0, "y": 0, "w": 1440, "h": 1080, "title": "Live — mid-run" },
+    { "file": "Main.dc.html", "x": 1560, "y": 0, "w": 1440, "h": 1080, "title": "Live — completed" },
+    { "file": "StateGraph.dc.html", "x": 3120, "y": 0, "w": 1560, "h": 1180, "title": "Full state graph — reference" }
+  ],
+  "annotations": [
+    { "id": "note-live", "x": 0, "y": -170, "w": 460, "text": "MID-RUN\nThe graph strip carries the live state: search/assess/refine are done and show ×2 because the loop actually ran twice, resolve_refs is marked as the cross-reference step, write is pulsing, everything downstream is dashed = not taken yet.\n\nCitations are deliberately absent — verify has not run, so there is nothing verified to show." },
+    { "id": "note-done", "x": 1560, "y": -170, "w": 460, "text": "COMPLETED\nSame strip, finalize lit. This is the state you inspect in: answer with numbered chips, citation cards with the excerpt and provenance, evidence split search vs cross-reference.\n\nThe dashed card at the bottom is the rejected state for reference — not part of this run." },
+    { "id": "note-ref", "x": 3120, "y": -170, "w": 460, "text": "REFERENCE\nEvery node, guard, terminal, ResearchState field and Budget value. Not part of the page — this is what the compact strip is an abbreviation of.\n\nIf this moves to docs/ it should become mermaid; the strip stays hand-drawn SVG because mermaid cannot do live per-node highlighting." },
+    { "id": "note-change", "x": 780, "y": -170, "w": 400, "text": "WHAT CHANGED\nThe linear execution list is gone. It showed order but hid topology.\n\nNow: grouped graph (RESEARCH / EVIDENCE / GENERATE — the same subgraph device waku uses), node state by colour, ×N badges for loops, and the log demoted to a compact feed on the right." }
+  ],
+  "launch": { "view": "canvas" }
+}

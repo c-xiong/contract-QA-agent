@@ -1,0 +1,18 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # Read from the host if set; defaults keep the container free to run.
+      CRA_LIVE_MODEL: "${CRA_LIVE_MODEL:-0}"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+    volumes:
+      # The corpus lives on the host. It is third-party data with its own licences and
+      # is reproducible from scripts/, so it does not belong in the image.
+      - ./data:/app/data:ro
+      # Model cache, so a restart does not re-download the embedding model.
+      - hf-cache:/home/researcher/.cache/huggingface
+
+volumes:
+  hf-cache:

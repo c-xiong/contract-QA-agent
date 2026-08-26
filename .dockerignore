@@ -1,0 +1,14 @@
+.git/
+.venv/
+data/
+evals/runs/
+experiments/runs/
+tests/
+docs/
+.github/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+__pycache__/
+*.pyc
+.env

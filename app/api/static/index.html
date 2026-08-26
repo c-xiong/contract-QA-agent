@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>contract-research · trace inspector</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#0b0d10; --panel:#0e1114; --panel2:#12151a; --line:#1b2027; --line2:#262c35;
+  --text:#dfe3e9; --bright:#eef1f5; --dim:#8992a0; --dimmer:#5c6470; --faint:#3d4653;
+  --teal:oklch(0.76 0.12 165); --amber:oklch(0.76 0.12 72);
+  --violet:oklch(0.72 0.11 295); --red:oklch(0.68 0.15 25);
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+  font-size:14px;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+.mono{font-family:var(--mono)}
+.hd{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--dimmer);
+  text-transform:uppercase}
+.meta{font-family:var(--mono);font-size:10.5px;color:var(--dimmer)}
+
+/* ── chrome ─────────────────────────────────────────────── */
+header{display:flex;align-items:center;justify-content:space-between;padding:0 24px;
+  height:54px;border-bottom:1px solid var(--line);background:var(--panel)}
+header .brand{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--bright)}
+header .sub{font-size:12px;color:var(--dimmer);margin-left:12px}
+header .stats{display:flex;align-items:center;gap:14px;font-family:var(--mono);
+  font-size:11.5px;color:var(--dim)}
+header .sep{color:var(--line2)}
+.livedot{width:6px;height:6px;border-radius:50%;background:var(--dimmer);display:inline-block;
+  margin-right:6px;vertical-align:1px}
+.livedot.on{background:var(--teal)}
+
+.query{display:flex;align-items:center;gap:10px;padding:12px 24px;
+  border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+.field{display:flex;align-items:center;gap:9px;background:#14181d;border:1px solid var(--line2);
+  border-radius:5px;padding:8px 12px}
+.field label{font-size:11px;color:var(--dimmer)}
+.field input,.field select{background:none;border:none;outline:none;font-family:var(--mono);
+  font-size:12.5px;color:var(--text)}
+.field.grow{flex:1;min-width:280px}
+.field.grow input{width:100%}
+.field select{cursor:pointer}
+.field select option{background:#14181d}
+#ask{background:var(--amber);color:#0b0d10;font-weight:600;font-size:13px;border:none;
+  border-radius:5px;padding:10px 24px;cursor:pointer}
+#ask:disabled{background:#14181d;color:var(--dim);cursor:default}
+
+/* ── graph strip ────────────────────────────────────────── */
+.strip-wrap{padding:20px 24px 4px}
+.strip-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;gap:16px}
+.legend{display:flex;gap:14px;align-items:center;font-family:var(--mono);font-size:10px;
+  color:var(--dimmer);flex-wrap:wrap}
+.legend i{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px}
+.strip{position:relative;width:1392px;height:188px;transform-origin:left top}
+.strip-outer{overflow-x:auto;overflow-y:hidden}
+.grp{position:absolute;border:1px solid var(--line);border-radius:7px;background:#0c0f12}
+.grp-l,.grp-r{position:absolute;padding:1px 8px;background:var(--bg);font-size:9px}
+.grp-l{font-family:var(--mono);letter-spacing:.14em;color:#4b5563}
+.grp-r{color:var(--faint);transform:translateX(-100%)}
+
+.node{position:absolute;box-sizing:border-box;background:var(--panel);
+  border:1px dashed #1f242c;border-radius:5px;padding:6px 9px;display:flex;
+  flex-direction:column;justify-content:center;transition:background .18s,border-color .18s}
+.node .nm{display:flex;align-items:center;gap:6px}
+.node .dot{width:5px;height:5px;border-radius:50%;background:#2a313b;flex-shrink:0}
+.node .lb{font-family:var(--mono);font-size:11.5px;font-weight:500;color:#4b5563}
+.node .sb{font-size:9.5px;color:var(--dimmer);margin-top:2px;padding-left:11px}
+.node .badge{position:absolute;right:-7px;top:-7px;min-width:17px;height:17px;padding:0 4px;
+  border-radius:9px;background:var(--amber);color:#0b0d10;font-family:var(--mono);
+  font-size:9.5px;font-weight:700;display:none;align-items:center;justify-content:center}
+.node[data-n]:not([data-state="pending"]) .badge[data-count]{display:flex}
+
+.node[data-state="done"]{background:#0f1714;border-style:solid;
+  border-color:color-mix(in oklab,var(--teal) 34%,var(--panel2))}
+.node[data-state="done"] .dot{background:var(--teal)}
+.node[data-state="done"] .lb{color:var(--text)}
+.node[data-state="xref"]{background:#141021;border-style:solid;
+  border-color:color-mix(in oklab,var(--violet) 40%,var(--panel2))}
+.node[data-state="xref"] .dot{background:var(--violet)}
+.node[data-state="xref"] .lb{color:var(--text)}
+.node[data-state="active"]{background:#191509;border-style:solid;border-color:var(--amber);
+  animation:pulse 1.4s ease-in-out infinite}
+.node[data-state="active"] .dot{background:var(--amber)}
+.node[data-state="active"] .lb{color:#fff}
+.node[data-state="terminal"]{background:color-mix(in oklab,var(--teal) 12%,var(--panel2));
+  border-style:solid;border-color:var(--teal)}
+.node[data-state="terminal"] .dot{background:var(--teal)}
+.node[data-state="terminal"] .lb{color:oklch(.88 .11 165)}
+.node[data-state="abstained"]{background:color-mix(in oklab,var(--violet) 12%,var(--panel2));
+  border-style:solid;border-color:var(--violet)}
+.node[data-state="abstained"] .dot{background:var(--violet)}
+.node[data-state="abstained"] .lb{color:oklch(.84 .10 295)}
+.node[data-state="failed"]{background:color-mix(in oklab,var(--red) 12%,var(--panel2));
+  border-style:solid;border-color:var(--red)}
+.node[data-state="failed"] .dot{background:var(--red)}
+.node[data-state="failed"] .lb{color:oklch(.80 .13 25)}
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 0 3px color-mix(in oklab,var(--amber) 22%,transparent)}
+  50%{box-shadow:0 0 0 7px color-mix(in oklab,var(--amber) 6%,transparent)}}
+.edge{stroke:#262c35;stroke-width:1.4;fill:none;stroke-dasharray:4 3;transition:stroke .2s}
+.edge.on{stroke:var(--teal);stroke-dasharray:none;stroke-width:1.5}
+.edge.loop.on{stroke:var(--amber);stroke-dasharray:4 3}
+.edge.xr.on{stroke:var(--violet);stroke-dasharray:none}
+#loopnote{position:absolute;left:150px;top:150px;font-family:var(--mono);font-size:9.5px;
+  color:var(--amber);display:none}
+
+/* ── body ───────────────────────────────────────────────── */
+.body{display:flex;gap:20px;padding:14px 24px 22px;align-items:flex-start}
+.col-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+.col-side{width:372px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px}
+.rowhd{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+
+#answer{padding:16px 19px;font-size:14.5px;line-height:1.72;min-height:74px;white-space:pre-wrap}
+#answer .cursor{display:inline-block;width:8px;height:17px;margin-left:3px;
+  background:var(--amber);vertical-align:-3px;animation:blink 1s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.chip{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;
+  margin:0 3px;padding:0 4px;border-radius:3px;font-family:var(--mono);font-size:10px;
+  font-weight:700;vertical-align:2px;cursor:pointer;
+  background:color-mix(in oklab,var(--teal) 16%,var(--panel));
+  border:1px solid color-mix(in oklab,var(--teal) 45%,var(--panel));color:oklch(.86 .11 165)}
+.chip.xr{background:color-mix(in oklab,var(--violet) 16%,var(--panel));
+  border-color:color-mix(in oklab,var(--violet) 45%,var(--panel));color:oklch(.82 .10 295)}
+
+.cite{border-left:2px solid var(--teal);padding:11px 14px}
+.cite.xr{border-left-color:var(--violet)}
+.cite.bad{border-left-color:var(--red)}
+.cite .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cite .num{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;
+  border-radius:3px;font-family:var(--mono);font-size:10px;font-weight:700;
+  background:color-mix(in oklab,var(--teal) 16%,var(--panel));
+  border:1px solid color-mix(in oklab,var(--teal) 45%,var(--panel));color:oklch(.86 .11 165)}
+.cite.xr .num{background:color-mix(in oklab,var(--violet) 16%,var(--panel));
+  border-color:color-mix(in oklab,var(--violet) 45%,var(--panel));color:oklch(.82 .10 295)}
+.cite.bad .num{background:color-mix(in oklab,var(--red) 14%,var(--panel));
+  border-color:color-mix(in oklab,var(--red) 45%,var(--panel));color:oklch(.78 .13 25)}
+.cite .ref{font-family:var(--mono);font-size:12.5px;color:var(--bright)}
+.cite.bad .ref{color:var(--dim);text-decoration:line-through}
+.cite .ttl{font-size:12px;color:var(--dim)}
+.cite .ok{margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);
+  font-size:10.5px;color:oklch(.80 .11 165)}
+.cite .bad-lbl{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:oklch(.78 .13 25)}
+.cite .ex{margin-top:8px;padding:9px 12px;background:#0a0c0f;border-radius:4px;font-size:12.5px;
+  line-height:1.6;color:#a8b0bb;max-height:132px;overflow:auto}
+.cite .pv{margin-top:6px;display:flex;gap:14px;flex-wrap:wrap;font-family:var(--mono);
+  font-size:10px;color:#4b5563}
+.cite .pv .xrk{color:var(--violet)}
+
+.ev{display:flex;gap:8px;padding:7px 9px;border-radius:4px}
+.ev .mk{font-family:var(--mono);font-size:11px;flex-shrink:0;color:var(--teal)}
+.ev.xr .mk{color:var(--violet)}
+.ev .c{font-family:var(--mono);font-size:11.5px;color:var(--bright)}
+.ev .d{font-size:11px;color:#6b7280;margin-top:2px;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.ev .m{font-family:var(--mono);font-size:9.5px;color:#4b5563;margin-top:2px}
+.ev.xr .m{color:var(--violet)}
+
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 10px;
+  font-family:var(--mono);font-size:10.5px}
+.grid2 .k{color:var(--dim)}
+.grid2 .v{color:var(--text);text-align:right}
+.grid2 .v.warn{color:var(--amber)}
+
+.log{max-height:250px;overflow:auto;padding:5px}
+.logrow{display:flex;gap:9px;padding:5px 8px;align-items:baseline}
+.logrow .t{font-family:var(--mono);font-size:9.5px;color:var(--faint);width:52px;flex-shrink:0;
+  text-align:right}
+.logrow .s{font-family:var(--mono);font-size:11px;width:104px;flex-shrink:0;color:var(--text)}
+.logrow .d{font-size:10.5px;color:var(--dim);line-height:1.4;min-width:0;word-break:break-word}
+
+.empty{padding:22px;display:flex;flex-direction:column;align-items:center;gap:7px;
+  border:1px dashed #1f242c;border-radius:5px;text-align:center}
+.empty .t{font-size:12px;color:#4b5563}
+.empty .s{font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+.banner{padding:10px 14px;border-radius:5px;font-size:12.5px;line-height:1.5}
+.banner.err{background:color-mix(in oklab,var(--red) 10%,var(--panel));
+  border:1px solid color-mix(in oklab,var(--red) 38%,var(--panel));color:oklch(.84 .10 25)}
+.banner.abs{background:color-mix(in oklab,var(--violet) 9%,var(--panel));
+  border:1px solid color-mix(in oklab,var(--violet) 34%,var(--panel));color:#c3bde0}
+.pill{font-family:var(--mono);font-size:10.5px;padding:2px 9px;border-radius:3px;
+  background:var(--panel2);border:1px solid var(--line2);color:var(--dim)}
+.pill.ok{background:color-mix(in oklab,var(--teal) 12%,var(--panel));
+  border-color:color-mix(in oklab,var(--teal) 38%,var(--panel));color:oklch(.86 .11 165)}
+.pill.run{background:color-mix(in oklab,var(--amber) 12%,var(--panel));
+  border-color:color-mix(in oklab,var(--amber) 38%,var(--panel));color:oklch(.86 .11 72)}
+.pill.abs{background:color-mix(in oklab,var(--violet) 12%,var(--panel));
+  border-color:color-mix(in oklab,var(--violet) 38%,var(--panel));color:oklch(.84 .10 295)}
+.pill.bad{background:color-mix(in oklab,var(--red) 12%,var(--panel));
+  border-color:color-mix(in oklab,var(--red) 38%,var(--panel));color:oklch(.80 .13 25)}
+@media (max-width:1200px){.body{flex-direction:column}.col-side{width:100%}}
+</style>
+</head>
+<body>
+
+<header>
+  <div><span class="brand">contract-research</span><span class="sub">trace inspector — read only</span></div>
+  <div class="stats">
+    <span id="corpus">—</span><span class="sep">|</span>
+    <span id="arm-lbl">—</span><span class="sep">|</span>
+    <span><i class="livedot" id="livedot"></i><span id="model">—</span></span>
+  </div>
+</header>
+
+<form class="query" id="form">
+  <div class="field grow">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5c6470" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <input id="q" autocomplete="off" placeholder="What limits liability, and does it always apply?">
+  </div>
+  <div class="field"><label for="docs">docs</label><select id="docs"></select></div>
+  <div class="field"><label for="arm">arm</label><select id="arm"></select></div>
+  <button id="ask" type="submit">Ask</button>
+</form>
+
+<div id="note-wrap" style="padding:12px 24px 0;display:none">
+  <div class="banner err" id="note"></div>
+</div>
+
+<div class="strip-wrap">
+  <div class="strip-head">
+    <span class="hd">Graph</span>
+    <div class="legend">
+      <span><i style="background:var(--teal)"></i>done</span>
+      <span><i style="background:var(--amber)"></i>running</span>
+      <span><i style="background:var(--violet)"></i>cross-reference</span>
+      <span><i style="background:#2a313b"></i>not taken</span>
+      <span class="sep" style="color:var(--line2)">|</span><span id="steps">idle</span>
+    </div>
+  </div>
+  <div class="strip-outer"><div class="strip" id="strip"></div></div>
+</div>
+
+<div class="body">
+  <div class="col-main">
+    <div class="rowhd"><span class="hd">Answer</span><span class="pill" id="status">idle</span></div>
+    <div class="card" id="answer"><span style="color:var(--dimmer)">Ask a question to start a run.</span></div>
+
+    <div class="rowhd" style="margin-top:3px">
+      <span class="hd">Citations</span><span class="meta" id="cite-sum">—</span>
+    </div>
+    <div id="cites"></div>
+  </div>
+
+  <div class="col-side">
+    <div class="rowhd"><span class="hd">Evidence</span><span class="meta" id="ev-sum">—</span></div>
+    <div class="card" id="evidence" style="padding:6px"></div>
+
+    <div class="card" style="padding:11px 14px">
+      <div class="hd" style="font-size:9.5px;letter-spacing:.12em">Budget</div>
+      <div class="grid2" id="budget" style="margin-top:7px"></div>
+    </div>
+
+    <div class="rowhd"><span class="hd">Log</span></div>
+    <div class="card log" id="log"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* Node geometry mirrors design/StateGraph.dc.html. Hand-drawn SVG rather than a
+   diagram library: mermaid re-renders whole diagrams and gives no handle on a single
+   node, so live per-node highlighting would mean a full redraw per event. */
+const NODES = {
+  search:          [52, 52,118,44,"search","retrieve"],
+  assess:          [206,52,118,44,"assess","enough?"],
+  refine:          [206,126,118,38,"refine","widen query"],
+  resolve_refs:    [546,52,152,44,"resolve_refs","follow §refs"],
+  select_evidence: [546,126,152,38,"select_evidence","dedupe"],
+  write:           [798,52,118,44,"write","model call"],
+  verify:          [946,52,118,44,"verify","5 checks"],
+  finalize:        [1094,52,118,44,"finalize","completed"],
+  repair:          [946,126,118,38,"repair","once"],
+  abstain:         [1094,126,118,38,"abstain","abstained"],
+  fail:            [1242,126,118,38,"fail","failed"],
+};
+const GROUPS = [
+  [24,20,476,168,"RESEARCH","bounded loop"],
+  [516,20,200,168,"EVIDENCE","SPEC 9.5"],
+  [766,20,618,168,"GENERATE","citation gate"],
+];
+const EDGES = [
+  ["e-entry","M24 74 L46 74",""],
+  ["e-sa","M170 74 L200 74",""],
+  ["e-ar","M265 96 L265 120","loop"],
+  ["e-rs","M206 145 L178 145 L178 118 L111 118 L111 98","loop"],
+  ["e-arr","M324 74 L540 74",""],
+  ["e-rrse","M622 96 L622 120","xr"],
+  ["e-sew","M698 145 L744 145 L744 74 L792 74",""],
+  ["e-wv","M916 74 L940 74",""],
+  ["e-vf","M1064 74 L1088 74",""],
+  ["e-vr","M1005 96 L1005 120","loop"],
+  ["e-rw","M946 145 L920 145 L920 108 L857 108 L857 98","loop"],
+  ["e-va","M1064 88 L1078 88 L1078 145 L1088 145","xr"],
+  ["e-xf","M1212 145 L1236 145",""],
+];
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+  ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" })[c]);
+
+function buildStrip() {
+  const strip = $("strip");
+  let html = "";
+  for (const [x,y,w,h,name,note] of GROUPS) {
+    html += `<div class="grp" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px"></div>`;
+    html += `<div class="grp-l" style="left:${x+12}px;top:${y-8}px">${name}</div>`;
+    html += `<div class="grp-r" style="left:${x+w-12}px;top:${y-8}px">${note}</div>`;
+  }
+  let paths = "";
+  for (const [id,d,cls] of EDGES) paths += `<path id="${id}" class="edge ${cls}" d="${d}"/>`;
+  html += `<svg width="1392" height="188" viewBox="0 0 1392 188"
+    style="position:absolute;left:0;top:0;pointer-events:none">${paths}</svg>`;
+  for (const [key,[x,y,w,h,label,sub]] of Object.entries(NODES)) {
+    html += `<div class="node" id="n-${key}" data-n="${key}" data-state="pending"
+      style="left:${x}px;top:${y}px;width:${w}px;height:${h}px">
+      <span class="badge" id="b-${key}"></span>
+      <div class="nm"><span class="dot"></span><span class="lb">${label}</span></div>
+      <div class="sb">${sub}</div></div>`;
+  }
+  html += `<div id="loopnote">looped &times;<span id="loopn">2</span></div>`;
+  strip.innerHTML = html;
+  fitStrip();
+}
+
+/* The strip is authored at a fixed 1392px. Scale it down on narrow viewports rather
+   than reflowing: a graph whose nodes move around between runs is unreadable. */
+function fitStrip() {
+  const outer = document.querySelector(".strip-outer");
+  const strip = $("strip");
+  const avail = outer.clientWidth;
+  const scale = Math.min(1, avail / 1392);
+  strip.style.transform = `scale(${scale})`;
+  outer.style.height = `${188 * scale + 4}px`;
+}
+window.addEventListener("resize", fitStrip);
+
+function resetStrip() {
+  for (const key of Object.keys(NODES)) {
+    const n = $(`n-${key}`); n.dataset.state = "pending";
+    const b = $(`b-${key}`); b.textContent = ""; b.removeAttribute("data-count");
+  }
+  for (const [id] of EDGES) $(id).classList.remove("on");
+  $("loopnote").style.display = "none";
+}
+
+const counts = {};
+function markNode(node, state) {
+  const el = $(`n-${node}`);
+  if (!el) return;
+  el.dataset.state = state;
+  counts[node] = (counts[node] || 0) + (state === "active" ? 1 : 0);
+  if (counts[node] > 1) {
+    const b = $(`b-${node}`);
+    b.textContent = counts[node]; b.setAttribute("data-count", counts[node]);
+  }
+  if ((counts.search || 0) > 1) {
+    $("loopnote").style.display = "block";
+    $("loopn").textContent = counts.search;
+  }
+}
+const ON = {
+  search: ["e-entry"], assess: ["e-sa"], refine: ["e-ar","e-rs"],
+  resolve_refs: ["e-arr"], select_evidence: ["e-rrse"], write: ["e-sew"],
+  verify: ["e-wv"], repair: ["e-vr","e-rw"], finalize: ["e-vf"], abstain: ["e-va"],
+  fail: ["e-xf"],
+};
+
+let source = null;
+function stop() {
+  if (source) { source.close(); source = null; }
+  $("ask").disabled = false; $("ask").textContent = "Ask";
+}
+
+function run(ev) {
+  ev.preventDefault();
+  if (source) { stop(); return; }
+
+  const q = $("q").value.trim() || $("q").placeholder;
+  const docs = $("docs").value;
+  const arm = $("arm").value;
+
+  resetStrip();
+  for (const k of Object.keys(counts)) delete counts[k];
+  $("answer").innerHTML = `<span style="color:var(--dimmer)">waiting for the first node…</span>`;
+  $("cites").innerHTML = ""; $("cite-sum").textContent = "—";
+  $("evidence").innerHTML = ""; $("ev-sum").textContent = "—";
+  $("budget").innerHTML = ""; $("log").innerHTML = "";
+  $("status").className = "pill run"; $("status").textContent = "running";
+  $("ask").textContent = "Stop";
+
+  const params = new URLSearchParams({ question: q, arm });
+  if (docs) params.set("document_ids", docs);
+  source = new EventSource(`/research/stream?${params}`);
+  let previous = null;
+
+  source.addEventListener("start", (e) => {
+    const d = JSON.parse(e.data);
+    $("corpus").textContent = `${d.documents} docs · ${d.chunks.toLocaleString()} chunks`;
+    $("arm-lbl").textContent = d.retriever;
+    $("model").textContent = d.live_model ? `model: ${d.model_id}` : "model: stub";
+    $("livedot").className = "livedot" + (d.live_model ? " on" : "");
+  });
+
+  source.addEventListener("node", (e) => {
+    const d = JSON.parse(e.data);
+    if (previous && $(`n-${previous}`)?.dataset.state === "active") {
+      markNode(previous, previous === "resolve_refs" ? "xref" : "done");
+    }
+    markNode(d.node, "active");
+    (ON[d.node] || []).forEach((id) => $(id)?.classList.add("on"));
+    previous = d.node;
+    $("steps").textContent = `step ${d.index} · ${(d.total_ms/1000).toFixed(2)} s`;
+    addLog(d);
+    if (d.node === "write") {
+      $("answer").innerHTML =
+        `<span style="color:var(--dimmer)">generating…</span><span class="cursor"></span>`;
+    }
+  });
+
+  source.addEventListener("done", (e) => { render(JSON.parse(e.data), previous); stop(); });
+
+  source.addEventListener("error", (e) => {
+    let detail = "stream closed unexpectedly";
+    try { detail = JSON.parse(e.data).detail; } catch (_) { /* transport-level */ }
+    $("status").className = "pill bad"; $("status").textContent = "error";
+    $("answer").innerHTML = `<div class="banner err">${esc(detail)}</div>`;
+    stop();
+  });
+}
+
+function addLog(d) {
+  const m = d.metrics || {};
+  const extra = [];
+  if (m.query) extra.push(`q “${m.query}”`);
+  if (m.error_codes?.length) extra.push(m.error_codes.join(", "));
+  const row = document.createElement("div");
+  row.className = "logrow";
+  row.innerHTML =
+    `<span class="t">${d.elapsed_ms} ms</span>` +
+    `<span class="s">${esc(d.node)}</span>` +
+    `<span class="d">${esc(d.detail)}${extra.length ? " · " + esc(extra.join(" · ")) : ""}</span>`;
+  $("log").appendChild(row);
+  $("log").scrollTop = $("log").scrollHeight;
+}
+
+function render(d, lastNode) {
+  const terminal = { completed: "terminal", abstained: "abstained", failed: "failed" }[d.status];
+  if (lastNode) markNode(lastNode, terminal || "done");
+
+  $("status").className = "pill " +
+    ({ completed: "ok", abstained: "abs", failed: "bad" }[d.status] || "");
+  $("status").textContent = `${d.status} · ${(d.total_ms/1000).toFixed(2)} s`;
+  $("steps").textContent = `${d.steps} steps · ${(d.total_ms/1000).toFixed(2)} s`;
+
+  /* Answer, with each citation replaced by a numbered chip that scrolls to its card. */
+  let answer = esc(d.answer);
+  d.citations.forEach((c) => {
+    const cls = c.pulled_by === "cross_reference" ? "chip xr" : "chip";
+    answer = answer.split(esc(c.internal)).join(
+      `<span class="${cls}" data-go="c${c.index}">${c.index}</span>`);
+  });
+  $("answer").innerHTML = answer ||
+    `<span style="color:var(--dimmer)">(no answer text)</span>`;
+  if (d.status === "abstained") {
+    $("answer").insertAdjacentHTML("afterbegin",
+      `<div class="banner abs" style="margin-bottom:12px">Abstained — the run stopped rather than assert something the evidence does not carry.</div>`);
+  }
+  $("answer").querySelectorAll("[data-go]").forEach((el) =>
+    el.addEventListener("click", () =>
+      $(el.dataset.go)?.scrollIntoView({ behavior: "smooth", block: "center" })));
+
+  /* Citations */
+  const bad = d.citation_errors.length;
+  $("cite-sum").textContent =
+    `${d.citations.length + bad} emitted · ${d.citations.length} verified · ${bad} rejected`;
+  const cites = $("cites");
+  cites.innerHTML = "";
+  d.citations.forEach((c) => {
+    const xr = c.pulled_by === "cross_reference";
+    const el = document.createElement("div");
+    el.className = "card cite" + (xr ? " xr" : "");
+    el.id = `c${c.index}`;
+    el.style.marginBottom = "10px";
+    el.innerHTML =
+      `<div class="top"><span class="num">${c.index}</span>` +
+      `<span class="ref">${esc(c.internal)}</span><span style="color:#6b7280">·</span>` +
+      `<span class="ttl">${esc(c.document_title)}</span>` +
+      `<span class="ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="oklch(.80 .11 165)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>verified</span></div>` +
+      (c.excerpt ? `<div class="ex">${esc(c.excerpt)}</div>` : "") +
+      `<div class="pv">${c.source_chunk_id ? `<span>chunk ${esc(c.source_chunk_id)}</span>` : ""}` +
+      (xr ? `<span class="xrk">pulled_by cross_reference</span>`
+          : `<span>pulled_by search</span>`) + `</div>`;
+    cites.appendChild(el);
+  });
+  d.citation_errors.forEach((err, i) => {
+    const el = document.createElement("div");
+    el.className = "card cite bad";
+    el.style.marginBottom = "10px";
+    el.innerHTML =
+      `<div class="top"><span class="num">${d.citations.length + i + 1}</span>` +
+      `<span class="ref">${esc(err.raw)}</span>` +
+      `<span class="bad-lbl">${esc(err.code)}</span></div>` +
+      `<div style="margin-top:6px;font-size:11.5px;color:var(--dim);line-height:1.5">${esc(err.detail)}</div>`;
+    cites.appendChild(el);
+  });
+  if (!d.citations.length && !bad) {
+    cites.innerHTML = `<div class="card empty"><div class="t">No citations in this answer</div>` +
+      `<div class="s">an uncited answer does not pass the gate</div></div>`;
+  }
+
+  /* Evidence */
+  const xrn = d.evidence.filter((e) => e.pulled_by === "cross_reference").length;
+  $("ev-sum").innerHTML =
+    `${d.evidence.length} · <span style="color:var(--violet)">${xrn} xref</span>`;
+  const ev = $("evidence");
+  ev.innerHTML = "";
+  d.evidence.slice(0, 12).forEach((e) => {
+    const xr = e.pulled_by === "cross_reference";
+    const loc = [e.document_id, e.page_number ? `p.${e.page_number}` : null,
+                 e.section_id ? `§${e.section_id}` : null].filter(Boolean).join(" ");
+    const el = document.createElement("div");
+    el.className = "ev" + (xr ? " xr" : "");
+    el.innerHTML =
+      `<span class="mk">${xr ? "&#8627;" : "&#9679;"}</span><div style="flex:1;min-width:0">` +
+      `<div class="c">${esc(loc)}</div>` +
+      `<div class="d">${esc((e.excerpt || "").replace(/\s+/g, " ").slice(0, 64))}…</div>` +
+      `<div class="m">${xr ? "cross_reference" : "search"}</div></div>`;
+    ev.appendChild(el);
+  });
+  if (d.evidence.length > 12) {
+    ev.insertAdjacentHTML("beforeend",
+      `<div style="text-align:center;padding:7px 0 3px;font-family:var(--mono);font-size:10px;color:var(--faint)">+ ${d.evidence.length - 12} more</div>`);
+  }
+  if (!d.evidence.length) {
+    ev.innerHTML = `<div class="empty"><div class="t">Nothing retrieved</div>` +
+      `<div class="s">no passage matched any query</div></div>`;
+  }
+
+  /* Budget */
+  const u = d.usage;
+  const row = (k, v, warn) =>
+    `<div class="k">${k}</div><div class="v${warn ? " warn" : ""}">${v}</div>`;
+  $("budget").innerHTML =
+    row("searches", `${u.searches_used} / ${u.max_searches}`, u.searches_used >= u.max_searches) +
+    row("iterations", `${u.iterations} / ${u.max_iterations}`, u.iterations >= u.max_iterations) +
+    row("repairs", `${u.repair_attempts} / ${u.max_repair_attempts}`, u.repair_attempts > 0) +
+    row("xref pulled", `${u.cross_reference_pulled} / ${u.max_cross_reference_chunks}`,
+        u.cross_reference_pulled >= u.max_cross_reference_chunks) +
+    row("tokens", (u.input_tokens + u.output_tokens).toLocaleString(), false);
+
+  if (d.status === "failed" && d.failure) {
+    $("answer").insertAdjacentHTML("afterbegin",
+      `<div class="banner err" style="margin-bottom:12px"><strong>${esc(d.failure)}</strong> — ${esc(d.failure_detail || "")}</div>`);
+  }
+}
+
+/* ── boot ─────────────────────────────────────────────── */
+buildStrip();
+$("form").addEventListener("submit", run);
+
+Promise.all([
+  fetch("/documents").then((r) => r.json()).catch(() => []),
+  fetch("/arms").then((r) => r.json()).catch(() => []),
+  fetch("/health").then((r) => r.json()).catch(() => null),
+]).then(([docs, arms, health]) => {
+  const sel = $("docs");
+  sel.innerHTML = `<option value="">all ${docs.length}</option>`;
+  docs.forEach((d) => {
+    const o = document.createElement("option");
+    o.value = d.document_id;
+    o.textContent = `${d.document_id} · ${d.title.slice(0, 34)}`;
+    sel.appendChild(o);
+  });
+  const armSel = $("arm");
+  arms.forEach((a) => {
+    const o = document.createElement("option");
+    o.value = a; o.textContent = a;
+    armSel.appendChild(o);
+  });
+  if (health) {
+    armSel.value = arms.includes(health.retriever) ? health.retriever : arms[0] || "";
+    $("corpus").textContent = `${health.documents} docs · ${health.chunks.toLocaleString()} chunks`;
+    $("arm-lbl").textContent = health.retriever;
+    $("model").textContent = health.live_model ? `model: ${health.model_id}` : "model: stub";
+    $("livedot").className = "livedot" + (health.live_model ? " on" : "");
+    if (health.note) {
+      $("note").textContent = health.note;
+      $("note-wrap").style.display = "block";
+    }
+  }
+});
+</script>
+</body>
+</html>

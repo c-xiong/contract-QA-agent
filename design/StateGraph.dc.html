@@ -1,0 +1,328 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: oklch(0.76 0.12 72); } a:hover { color: oklch(0.84 0.12 72); }
+  </style>
+</helmet>
+
+<div style="
+  position: relative; width: 1560px; height: 1180px; box-sizing: border-box;
+  background: #0b0d10; color: #dfe3e9;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  background-image: radial-gradient(circle at 1px 1px, #171b21 1px, transparent 0);
+  background-size: 32px 32px;
+">
+
+  <!-- ── header ─────────────────────────────────────────────────── -->
+  <div style="position: absolute; left: 44px; top: 34px; display: flex; flex-direction: column; gap: 6px;">
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.18em; color: #5c6470; text-transform: uppercase;">app/agent/graph.py &nbsp;·&nbsp; app/agent/state.py &nbsp;·&nbsp; app/agent/policies.py</div>
+    <div style="font-size: 27px; font-weight: 600; letter-spacing: -0.01em;">Agent state graph</div>
+    <div style="font-size: 13.5px; color: #8992a0; max-width: 640px; line-height: 1.5;">Every node, every routing condition, every terminal. Boxes list the <span style="font-family: 'JetBrains Mono', ui-monospace, monospace; color: #b9c0ca;">ResearchState</span> keys each node writes; guards on the edges are enforced in code, never in a prompt.</div>
+  </div>
+
+  <div style="position: absolute; right: 44px; top: 36px; display: flex; gap: 22px; align-items: flex-start;">
+    <div style="display: flex; flex-direction: column; gap: 7px;">
+      <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 11px; height: 11px; border-radius: 2px; background: oklch(0.76 0.12 72);"></span><span style="font-size: 12px; color: #8992a0;">bounded loop</span></div>
+      <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 11px; height: 11px; border-radius: 2px; background: oklch(0.76 0.12 165);"></span><span style="font-size: 12px; color: #8992a0;">success terminal</span></div>
+      <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 11px; height: 11px; border-radius: 2px; background: oklch(0.68 0.15 25);"></span><span style="font-size: 12px; color: #8992a0;">failure terminal</span></div>
+      <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 11px; height: 11px; border-radius: 2px; background: oklch(0.72 0.11 295);"></span><span style="font-size: 12px; color: #8992a0;">abstention terminal</span></div>
+    </div>
+  </div>
+
+  <!-- ── edges ──────────────────────────────────────────────────── -->
+  <svg width="1060" height="1010" viewBox="0 0 1060 1010" style="position: absolute; left: 24px; top: 150px;">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#3d4653"></path>
+      </marker>
+      <marker id="ar-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="oklch(0.76 0.12 72)"></path>
+      </marker>
+      <marker id="ar-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="oklch(0.68 0.15 25)"></path>
+      </marker>
+      <marker id="ar-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="oklch(0.76 0.12 165)"></path>
+      </marker>
+      <marker id="ar-violet" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="oklch(0.72 0.11 295)"></path>
+      </marker>
+    </defs>
+
+    <!-- entry -> search -->
+    <path d="M 386 22 L 386 46" stroke="#3d4653" stroke-width="1.6" fill="none" marker-end="url(#ar)"></path>
+    <!-- search -> assess -->
+    <path d="M 386 128 L 386 164" stroke="#3d4653" stroke-width="1.6" fill="none" marker-end="url(#ar)"></path>
+    <!-- assess -> refine  (continue, left) -->
+    <path d="M 276 210 L 200 210 L 200 288" stroke="oklch(0.76 0.12 72)" stroke-width="1.6" fill="none" marker-end="url(#ar-amber)"></path>
+    <!-- refine -> search (back edge, far left) -->
+    <path d="M 106 314 L 46 314 L 46 84 L 276 84" stroke="oklch(0.76 0.12 72)" stroke-width="1.6" fill="none" stroke-dasharray="5 4" marker-end="url(#ar-amber)"></path>
+    <!-- assess -> resolve_refs (stop) -->
+    <path d="M 386 246 L 386 288" stroke="#3d4653" stroke-width="1.6" fill="none" marker-end="url(#ar)"></path>
+    <!-- refine -> resolve_refs (no new query) -->
+    <path d="M 296 314 L 340 314 L 340 300" stroke="#4b5563" stroke-width="1.4" fill="none" stroke-dasharray="4 3" marker-end="url(#ar)"></path>
+    <!-- resolve_refs -> select_evidence -->
+    <path d="M 386 370 L 386 406" stroke="#3d4653" stroke-width="1.6" fill="none" marker-end="url(#ar)"></path>
+    <!-- select_evidence -> write -->
+    <path d="M 386 488 L 386 524" stroke="#3d4653" stroke-width="1.6" fill="none" marker-end="url(#ar)"></path>
+    <!-- select_evidence -> abstain (no results, left) -->
+    <path d="M 276 452 L 120 452 L 120 714" stroke="oklch(0.72 0.11 295)" stroke-width="1.6" fill="none" marker-end="url(#ar-violet)"></path>
+    <!-- write -> verify -->
+    <path d="M 386 606 L 386 642" stroke="#3d4653" stroke-width="1.6" fill="none" marker-end="url(#ar)"></path>
+    <!-- verify -> repair (right) -->
+    <path d="M 496 682 L 596 682" stroke="oklch(0.76 0.12 72)" stroke-width="1.6" fill="none" marker-end="url(#ar-amber)"></path>
+    <!-- repair -> write (back up) -->
+    <path d="M 686 658 L 686 566 L 496 566" stroke="oklch(0.76 0.12 72)" stroke-width="1.6" fill="none" stroke-dasharray="5 4" marker-end="url(#ar-amber)"></path>
+    <!-- verify -> finalize -->
+    <path d="M 386 724 L 386 762" stroke="oklch(0.76 0.12 165)" stroke-width="1.6" fill="none" marker-end="url(#ar-teal)"></path>
+    <!-- verify -> abstain (left, after repair spent) -->
+    <path d="M 276 700 L 220 700 L 220 748 L 196 748" stroke="oklch(0.72 0.11 295)" stroke-width="1.6" fill="none" marker-end="url(#ar-violet)"></path>
+    <!-- search -> fail (far right) -->
+    <path d="M 496 92 L 900 92 L 900 736 L 786 736" stroke="oklch(0.68 0.15 25)" stroke-width="1.5" fill="none" marker-end="url(#ar-red)"></path>
+    <!-- write -> fail -->
+    <path d="M 496 578 L 838 578 L 838 712 L 786 712" stroke="oklch(0.68 0.15 25)" stroke-width="1.5" fill="none" marker-end="url(#ar-red)"></path>
+    <!-- terminals -> END -->
+    <path d="M 120 790 L 120 860 L 380 860" stroke="#3d4653" stroke-width="1.4" fill="none"></path>
+    <path d="M 386 812 L 386 860" stroke="#3d4653" stroke-width="1.4" fill="none"></path>
+    <path d="M 686 790 L 686 860 L 400 860" stroke="#3d4653" stroke-width="1.4" fill="none"></path>
+    <path d="M 386 856 L 386 884" stroke="#3d4653" stroke-width="1.6" fill="none" marker-end="url(#ar)"></path>
+  </svg>
+
+  <!-- ── edge labels ────────────────────────────────────────────── -->
+  <div style="position: absolute; left: 218px; top: 344px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; color: oklch(0.76 0.12 72);">continue</div>
+  <div style="position: absolute; left: 62px; top: 300px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; color: oklch(0.76 0.12 72);">retry</div>
+  <div style="position: absolute; left: 400px; top: 402px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; color: #8992a0;">stop</div>
+  <div style="position: absolute; left: 306px; top: 486px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; color: #6b7280;">no new query</div>
+  <div style="position: absolute; left: 148px; top: 578px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; color: oklch(0.72 0.11 295);">no results</div>
+  <div style="position: absolute; left: 540px; top: 812px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; color: oklch(0.76 0.12 72);">errors</div>
+  <div style="position: absolute; left: 400px; top: 890px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; color: oklch(0.76 0.12 165);">verified</div>
+  <div style="position: absolute; left: 208px; top: 858px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; color: oklch(0.72 0.11 295);">repair spent</div>
+  <div style="position: absolute; left: 700px; top: 224px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; color: oklch(0.68 0.15 25);">budget_exhausted · retrieval_unavailable</div>
+  <div style="position: absolute; left: 700px; top: 712px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; color: oklch(0.68 0.15 25);">model_timeout · internal_error</div>
+
+  <!-- ── entry chip ─────────────────────────────────────────────── -->
+  <div style="position: absolute; left: 322px; top: 152px; padding: 5px 14px; border-radius: 999px; border: 1px dashed #3d4653; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; color: #8992a0;">initial_state()</div>
+
+  <!-- ── NODE: search ───────────────────────────────────────────── -->
+  <div style="position: absolute; left: 300px; top: 196px; width: 220px; box-sizing: border-box; background: #12151a; border: 1px solid #2a313b; border-left: 3px solid oklch(0.76 0.12 72); border-radius: 5px; padding: 11px 13px;">
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: #eef1f5;">search</div>
+    <div style="font-size: 11.5px; color: #8992a0; margin-top: 3px; line-height: 1.45;">retriever.search(query, top_k)</div>
+    <div style="margin-top: 8px; padding-top: 7px; border-top: 1px solid #1e232b; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6b7280; line-height: 1.65;">writes&nbsp; retrieved_chunks<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;search_queries<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;searches_used ++</div>
+  </div>
+
+  <!-- ── NODE: assess ───────────────────────────────────────────── -->
+  <div style="position: absolute; left: 300px; top: 312px; width: 220px; box-sizing: border-box; background: #12151a; border: 1px solid #2a313b; border-left: 3px solid oklch(0.76 0.12 72); border-radius: 5px; padding: 11px 13px;">
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: #eef1f5;">assess</div>
+    <div style="font-size: 11.5px; color: #8992a0; margin-top: 3px; line-height: 1.45;">term coverage &ge; 50%?</div>
+    <div style="margin-top: 8px; padding-top: 7px; border-top: 1px solid #1e232b; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6b7280; line-height: 1.65;">writes&nbsp; research_iterations ++<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stop_reason<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;assessed_chunk_count</div>
+  </div>
+
+  <!-- ── NODE: refine ───────────────────────────────────────────── -->
+  <div style="position: absolute; left: 130px; top: 428px; width: 190px; box-sizing: border-box; background: #12151a; border: 1px solid #2a313b; border-left: 3px solid oklch(0.76 0.12 72); border-radius: 5px; padding: 11px 13px;">
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: #eef1f5;">refine</div>
+    <div style="font-size: 11.5px; color: #8992a0; margin-top: 3px; line-height: 1.45;">widen query, drop stopwords</div>
+    <div style="margin-top: 8px; padding-top: 7px; border-top: 1px solid #1e232b; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6b7280; line-height: 1.65;">writes&nbsp; search_queries</div>
+  </div>
+
+  <!-- ── NODE: resolve_refs ─────────────────────────────────────── -->
+  <div style="position: absolute; left: 300px; top: 428px; width: 220px; box-sizing: border-box; background: #12151a; border: 1px solid #2a313b; border-left: 3px solid oklch(0.72 0.11 295); border-radius: 5px; padding: 11px 13px;">
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: #eef1f5;">resolve_refs</div>
+    <div style="font-size: 11.5px; color: #8992a0; margin-top: 3px; line-height: 1.45;">follow &ldquo;subject to &sect;8.3&rdquo;</div>
+    <div style="margin-top: 8px; padding-top: 7px; border-top: 1px solid #1e232b; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6b7280; line-height: 1.65;">writes&nbsp; retrieved_chunks +=<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pulled_by=&ldquo;cross_reference&rdquo;</div>
+  </div>
+
+  <!-- ── NODE: select_evidence ──────────────────────────────────── -->
+  <div style="position: absolute; left: 300px; top: 544px; width: 220px; box-sizing: border-box; background: #12151a; border: 1px solid #2a313b; border-left: 3px solid #4b5563; border-radius: 5px; padding: 11px 13px;">
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: #eef1f5;">select_evidence</div>
+    <div style="font-size: 11.5px; color: #8992a0; margin-top: 3px; line-height: 1.45;">dedupe on citable location</div>
+    <div style="margin-top: 8px; padding-top: 7px; border-top: 1px solid #1e232b; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6b7280; line-height: 1.65;">writes&nbsp; evidence<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;status = &ldquo;writing&rdquo;</div>
+  </div>
+
+  <!-- ── NODE: write ────────────────────────────────────────────── -->
+  <div style="position: absolute; left: 300px; top: 660px; width: 220px; box-sizing: border-box; background: #12151a; border: 1px solid #2a313b; border-left: 3px solid #4b5563; border-radius: 5px; padding: 11px 13px;">
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: #eef1f5;">write</div>
+    <div style="font-size: 11.5px; color: #8992a0; margin-top: 3px; line-height: 1.45;">model call &mdash; the only one</div>
+    <div style="margin-top: 8px; padding-top: 7px; border-top: 1px solid #1e232b; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6b7280; line-height: 1.65;">writes&nbsp; draft_answer<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_tokens / output_tokens</div>
+  </div>
+
+  <!-- ── NODE: verify ───────────────────────────────────────────── -->
+  <div style="position: absolute; left: 300px; top: 776px; width: 220px; box-sizing: border-box; background: #12151a; border: 1px solid #2a313b; border-left: 3px solid oklch(0.76 0.12 165); border-radius: 5px; padding: 11px 13px;">
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: #eef1f5;">verify</div>
+    <div style="font-size: 11.5px; color: #8992a0; margin-top: 3px; line-height: 1.45;">5 deterministic checks</div>
+    <div style="margin-top: 8px; padding-top: 7px; border-top: 1px solid #1e232b; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6b7280; line-height: 1.65;">writes&nbsp; citations<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;citation_errors</div>
+  </div>
+
+  <!-- ── NODE: repair ───────────────────────────────────────────── -->
+  <div style="position: absolute; left: 620px; top: 782px; width: 156px; box-sizing: border-box; background: #12151a; border: 1px solid #2a313b; border-left: 3px solid oklch(0.76 0.12 72); border-radius: 5px; padding: 11px 13px;">
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: #eef1f5;">repair</div>
+    <div style="font-size: 11.5px; color: #8992a0; margin-top: 3px; line-height: 1.45;">exactly once</div>
+    <div style="margin-top: 8px; padding-top: 7px; border-top: 1px solid #1e232b; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6b7280; line-height: 1.65;">writes&nbsp; repair_attempts ++</div>
+  </div>
+
+  <!-- ── TERMINALS ──────────────────────────────────────────────── -->
+  <div style="position: absolute; left: 300px; top: 892px; width: 220px; box-sizing: border-box; background: color-mix(in oklab, oklch(0.76 0.12 165) 9%, #12151a); border: 1px solid color-mix(in oklab, oklch(0.76 0.12 165) 34%, #12151a); border-radius: 5px; padding: 10px 13px;">
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: oklch(0.85 0.11 165);">finalize</div>
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #8992a0; margin-top: 4px;">status = &ldquo;completed&rdquo;</div>
+  </div>
+
+  <div style="position: absolute; left: 44px; top: 892px; width: 216px; box-sizing: border-box; background: color-mix(in oklab, oklch(0.72 0.11 295) 9%, #12151a); border: 1px solid color-mix(in oklab, oklch(0.72 0.11 295) 34%, #12151a); border-radius: 5px; padding: 10px 13px;">
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: oklch(0.82 0.10 295);">abstain</div>
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #8992a0; margin-top: 4px;">status = &ldquo;abstained&rdquo;</div>
+    <div style="font-size: 10.5px; color: #6b7280; margin-top: 5px; line-height: 1.45;">names what was searched and why it fell short &mdash; a bare &ldquo;I don&#39;t know&rdquo; is a bug</div>
+  </div>
+
+  <div style="position: absolute; left: 620px; top: 892px; width: 216px; box-sizing: border-box; background: color-mix(in oklab, oklch(0.68 0.15 25) 9%, #12151a); border: 1px solid color-mix(in oklab, oklch(0.68 0.15 25) 34%, #12151a); border-radius: 5px; padding: 10px 13px;">
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: oklch(0.78 0.13 25);">fail</div>
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #8992a0; margin-top: 4px;">status = &ldquo;failed&rdquo;</div>
+    <div style="font-size: 10.5px; color: #6b7280; margin-top: 5px; line-height: 1.45;">preserves the failure kind &mdash; never relabelled as an abstention</div>
+  </div>
+
+  <div style="position: absolute; left: 336px; top: 1040px; padding: 5px 18px; border-radius: 999px; border: 1px solid #2a313b; background: #12151a; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; color: #8992a0;">END</div>
+
+  <!-- ── budget panel ───────────────────────────────────────────── -->
+  <div style="position: absolute; left: 596px; top: 260px; width: 396px; box-sizing: border-box; background: #12151a; border: 1px solid #232830; border-radius: 6px; padding: 14px 16px;">
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.14em; color: #5c6470; text-transform: uppercase;">Budget &mdash; bounds every loop above</div>
+    <div style="font-size: 11.5px; color: #8992a0; margin-top: 6px; line-height: 1.5;">Deterministic code with tests. Carried <em>in</em> state, so a run&#39;s limits are recorded in its own trace.</div>
+    <div style="margin-top: 11px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 18px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px;">
+      <div style="color: #8992a0;">max_searches</div><div style="color: oklch(0.76 0.12 72); text-align: right;">3</div>
+      <div style="color: #8992a0;">max_research_iterations</div><div style="color: oklch(0.76 0.12 72); text-align: right;">3</div>
+      <div style="color: #8992a0;">max_queries_per_iteration</div><div style="color: oklch(0.76 0.12 72); text-align: right;">2</div>
+      <div style="color: #8992a0;">max_chunks_per_query</div><div style="color: oklch(0.76 0.12 72); text-align: right;">5</div>
+      <div style="color: #8992a0;">max_evidence_chars</div><div style="color: oklch(0.76 0.12 72); text-align: right;">24 000</div>
+      <div style="color: #8992a0;">max_repair_attempts</div><div style="color: oklch(0.76 0.12 72); text-align: right;">1</div>
+      <div style="color: #8992a0;">max_cross_reference_depth</div><div style="color: oklch(0.72 0.11 295); text-align: right;">1</div>
+      <div style="color: #8992a0;">max_cross_reference_chunks</div><div style="color: oklch(0.72 0.11 295); text-align: right;">4</div>
+    </div>
+  </div>
+
+  <!-- ── stop_reason panel ──────────────────────────────────────── -->
+  <div style="position: absolute; left: 596px; top: 500px; width: 396px; box-sizing: border-box; background: #12151a; border: 1px solid #232830; border-radius: 6px; padding: 14px 16px;">
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.14em; color: #5c6470; text-transform: uppercase;">StopReason &mdash; why <span style="color: #8992a0;">assess</span> stopped</div>
+    <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 6px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; color: #b9c0ca;">
+      <div style="display: flex; gap: 10px;"><span style="color: oklch(0.76 0.12 165); width: 8px;">&bull;</span><span>sufficient_evidence</span></div>
+      <div style="display: flex; gap: 10px;"><span style="color: oklch(0.76 0.12 72); width: 8px;">&bull;</span><span>search_budget_exhausted</span></div>
+      <div style="display: flex; gap: 10px;"><span style="color: oklch(0.76 0.12 72); width: 8px;">&bull;</span><span>iteration_budget_exhausted</span></div>
+      <div style="display: flex; gap: 10px;"><span style="color: oklch(0.76 0.12 72); width: 8px;">&bull;</span><span>no_new_evidence</span></div>
+      <div style="display: flex; gap: 10px;"><span style="color: oklch(0.72 0.11 295); width: 8px;">&bull;</span><span>no_results</span></div>
+    </div>
+  </div>
+
+  <!-- ── citation gate panel ────────────────────────────────────── -->
+  <div style="position: absolute; left: 596px; top: 660px; width: 396px; box-sizing: border-box; background: #12151a; border: 1px solid #232830; border-radius: 6px; padding: 14px 16px;">
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.14em; color: #5c6470; text-transform: uppercase;">CitationErrorCode &mdash; what <span style="color: #8992a0;">verify</span> rejects</div>
+    <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 6px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; color: #b9c0ca;">
+      <div style="display: flex; gap: 10px;"><span style="color: #5c6470; width: 12px;">1</span><span>unparseable</span></div>
+      <div style="display: flex; gap: 10px;"><span style="color: #5c6470; width: 12px;">2</span><span>unknown_document</span></div>
+      <div style="display: flex; gap: 10px;"><span style="color: #5c6470; width: 12px;">3</span><span>document_not_allowed</span></div>
+      <div style="display: flex; gap: 10px;"><span style="color: #5c6470; width: 12px;">4</span><span>page_not_found</span></div>
+      <div style="display: flex; gap: 10px;"><span style="color: #5c6470; width: 12px;">5</span><span>section_not_found</span></div>
+      <div style="display: flex; gap: 10px;"><span style="color: oklch(0.68 0.15 25); width: 12px;">6</span><span style="color: #eef1f5;">not_in_evidence</span></div>
+    </div>
+    <div style="margin-top: 10px; padding-top: 9px; border-top: 1px solid #1e232b; font-size: 11px; color: #8992a0; line-height: 1.5;">Only <span style="font-family: 'JetBrains Mono', ui-monospace, monospace; color: #eef1f5;">not_in_evidence</span> catches a citation to a real, correctly paginated location the model was never shown. Checks 1&ndash;5 all pass on it.</div>
+  </div>
+
+  <!-- ── ResearchState reference ────────────────────────────────── -->
+  <div style="position: absolute; left: 1032px; top: 150px; width: 486px; box-sizing: border-box; background: #12151a; border: 1px solid #232830; border-radius: 6px; padding: 15px 17px;">
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.14em; color: #5c6470; text-transform: uppercase;">ResearchState &mdash; TypedDict, total=False</div>
+    <div style="font-size: 11.5px; color: #8992a0; margin-top: 6px; line-height: 1.5;">LangGraph merges partial dicts, so each node returns only the keys it changed. No validation on assignment &mdash; every value is a primitive or an already-validated Pydantic object.</div>
+
+    <div style="margin-top: 13px; display: flex; flex-direction: column; gap: 11px;">
+      <div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 9.5px; letter-spacing: 0.12em; color: #4b5563; text-transform: uppercase; margin-bottom: 5px;">input</div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 14px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px;">
+          <div style="color: #b9c0ca;">question</div><div style="color: #5c6470;">str</div>
+          <div style="color: #b9c0ca;">allowed_document_ids</div><div style="color: #5c6470;">list[str] | None</div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 9.5px; letter-spacing: 0.12em; color: #4b5563; text-transform: uppercase; margin-bottom: 5px;">retrieval</div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 14px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px;">
+          <div style="color: #b9c0ca;">search_queries</div><div style="color: #5c6470;">list[str]</div>
+          <div style="color: #b9c0ca;">research_iterations</div><div style="color: #5c6470;">int</div>
+          <div style="color: #b9c0ca;">stop_reason</div><div style="color: #5c6470;">str | None</div>
+          <div style="color: #b9c0ca;">assessed_chunk_count</div><div style="color: #5c6470;">int</div>
+          <div style="color: #b9c0ca;">retrieved_chunks</div><div style="color: #5c6470;">list[RetrievedChunk]</div>
+          <div style="color: #b9c0ca;">evidence</div><div style="color: #5c6470;">list[Evidence]</div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 9.5px; letter-spacing: 0.12em; color: #4b5563; text-transform: uppercase; margin-bottom: 5px;">generation</div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 14px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px;">
+          <div style="color: #b9c0ca;">draft_answer</div><div style="color: #5c6470;">str</div>
+          <div style="color: #b9c0ca;">final_answer</div><div style="color: #5c6470;">str | None</div>
+          <div style="color: #b9c0ca;">citations</div><div style="color: #5c6470;">list[Citation]</div>
+          <div style="color: #b9c0ca;">citation_errors</div><div style="color: #5c6470;">list[CitationError]</div>
+          <div style="color: #b9c0ca;">repair_attempts</div><div style="color: #5c6470;">int</div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 9.5px; letter-spacing: 0.12em; color: #4b5563; text-transform: uppercase; margin-bottom: 5px;">control</div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 14px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px;">
+          <div style="color: #b9c0ca;">status</div><div style="color: #5c6470;">Status</div>
+          <div style="color: #b9c0ca;">failure</div><div style="color: #5c6470;">FailureKind | None</div>
+          <div style="color: #b9c0ca;">failure_detail</div><div style="color: #5c6470;">str | None</div>
+          <div style="color: #b9c0ca;">budget</div><div style="color: #5c6470;">Budget</div>
+          <div style="color: #b9c0ca;">searches_used</div><div style="color: #5c6470;">int</div>
+          <div style="color: #b9c0ca;">trace</div><div style="color: #5c6470;">list[TraceEvent]</div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 9.5px; letter-spacing: 0.12em; color: #4b5563; text-transform: uppercase; margin-bottom: 5px;">cost</div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 14px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px;">
+          <div style="color: #b9c0ca;">input_tokens</div><div style="color: #5c6470;">int</div>
+          <div style="color: #b9c0ca;">output_tokens</div><div style="color: #5c6470;">int</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Status + FailureKind ───────────────────────────────────── -->
+  <div style="position: absolute; left: 1032px; top: 706px; width: 486px; box-sizing: border-box; background: #12151a; border: 1px solid #232830; border-radius: 6px; padding: 15px 17px;">
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.14em; color: #5c6470; text-transform: uppercase;">Status</div>
+    <div style="margin-top: 9px; display: flex; flex-wrap: wrap; gap: 6px;">
+      <span style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; padding: 3px 9px; border-radius: 3px; background: #171b21; border: 1px solid #262c35; color: #8992a0;">planning</span>
+      <span style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; padding: 3px 9px; border-radius: 3px; background: #171b21; border: 1px solid #262c35; color: #8992a0;">researching</span>
+      <span style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; padding: 3px 9px; border-radius: 3px; background: #171b21; border: 1px solid #262c35; color: #8992a0;">writing</span>
+      <span style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; padding: 3px 9px; border-radius: 3px; background: color-mix(in oklab, oklch(0.76 0.12 165) 12%, #171b21); border: 1px solid color-mix(in oklab, oklch(0.76 0.12 165) 38%, #171b21); color: oklch(0.85 0.11 165);">completed</span>
+      <span style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; padding: 3px 9px; border-radius: 3px; background: color-mix(in oklab, oklch(0.72 0.11 295) 12%, #171b21); border: 1px solid color-mix(in oklab, oklch(0.72 0.11 295) 38%, #171b21); color: oklch(0.82 0.10 295);">abstained</span>
+      <span style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; padding: 3px 9px; border-radius: 3px; background: color-mix(in oklab, oklch(0.68 0.15 25) 12%, #171b21); border: 1px solid color-mix(in oklab, oklch(0.68 0.15 25) 38%, #171b21); color: oklch(0.78 0.13 25);">failed</span>
+    </div>
+
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 0.14em; color: #5c6470; text-transform: uppercase; margin-top: 16px;">FailureKind &mdash; SPEC 11.4, a closed set</div>
+    <div style="font-size: 11.5px; color: #8992a0; margin-top: 5px; line-height: 1.5;">Closed so failures can be counted per category across an eval run instead of arriving as unclassifiable free text.</div>
+    <div style="margin-top: 9px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 14px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px; color: #b9c0ca;">
+      <div>invalid_tool_input</div>
+      <div>retrieval_unavailable</div>
+      <div>no_results</div>
+      <div>model_timeout</div>
+      <div>tool_timeout</div>
+      <div>output_validation</div>
+      <div>context_limit</div>
+      <div>citation_verification</div>
+      <div>budget_exhausted</div>
+      <div>internal_error</div>
+    </div>
+  </div>
+
+  <!-- ── footer note ────────────────────────────────────────────── -->
+  <div style="position: absolute; left: 1032px; top: 1032px; width: 486px; box-sizing: border-box; padding: 12px 15px; border-left: 2px solid oklch(0.76 0.12 72); background: #101317;">
+    <div style="font-size: 11.5px; color: #8992a0; line-height: 1.55;">The inspector drives node highlighting from <span style="font-family: 'JetBrains Mono', ui-monospace, monospace; color: #eef1f5;">graph.astream(stream_mode=&quot;updates&quot;)</span> &mdash; a node lights when the backend actually enters it. A front-end timer would make this diagram decorative instead of diagnostic.</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

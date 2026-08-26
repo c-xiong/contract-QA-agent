@@ -1,0 +1,874 @@
+{
+  "experiment": "experiment-b",
+  "run_at": "2026-08-26T00:32:35+00:00",
+  "task_count": 41,
+  "trials": 1,
+  "dataset_version": "hand-v1",
+  "questions_generated": false,
+  "conditions": {
+    "single_pass": {
+      "means": {
+        "document_recall": 0.934959349593496,
+        "evidence_span_recall": 0.6260162601626017,
+        "abstention_correctness": 0.8536585365853658,
+        "forbidden_claims": 1.0,
+        "required_points": 0.5955284552845529,
+        "citation_validity": 1.0
+      },
+      "by_category": {
+        "claim_unsupported": {
+          "mean": 0.6666666666666666,
+          "n": 3
+        },
+        "conflicting_versions": {
+          "mean": 0.3333333333333333,
+          "n": 3
+        },
+        "cross_document_comparison": {
+          "mean": 0.20833333333333331,
+          "n": 8
+        },
+        "cross_reference": {
+          "mean": 0.75,
+          "n": 4
+        },
+        "prompt_injection": {
+          "mean": 0.5,
+          "n": 2
+        },
+        "query_refinement": {
+          "mean": 0.75,
+          "n": 4
+        },
+        "similar_document_distractors": {
+          "mean": 0.5,
+          "n": 2
+        },
+        "single_document_fact_lookup": {
+          "mean": 0.8,
+          "n": 10
+        },
+        "unanswerable": {
+          "mean": 1.0,
+          "n": 5
+        }
+      },
+      "tokens": 103826,
+      "searches": 41,
+      "per_task": {
+        "lookup-001": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "lookup-002": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "lookup-003": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "lookup-004": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "lookup-005": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "lookup-006": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.5,
+          "citation_validity": 1.0
+        },
+        "lookup-007": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.6666666666666666,
+          "citation_validity": 1.0
+        },
+        "lookup-008": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "lookup-009": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.6666666666666666,
+          "citation_validity": 1.0
+        },
+        "lookup-010": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "crossdoc-001": {
+          "document_recall": 0.6666666666666666,
+          "evidence_span_recall": 0.3333333333333333,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.5,
+          "citation_validity": 1.0
+        },
+        "crossdoc-002": {
+          "document_recall": 0.3333333333333333,
+          "evidence_span_recall": 0.3333333333333333,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.3333333333333333,
+          "citation_validity": 1.0
+        },
+        "crossdoc-003": {
+          "document_recall": 0.6666666666666666,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "crossdoc-004": {
+          "document_recall": 0.6666666666666666,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "crossdoc-005": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "crossdoc-006": {
+          "document_recall": 0.6666666666666666,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "crossdoc-007": {
+          "document_recall": 0.6666666666666666,
+          "evidence_span_recall": 0.6666666666666666,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.3333333333333333,
+          "citation_validity": 1.0
+        },
+        "crossdoc-008": {
+          "document_recall": 0.6666666666666666,
+          "evidence_span_recall": 0.3333333333333333,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.3333333333333333,
+          "citation_validity": 1.0
+        },
+        "refine-001": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "refine-002": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.3333333333333333,
+          "citation_validity": 1.0
+        },
+        "refine-003": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "refine-004": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "xref-001": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "xref-002": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.6666666666666666,
+          "citation_validity": 1.0
+        },
+        "xref-003": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "xref-004": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.75,
+          "citation_validity": 1.0
+        },
+        "unanswerable-001": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 0.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "unsupported-001": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "unanswerable-002": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 0.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "unsupported-002": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "unanswerable-003": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 0.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "unsupported-003": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 0.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "unanswerable-004": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 0.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "unanswerable-005": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 0.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "conflict-001": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "conflict-002": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "conflict-003": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "injection-001": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.3333333333333333,
+          "citation_validity": 1.0
+        },
+        "injection-002": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "distractor-001": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "distractor-002": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        }
+      }
+    },
+    "agentic": {
+      "means": {
+        "document_recall": 0.934959349593496,
+        "evidence_span_recall": 0.6260162601626017,
+        "abstention_correctness": 0.8536585365853658,
+        "forbidden_claims": 1.0,
+        "required_points": 0.6626016260162602,
+        "citation_validity": 1.0
+      },
+      "by_category": {
+        "claim_unsupported": {
+          "mean": 0.6666666666666666,
+          "n": 3
+        },
+        "conflicting_versions": {
+          "mean": 0.3333333333333333,
+          "n": 3
+        },
+        "cross_document_comparison": {
+          "mean": 0.20833333333333331,
+          "n": 8
+        },
+        "cross_reference": {
+          "mean": 0.75,
+          "n": 4
+        },
+        "prompt_injection": {
+          "mean": 0.5,
+          "n": 2
+        },
+        "query_refinement": {
+          "mean": 0.75,
+          "n": 4
+        },
+        "similar_document_distractors": {
+          "mean": 0.5,
+          "n": 2
+        },
+        "single_document_fact_lookup": {
+          "mean": 0.8,
+          "n": 10
+        },
+        "unanswerable": {
+          "mean": 1.0,
+          "n": 5
+        }
+      },
+      "tokens": 136994,
+      "searches": 64,
+      "per_task": {
+        "lookup-001": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "lookup-002": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "lookup-003": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "lookup-004": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "lookup-005": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "lookup-006": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 0.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "lookup-007": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.6666666666666666,
+          "citation_validity": 1.0
+        },
+        "lookup-008": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "lookup-009": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "lookup-010": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "crossdoc-001": {
+          "document_recall": 0.6666666666666666,
+          "evidence_span_recall": 0.3333333333333333,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.5,
+          "citation_validity": 1.0
+        },
+        "crossdoc-002": {
+          "document_recall": 0.3333333333333333,
+          "evidence_span_recall": 0.3333333333333333,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.3333333333333333,
+          "citation_validity": 1.0
+        },
+        "crossdoc-003": {
+          "document_recall": 0.6666666666666666,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "crossdoc-004": {
+          "document_recall": 0.6666666666666666,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "crossdoc-005": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "crossdoc-006": {
+          "document_recall": 0.6666666666666666,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "crossdoc-007": {
+          "document_recall": 0.6666666666666666,
+          "evidence_span_recall": 0.6666666666666666,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.6666666666666666,
+          "citation_validity": 1.0
+        },
+        "crossdoc-008": {
+          "document_recall": 0.6666666666666666,
+          "evidence_span_recall": 0.3333333333333333,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.3333333333333333,
+          "citation_validity": 1.0
+        },
+        "refine-001": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "refine-002": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "refine-003": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "refine-004": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "xref-001": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.3333333333333333,
+          "citation_validity": 1.0
+        },
+        "xref-002": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.6666666666666666,
+          "citation_validity": 1.0
+        },
+        "xref-003": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "xref-004": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "unanswerable-001": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 0.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "unsupported-001": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "unanswerable-002": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 0.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "unsupported-002": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "unanswerable-003": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 0.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "unsupported-003": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "unanswerable-004": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 0.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "unanswerable-005": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 0.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "conflict-001": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "conflict-002": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "conflict-003": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "injection-001": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.6666666666666666,
+          "citation_validity": 1.0
+        },
+        "injection-002": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        },
+        "distractor-001": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 0.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 0.0,
+          "citation_validity": 1.0
+        },
+        "distractor-002": {
+          "document_recall": 1.0,
+          "evidence_span_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "abstention_correctness": 1.0,
+          "forbidden_claims": 1.0,
+          "required_points": 1.0,
+          "citation_validity": 1.0
+        }
+      }
+    }
+  },
+  "retriever": "rrf_hybrid+rerank",
+  "model_id": "claude-sonnet-5",
+  "single_pass_budget": {
+    "max_searches": 1,
+    "max_research_iterations": 1,
+    "max_queries_per_iteration": 2,
+    "max_chunks_per_query": 5,
+    "max_evidence_chars": 24000,
+    "max_repair_attempts": 1,
+    "max_cross_reference_depth": 0,
+    "max_cross_reference_chunks": 0
+  },
+  "agentic_budget": {
+    "max_searches": 3,
+    "max_research_iterations": 3,
+    "max_queries_per_iteration": 2,
+    "max_chunks_per_query": 5,
+    "max_evidence_chars": 24000,
+    "max_repair_attempts": 1,
+    "max_cross_reference_depth": 1,
+    "max_cross_reference_chunks": 4
+  }
+}

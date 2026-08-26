@@ -1,0 +1,106 @@
+[project]
+name = "eval-driven-contract-research-agent"
+version = "0.0.1"
+description = "A contract research agent over real annotated contracts, measured against expert annotations."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "pydantic>=2.9",
+    "pydantic-settings>=2.5",
+    "langgraph>=0.2",
+    "anthropic>=0.40",
+    "pymupdf>=1.24",
+    "rank-bm25>=0.2.2",
+    "faiss-cpu>=1.9",
+    "sentence-transformers>=3.3",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.7",
+    "mypy>=1.11",
+    "pre-commit>=4.0",
+    "httpx2>=0.28",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app", "evals"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["app", "evals", "scripts", "tests"]
+# design/ holds design-canvas source and its one-off generators, not application code.
+exclude = ["design"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # bugbear
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+    "RUF",  # ruff-specific
+    "BLE",  # flake8-blind-except -- CLAUDE.md: no bare except
+    "ASYNC",
+]
+ignore = [
+    "E501",  # line length is enforced by the formatter
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["B011"]
+# This module's whole purpose is a table of typographic characters to fold into
+# ASCII. RUF001 flags them as "ambiguous unicode" -- which is precisely why they
+# are listed there. The lookalikes are the data, not a mistake. Its tests must
+# contain the same characters to assert the folding actually happens.
+"app/ingestion/text.py" = ["RUF001"]
+"tests/unit/test_text.py" = ["RUF001"]
+"tests/unit/test_cuad.py" = ["RUF001"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+show_error_codes = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["rank_bm25.*", "pymupdf.*", "faiss.*", "sentence_transformers.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# PyMuPDF ships only partial annotations: pymupdf.open and the Document methods are
+# untyped, so strict mode's disallow_untyped_calls fires on every call into it.
+# Scoped to the single module that touches the library. Everything crossing out of
+# it is re-typed as ParsedPage / ParsedDocument, so the relaxation does not leak.
+module = ["app.ingestion.pdf_parser"]
+disallow_untyped_calls = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers --strict-config"
+asyncio_mode = "auto"
+markers = [
+    "live_model: hits a real model API; skipped unless CRA_LIVE_MODEL=1",
+]
+filterwarnings = [
+    "error",
+    # PyMuPDF's SWIG bindings emit this on import under Python 3.12. Upstream issue,
+    # nothing this project can act on.
+    "ignore:builtin type swigvarlink has no __module__ attribute:DeprecationWarning",
+    "ignore:builtin type SwigPyPacked has no __module__ attribute:DeprecationWarning",
+    "ignore:builtin type SwigPyObject has no __module__ attribute:DeprecationWarning",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "evals"]

@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # No CI job may spend money. Every model call routes to the deterministic stub.
+  CRA_LIVE_MODEL: "0"
+
+jobs:
+  checks:
+    name: lint, types, tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install dependencies
+        run: uv sync --locked --all-groups
+
+      - name: Ruff lint
+        run: uv run ruff check --output-format=github .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+      - name: Mypy
+        run: uv run mypy app evals
+
+      - name: Tests
+        run: uv run pytest
+
+      # Everything above runs against the deterministic stub and synthetic fixtures.
+      # No network, no API key, no cost -- CI exercises the whole system for free.
+
+  smoke:
+    name: corpus + eval smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install dependencies
+        run: uv sync --locked --all-groups
+
+      # The corpus is not in the repository: it is third-party data under its own
+      # licences and is reproducible from scripts/. Rebuilding it here also verifies
+      # that the acquisition path still works against the upstream releases -- a
+      # renamed column or a moved archive breaks this job rather than a later sprint.
+      - name: Acquire and ingest a corpus slice
+        run: |
+          uv run python scripts/download_cuad.py
+          uv run python scripts/inspect_cuad_columns.py
+          uv run python scripts/sample_contracts.py --size 8
+          uv run python scripts/ingest.py
+
+      - name: Build dense index
+        run: uv run python scripts/build_index.py
+
+      - name: Generate and score the eval suite
+        run: |
+          uv run python scripts/build_eval_tasks.py --out evals/datasets/ci
+          uv run python scripts/run_eval.py --suite ci
+
+      - name: Experiment A
+        run: uv run python experiments/retrieval_comparison.py --suite ci
+
+      - name: Upload run artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-and-experiment-runs
+          path: |
+            evals/runs/
+            experiments/runs/
+          if-no-files-found: warn
