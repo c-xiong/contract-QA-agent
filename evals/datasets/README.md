@@ -1,27 +1,25 @@
 # Eval datasets
 
-Two suites live under `evals/datasets/`:
+Three suites live under `evals/datasets/`:
 
-| Suite | Source | Status |
-|---|---|---|
-| `full` | `scripts/build_eval_tasks.py` | **41 tasks, model-generated questions.** Version `provisional-generated-v1`. |
-| `smoke` | you | Empty. Hand-written tasks go here. |
+| Suite | Questions | Evidence labels | Version | Status |
+|---|---|---|---|---|
+| `hand` | hand-written | expert annotation | `hand-v1` | **41 tasks. The reporting suite — every figure in the top-level README comes from it.** |
+| `full` | model-generated | expert annotation | `provisional-generated-v1` | 41 tasks. Superseded by `hand`; kept so earlier runs stay interpretable. |
+| `smoke` | — | — | — | Empty. A scratch suite for local checks. |
 
-## The distinction that matters
+## Why `full` is not reported
 
-`full` has expert-annotated **evidence** and model-generated **questions**. Every report
-that reads it prints a warning, and its `dataset_version` starts `provisional-generated-`
-so the label travels with the data. Figures derived from it are a pipeline check, not a
-capability measurement: the questions were written by the same model family the system
-uses, which makes any score partly a measurement of itself.
+`full` has expert-annotated evidence but model-generated questions. A dataset whose
+questions were written by the same model family the system uses is partly measuring
+itself, so any score from it is a pipeline check rather than a capability measurement.
 
-`smoke` is the suite for hand-written questions. Nothing generates into it.
+The label travels with the data: its `dataset_version` starts `provisional-generated-`,
+and every report that reads it prints a warning keyed on that prefix. `hand` replaced it
+by rewriting the `question` field of each task and changing the version — the evidence,
+the loader, the graders, and the experiments were unaffected.
 
-## Turning generated figures into real ones
-
-Rewrite the `question` field of each task and change `dataset_version`. **Nothing else
-changes** — the evidence, the loader, the graders, and the experiments are all unaffected,
-and the README warnings key on the version prefix.
+## Authoring a task
 
 Get the expert-annotated half for any document and category:
 
@@ -34,6 +32,8 @@ That prints `expected_document_ids` and `expected_evidence` with pages already r
 You supply `question`, `category`, `expected_behavior`, `required_points`,
 `forbidden_claims`, and `dataset_version`.
 
+`docs/authoring-eval-tasks.md` walks through what the job actually involves.
+
 ## Format
 
 JSONL — one JSON object per line, no enclosing array, no trailing commas. Lines starting
@@ -45,9 +45,9 @@ with `#` are ignored, so notes can live in the file.
 - **Do not contain the answer.** A question mentioning "New York" hands the retriever
   the answer and measures nothing.
 - **Do not echo the clause heading.** A question that is literally "governing law" is
-  matched by BM25 on the heading alone; it tests keyword search, not retrieval. SPEC 6.2
-  chose eight categories that differ in retrieval character precisely so the suite does
-  not become eight copies of one result.
+  matched by BM25 on the heading alone; it tests keyword search, not retrieval. The eight
+  categories in `docs/SPEC.md` §6.2 were chosen to differ in retrieval character so that
+  the suite does not become eight copies of one result.
 - **Are specific enough to have one right document.** "Can a party terminate for
   convenience?" is answerable from most of the corpus. Scope it, or set
   `allowed_document_ids`.
@@ -66,8 +66,8 @@ of every reported metric. It rejects:
 
 ## Composition
 
-SPEC 15.3 targets 32-40 tasks; SPEC 6.8 maps every category to a ground-truth source.
-The generated `full` suite currently holds:
+41 tasks, in both `hand` and `full`. `docs/SPEC.md` §6.8 maps every category to its
+ground-truth source.
 
 | Category | n | Ground truth |
 |---|---:|---|
