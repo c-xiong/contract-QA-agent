@@ -20,10 +20,17 @@ RESULTS = Path("results")
 # Which pinned file backs which claim. Anything else in results/ is reported as extra
 # rather than silently ignored.
 KNOWN = {
-    "eval-hand-rerank.json": "Full eval suite",
+    "eval-hand-bm25.json": "Full eval suite \u2014 BM25 arm",
+    "eval-hand-rerank.json": "Full eval suite \u2014 RRF hybrid + rerank arm",
     "experiment-a-retrieval.json": "Experiment A — retrieval comparison",
+    "experiment-a-retrieval-corpus7453.json": (
+        "Experiment A \u2014 superseded run on the pre-fix 7,453-chunk corpus"
+    ),
     "experiment-b-agentic.json": "Experiment B — single-pass vs agentic",
     "experiment-c-citation-gate.json": "Experiment C — citation gate ablation",
+    "experiment-c-fault-injection.json": (
+        "Experiment C \u2014 citation gate under deliberate fault injection"
+    ),
 }
 
 
