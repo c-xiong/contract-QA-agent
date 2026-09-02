@@ -301,6 +301,15 @@ def build_graph(
             allowed_document_ids=state.get("allowed_document_ids"),
         )
         return ResearchState(
+            # The verifier deterministically canonicalizes safe mechanical near-misses
+            # such as two complete locators joined by a semicolon in one bracket.  Keep
+            # that normalized text so the final answer and inspector chips agree with
+            # the citations that actually passed the gate.
+            draft_answer=(
+                result.normalized_answer
+                if result.normalized_answer is not None
+                else state.get("draft_answer", "")
+            ),
             citations=result.citations,
             citation_errors=result.errors,
             trace=_trace(state, "verify", result.summary()),

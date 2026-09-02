@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from app.evidence.citation_parser import extract_citations
+from app.evidence.citation_parser import extract_citations, normalize_compound_citations
 from app.ingestion.store import ChunkStore
 from app.schemas.evidence import Citation, CitationError
 from app.schemas.retrieval import RetrievedChunk
@@ -38,6 +38,7 @@ class VerificationResult:
     citations: list[Citation] = field(default_factory=list)
     errors: list[CitationError] = field(default_factory=list)
     uncited: bool = False
+    normalized_answer: str | None = None
 
     @property
     def ok(self) -> bool:
@@ -75,7 +76,8 @@ class CitationVerifier:
         `retrieved` is what the agent actually saw. Verification is against that set,
         not against the whole corpus, which is what makes check 5 meaningful.
         """
-        citations, malformed = extract_citations(answer)
+        normalized_answer = normalize_compound_citations(answer)
+        citations, malformed = extract_citations(normalized_answer)
 
         errors: list[CitationError] = [
             CitationError(
@@ -121,7 +123,12 @@ class CitationVerifier:
         #   answer means the writer ignored its instructions entirely.
         uncited = not citations and not malformed and bool(answer.strip())
 
-        return VerificationResult(citations=citations, errors=errors, uncited=uncited)
+        return VerificationResult(
+            citations=citations,
+            errors=errors,
+            uncited=uncited,
+            normalized_answer=normalized_answer,
+        )
 
     def _check(
         self,

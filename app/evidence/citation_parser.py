@@ -60,6 +60,38 @@ def parse_citation(text: str) -> Citation | None:
     )
 
 
+def normalize_compound_citations(text: str) -> str:
+    """Split a well-formed semicolon list into canonical individual citations.
+
+    Models sometimes render two otherwise valid locators in one pair of brackets::
+
+        [doc-031, p. 19, §14.1; doc-035, p. 11, §9.1]
+
+    The public citation grammar deliberately keeps one locator per bracket.  This
+    normalizer repairs the mechanical list form without a model call, but only when
+    *every* semicolon-delimited component independently parses as a complete citation.
+    An ambiguous or partly malformed span is left untouched so the verifier still
+    reports it as ``unparseable`` rather than guessing what the model meant.
+    """
+
+    def replace(match: re.Match[str]) -> str:
+        span = match.group(0)
+        if ";" not in span or parse_citation(span) is not None:
+            return span
+
+        parts = [part.strip() for part in span[1:-1].split(";")]
+        if len(parts) < 2 or any(not part for part in parts):
+            return span
+
+        parsed = [parse_citation(f"[{part}]") for part in parts]
+        if any(citation is None for citation in parsed):
+            return span
+
+        return " ".join(citation.render() for citation in parsed if citation is not None)
+
+    return _CITATION_SHAPED.sub(replace, text)
+
+
 def extract_citations(text: str) -> tuple[list[Citation], list[str]]:
     """Find every citation in `text`.
 
@@ -68,6 +100,7 @@ def extract_citations(text: str) -> tuple[list[Citation], list[str]]:
     lets the verifier distinguish "the model cited nothing" from "the model tried to
     cite and produced garbage".
     """
+    text = normalize_compound_citations(text)
     citations: list[Citation] = []
     malformed: list[str] = []
 
@@ -108,4 +141,4 @@ def _looks_like_attempt(span: str) -> bool:
 
 def strip_citations(text: str) -> str:
     """Remove well-formed citations, leaving the prose. Used for claim-level checks."""
-    return _CITATION.sub("", text)
+    return _CITATION.sub("", normalize_compound_citations(text))

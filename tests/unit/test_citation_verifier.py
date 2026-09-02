@@ -39,6 +39,18 @@ class TestPasses:
         )
         assert result.ok is True
 
+    def test_compound_citation_is_normalized_then_verified(self, store: ChunkStore) -> None:
+        result = CitationVerifier(store).verify(
+            "The cap and carve-out both apply [doc-900, p. 1, §8.1; doc-900, p. 2, §8.3].",
+            retrieved_from(store, "doc-900-c0001", "doc-900-c0002"),
+        )
+
+        assert result.ok is True
+        assert [citation.section_id for citation in result.citations] == ["8.1", "8.3"]
+        assert result.normalized_answer is not None
+        assert ";" not in result.normalized_answer
+        assert "[doc-900, p. 1, §8.1] [doc-900, p. 2, §8.3]" in result.normalized_answer
+
 
 class TestFailures:
     def test_hallucinated_document(self, store: ChunkStore) -> None:

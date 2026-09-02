@@ -19,6 +19,9 @@ Rules:
 - Cite every factual claim with the internal citation format: [doc-014, p. 12, §8.1]
   Use the document_id, page, and section exactly as given in the excerpt header.
   Omit the section if the excerpt header has none.
+- Put exactly one locator inside each pair of brackets. When one claim needs multiple
+  sources, write separate citations: [doc-014, p. 12, §8.1] [doc-035, p. 11, §9.1]
+  Never combine them as [doc-014, p. 12, §8.1; doc-035, p. 11, §9.1].
 - If the excerpts do not answer the question, say so explicitly and state what you
   did find. Do not guess, and do not pad an answer to look complete.
 - Quote or closely paraphrase the contract language rather than summarizing loosely.
@@ -60,7 +63,8 @@ REPAIR_SYSTEM = (
     + """
 
 Your previous answer contained citations that failed verification. Rewrite it using \
-only citations that appear verbatim in the evidence headers above. If a claim cannot \
+only citations that appear verbatim in the evidence headers above. Keep multiple \
+locators in separate pairs of brackets; never join them with a semicolon. If a claim cannot \
 be supported by an available excerpt, remove the claim."""
 )
 

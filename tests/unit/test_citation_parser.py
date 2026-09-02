@@ -8,7 +8,12 @@ from __future__ import annotations
 
 import pytest
 
-from app.evidence.citation_parser import extract_citations, parse_citation, strip_citations
+from app.evidence.citation_parser import (
+    extract_citations,
+    normalize_compound_citations,
+    parse_citation,
+    strip_citations,
+)
 
 
 class TestWellFormed:
@@ -113,6 +118,28 @@ class TestExtraction:
 
     def test_no_citations_yields_two_empty_lists(self) -> None:
         assert extract_citations("An answer with no citation at all.") == ([], [])
+
+
+class TestCompoundNormalization:
+    def test_splits_two_complete_locators_into_separate_citations(self) -> None:
+        original = "Sources [doc-031, p. 19, §14.1; doc-035, p. 11, §9.1]."
+        normalized = normalize_compound_citations(original)
+
+        assert normalized == ("Sources [doc-031, p. 19, §14.1] [doc-035, p. 11, §9.1].")
+        citations, malformed = extract_citations(original)
+        assert [citation.document_id for citation in citations] == ["doc-031", "doc-035"]
+        assert malformed == []
+
+    def test_partly_malformed_list_is_not_guessed_at(self) -> None:
+        original = "Bad [doc-031, p. 19, §14.1; page eleven]."
+        assert normalize_compound_citations(original) == original
+        citations, malformed = extract_citations(original)
+        assert citations == []
+        assert malformed == ["[doc-031, p. 19, §14.1; page eleven]"]
+
+    def test_ordinary_semicolon_brackets_are_untouched(self) -> None:
+        original = "The clause says [fees; expenses]."
+        assert normalize_compound_citations(original) == original
 
 
 class TestStripCitations:
