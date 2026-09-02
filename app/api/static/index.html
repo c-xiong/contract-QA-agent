@@ -7,18 +7,67 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<script>
+/* Theme resolution runs before first paint, so a light-mode reader never sees a dark
+   flash on load. What is stored is the *preference* (auto|light|dark); what lands on
+   <html> is always the *resolved* theme. That split is why the stylesheet below needs
+   one dark base plus one light override, instead of a prefers-color-scheme media query
+   duplicated alongside every [data-theme] rule. */
+(function () {
+  var pref = "auto";
+  try { pref = localStorage.getItem("cri-theme") || "auto"; } catch (e) { /* private mode */ }
+  if (pref !== "light" && pref !== "dark") pref = "auto";
+  window.__themePref = pref;
+  /* Asking for "light" rather than "dark" keeps dark the default when the OS states
+     no preference at all. */
+  var light = pref === "light" ||
+    (pref === "auto" && window.matchMedia("(prefers-color-scheme: light)").matches);
+  document.documentElement.dataset.theme = light ? "light" : "dark";
+})();
+</script>
 <style>
+/* Dark is the base palette; the light block below overrides only the colour tokens.
+   Every colour in this file resolves through one of these — a literal hex anywhere
+   else would survive the theme swap and break one of the two themes. */
 :root{
-  --bg:#0b0d10; --panel:#0e1114; --panel2:#12151a; --line:#1b2027; --line2:#262c35;
-  --text:#dfe3e9; --bright:#eef1f5; --dim:#8992a0; --dimmer:#5c6470; --faint:#3d4653;
+  color-scheme:dark;
+  --bg:#0b0d10; --panel:#0e1114; --panel2:#12151a; --sunken:#0a0c0f; --grp-bg:#0c0f12;
+  --input-bg:#14181d;
+  --line:#1b2027; --line2:#262c35; --line-dash:#1f242c; --inert:#2a313b;
+  --text:#dfe3e9; --bright:#eef1f5; --text-soft:#a8b0bb;
+  --dim:#8992a0; --sub:#6b7280; --dimmer:#5c6470; --idle:#4b5563; --faint:#3d4653;
   --teal:oklch(0.76 0.12 165); --amber:oklch(0.76 0.12 72);
   --violet:oklch(0.72 0.11 295); --red:oklch(0.68 0.15 25);
+  /* Accent *text* is a separate token from the accent itself: legible label colour on a
+     tinted background moves in the opposite direction to the tint when the theme flips. */
+  --teal-fg:oklch(0.86 0.11 165); --amber-fg:oklch(0.86 0.11 72);
+  --violet-fg:oklch(0.83 0.10 295); --red-fg:oklch(0.80 0.13 25);
+  --on-accent:#0b0d10;
   --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
   --sans:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
 }
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#f5f7f9; --panel:#ffffff; --panel2:#eef1f5; --sunken:#f2f4f7; --grp-bg:#fafbfc;
+  --input-bg:#ffffff;
+  --line:#dde2e8; --line2:#c6cdd6; --line-dash:#d5dbe3; --inert:#c3cad3;
+  --text:#2b3138; --bright:#11151a; --text-soft:#49515b;
+  --dim:#5a626d; --sub:#6f7783; --dimmer:#828a96; --idle:#949ca8; --faint:#a9b0bb;
+  --teal:oklch(0.56 0.12 165); --amber:oklch(0.74 0.14 72);
+  --violet:oklch(0.53 0.16 295); --red:oklch(0.56 0.19 25);
+  --teal-fg:oklch(0.42 0.11 165); --amber-fg:oklch(0.47 0.10 72);
+  --violet-fg:oklch(0.44 0.15 295); --red-fg:oklch(0.47 0.17 25);
+}
 *{box-sizing:border-box}
+/* A macOS trackpad rubber-bands the whole document past its scroll boundaries — the page
+   reads as if it were hanging off a bungee cord — while a mouse wheel never triggers it.
+   overscroll-behavior:none suppresses that overscroll affordance (and scroll chaining) for
+   the viewport, so the background stays pinned and the page stops where the content stops.
+   It is set on <html> because the used value there is what propagates to the viewport; the
+   copy on <body> is only a fallback for engines that read it off the body instead. */
+html{background:var(--bg);overscroll-behavior:none}
 body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
-  font-size:14px;-webkit-font-smoothing:antialiased}
+  font-size:14px;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
 button,input,select{font:inherit;color:inherit}
 .mono{font-family:var(--mono)}
 .hd{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--dimmer);
@@ -33,13 +82,36 @@ header .sub{font-size:12px;color:var(--dimmer);margin-left:12px}
 header .stats{display:flex;align-items:center;gap:14px;font-family:var(--mono);
   font-size:11.5px;color:var(--dim)}
 header .sep{color:var(--line2)}
+/* trailing separator has nothing after it once optional stats are hidden */
+header .stats .sep:last-child{display:none}
+/* margin-left:auto keeps .right flush right whether or not the brand block
+   on its left is present; space-between alone collapses to the left edge */
+header .right{display:flex;align-items:center;gap:16px;margin-left:auto}
 .livedot{width:6px;height:6px;border-radius:50%;background:var(--dimmer);display:inline-block;
   margin-right:6px;vertical-align:1px}
 .livedot.on{background:var(--teal)}
 
+/* Three-way theme switch: auto follows the OS, light and dark pin it. A native
+   <select> gives the click-to-open list, keyboard handling and OS popup for free,
+   which is what a page with no JS dependencies should be spending. The current
+   preference is shown as its own word ("auto"), not as an icon that has to be
+   decoded. */
+.theme{position:relative;display:flex;align-items:center;height:27px;padding:0 22px 0 9px;
+  border:1px solid var(--line2);border-radius:6px;background:var(--input-bg)}
+.theme select{appearance:none;-webkit-appearance:none;background:none;border:none;outline:none;
+  cursor:pointer;font-family:var(--mono);font-size:11.5px;color:var(--dim);
+  transition:color .15s}
+.theme:hover select{color:var(--text)}
+.theme select option{background:var(--input-bg);color:var(--text)}
+/* Chevron drawn in CSS: appearance:none removes the platform arrow, and an inline
+   SVG would be one more thing to keep legible in both themes. */
+.theme::after{content:"";position:absolute;right:9px;top:50%;width:5px;height:5px;
+  margin-top:-4px;border-right:1.4px solid var(--dimmer);border-bottom:1.4px solid var(--dimmer);
+  transform:rotate(45deg);pointer-events:none}
+
 .query{display:flex;align-items:center;gap:10px;padding:12px 24px;
   border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
-.field{display:flex;align-items:center;gap:9px;background:#14181d;border:1px solid var(--line2);
+.field{display:flex;align-items:center;gap:9px;background:var(--input-bg);border:1px solid var(--line2);
   border-radius:5px;padding:8px 12px}
 .field label{font-size:11px;color:var(--dimmer)}
 .field input,.field select{background:none;border:none;outline:none;font-family:var(--mono);
@@ -47,10 +119,11 @@ header .sep{color:var(--line2)}
 .field.grow{flex:1;min-width:280px}
 .field.grow input{width:100%}
 .field select{cursor:pointer}
-.field select option{background:#14181d}
-#ask{background:var(--amber);color:#0b0d10;font-weight:600;font-size:13px;border:none;
+.field select option{background:var(--input-bg)}
+.field>svg{color:var(--dimmer);flex-shrink:0}
+#ask{background:var(--amber);color:var(--on-accent);font-weight:600;font-size:13px;border:none;
   border-radius:5px;padding:10px 24px;cursor:pointer}
-#ask:disabled{background:#14181d;color:var(--dim);cursor:default}
+#ask:disabled{background:var(--panel2);color:var(--dim);cursor:default}
 
 /* ── graph strip ────────────────────────────────────────── */
 .strip-wrap{padding:20px 24px 4px}
@@ -59,52 +132,56 @@ header .sep{color:var(--line2)}
   color:var(--dimmer);flex-wrap:wrap}
 .legend i{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px}
 .strip{position:relative;width:1392px;height:188px;transform-origin:left top}
-.strip-outer{overflow-x:auto;overflow-y:hidden}
-.grp{position:absolute;border:1px solid var(--line);border-radius:7px;background:#0c0f12}
+.strip-outer{overflow-x:auto;overflow-y:hidden;
+  /* horizontal only: kills the sideways bounce and the swipe-back gesture, while a
+     vertical wheel over the strip still chains to the page */
+  overscroll-behavior-x:none;overscroll-behavior-y:auto}
+.grp{position:absolute;border:1px solid var(--line);border-radius:7px;background:var(--grp-bg)}
 .grp-l,.grp-r{position:absolute;padding:1px 8px;background:var(--bg);font-size:9px}
-.grp-l{font-family:var(--mono);letter-spacing:.14em;color:#4b5563}
+.grp-l{font-family:var(--mono);letter-spacing:.14em;color:var(--idle)}
 .grp-r{color:var(--faint);transform:translateX(-100%)}
 
 .node{position:absolute;box-sizing:border-box;background:var(--panel);
-  border:1px dashed #1f242c;border-radius:5px;padding:6px 9px;display:flex;
+  border:1px dashed var(--line-dash);border-radius:5px;padding:6px 9px;display:flex;
   flex-direction:column;justify-content:center;transition:background .18s,border-color .18s}
 .node .nm{display:flex;align-items:center;gap:6px}
-.node .dot{width:5px;height:5px;border-radius:50%;background:#2a313b;flex-shrink:0}
-.node .lb{font-family:var(--mono);font-size:11.5px;font-weight:500;color:#4b5563}
+.node .dot{width:5px;height:5px;border-radius:50%;background:var(--inert);flex-shrink:0}
+.node .lb{font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--idle)}
 .node .sb{font-size:9.5px;color:var(--dimmer);margin-top:2px;padding-left:11px}
 .node .badge{position:absolute;right:-7px;top:-7px;min-width:17px;height:17px;padding:0 4px;
-  border-radius:9px;background:var(--amber);color:#0b0d10;font-family:var(--mono);
+  border-radius:9px;background:var(--amber);color:var(--on-accent);font-family:var(--mono);
   font-size:9.5px;font-weight:700;display:none;align-items:center;justify-content:center}
 .node[data-n]:not([data-state="pending"]) .badge[data-count]{display:flex}
 
-.node[data-state="done"]{background:#0f1714;border-style:solid;
+.node[data-state="done"]{background:color-mix(in oklab,var(--teal) 9%,var(--panel));border-style:solid;
   border-color:color-mix(in oklab,var(--teal) 34%,var(--panel2))}
 .node[data-state="done"] .dot{background:var(--teal)}
 .node[data-state="done"] .lb{color:var(--text)}
-.node[data-state="xref"]{background:#141021;border-style:solid;
+.node[data-state="xref"]{background:color-mix(in oklab,var(--violet) 9%,var(--panel));border-style:solid;
   border-color:color-mix(in oklab,var(--violet) 40%,var(--panel2))}
 .node[data-state="xref"] .dot{background:var(--violet)}
 .node[data-state="xref"] .lb{color:var(--text)}
-.node[data-state="active"]{background:#191509;border-style:solid;border-color:var(--amber);
+.node[data-state="active"]{background:color-mix(in oklab,var(--amber) 11%,var(--panel));
+  border-style:solid;border-color:var(--amber);
   animation:pulse 1.4s ease-in-out infinite}
 .node[data-state="active"] .dot{background:var(--amber)}
-.node[data-state="active"] .lb{color:#fff}
+.node[data-state="active"] .lb{color:var(--bright)}
 .node[data-state="terminal"]{background:color-mix(in oklab,var(--teal) 12%,var(--panel2));
   border-style:solid;border-color:var(--teal)}
 .node[data-state="terminal"] .dot{background:var(--teal)}
-.node[data-state="terminal"] .lb{color:oklch(.88 .11 165)}
+.node[data-state="terminal"] .lb{color:var(--teal-fg)}
 .node[data-state="abstained"]{background:color-mix(in oklab,var(--violet) 12%,var(--panel2));
   border-style:solid;border-color:var(--violet)}
 .node[data-state="abstained"] .dot{background:var(--violet)}
-.node[data-state="abstained"] .lb{color:oklch(.84 .10 295)}
+.node[data-state="abstained"] .lb{color:var(--violet-fg)}
 .node[data-state="failed"]{background:color-mix(in oklab,var(--red) 12%,var(--panel2));
   border-style:solid;border-color:var(--red)}
 .node[data-state="failed"] .dot{background:var(--red)}
-.node[data-state="failed"] .lb{color:oklch(.80 .13 25)}
+.node[data-state="failed"] .lb{color:var(--red-fg)}
 @keyframes pulse{
   0%,100%{box-shadow:0 0 0 3px color-mix(in oklab,var(--amber) 22%,transparent)}
   50%{box-shadow:0 0 0 7px color-mix(in oklab,var(--amber) 6%,transparent)}}
-.edge{stroke:#262c35;stroke-width:1.4;fill:none;stroke-dasharray:4 3;transition:stroke .2s}
+.edge{stroke:var(--line2);stroke-width:1.4;fill:none;stroke-dasharray:4 3;transition:stroke .2s}
 .edge.on{stroke:var(--teal);stroke-dasharray:none;stroke-width:1.5}
 .edge.loop.on{stroke:var(--amber);stroke-dasharray:4 3}
 .edge.xr.on{stroke:var(--violet);stroke-dasharray:none}
@@ -119,6 +196,10 @@ header .sep{color:var(--line2)}
 .rowhd{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 
 #answer{padding:16px 19px;font-size:14.5px;line-height:1.72;min-height:74px;white-space:pre-wrap}
+#answer strong{font-weight:650;color:var(--text)}
+#answer em{font-style:italic}
+#answer code{padding:1px 5px;border:1px solid var(--border);border-radius:4px;
+  background:var(--surface2);font-family:var(--mono);font-size:.9em;color:var(--text)}
 #answer .cursor{display:inline-block;width:8px;height:17px;margin-left:3px;
   background:var(--amber);vertical-align:-3px;animation:blink 1s step-end infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
@@ -126,9 +207,9 @@ header .sep{color:var(--line2)}
   margin:0 3px;padding:0 4px;border-radius:3px;font-family:var(--mono);font-size:10px;
   font-weight:700;vertical-align:2px;cursor:pointer;
   background:color-mix(in oklab,var(--teal) 16%,var(--panel));
-  border:1px solid color-mix(in oklab,var(--teal) 45%,var(--panel));color:oklch(.86 .11 165)}
+  border:1px solid color-mix(in oklab,var(--teal) 45%,var(--panel));color:var(--teal-fg)}
 .chip.xr{background:color-mix(in oklab,var(--violet) 16%,var(--panel));
-  border-color:color-mix(in oklab,var(--violet) 45%,var(--panel));color:oklch(.82 .10 295)}
+  border-color:color-mix(in oklab,var(--violet) 45%,var(--panel));color:var(--violet-fg)}
 
 .cite{border-left:2px solid var(--teal);padding:11px 14px}
 .cite.xr{border-left-color:var(--violet)}
@@ -137,30 +218,31 @@ header .sep{color:var(--line2)}
 .cite .num{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;
   border-radius:3px;font-family:var(--mono);font-size:10px;font-weight:700;
   background:color-mix(in oklab,var(--teal) 16%,var(--panel));
-  border:1px solid color-mix(in oklab,var(--teal) 45%,var(--panel));color:oklch(.86 .11 165)}
+  border:1px solid color-mix(in oklab,var(--teal) 45%,var(--panel));color:var(--teal-fg)}
 .cite.xr .num{background:color-mix(in oklab,var(--violet) 16%,var(--panel));
-  border-color:color-mix(in oklab,var(--violet) 45%,var(--panel));color:oklch(.82 .10 295)}
+  border-color:color-mix(in oklab,var(--violet) 45%,var(--panel));color:var(--violet-fg)}
 .cite.bad .num{background:color-mix(in oklab,var(--red) 14%,var(--panel));
-  border-color:color-mix(in oklab,var(--red) 45%,var(--panel));color:oklch(.78 .13 25)}
+  border-color:color-mix(in oklab,var(--red) 45%,var(--panel));color:var(--red-fg)}
 .cite .ref{font-family:var(--mono);font-size:12.5px;color:var(--bright)}
 .cite.bad .ref{color:var(--dim);text-decoration:line-through}
 .cite .ttl{font-size:12px;color:var(--dim)}
 .cite .ok{margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);
-  font-size:10.5px;color:oklch(.80 .11 165)}
-.cite .bad-lbl{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:oklch(.78 .13 25)}
-.cite .ex{margin-top:8px;padding:9px 12px;background:#0a0c0f;border-radius:4px;font-size:12.5px;
-  line-height:1.6;color:#a8b0bb;max-height:132px;overflow:auto}
+  font-size:10.5px;color:var(--teal-fg)}
+.cite .ok svg{stroke:currentColor}
+.cite .bad-lbl{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--red-fg)}
+.cite .ex{margin-top:8px;padding:9px 12px;background:var(--sunken);border-radius:4px;
+  font-size:12.5px;line-height:1.6;color:var(--text-soft);max-height:132px;overflow:auto}
 .cite .pv{margin-top:6px;display:flex;gap:14px;flex-wrap:wrap;font-family:var(--mono);
-  font-size:10px;color:#4b5563}
+  font-size:10px;color:var(--idle)}
 .cite .pv .xrk{color:var(--violet)}
 
 .ev{display:flex;gap:8px;padding:7px 9px;border-radius:4px}
 .ev .mk{font-family:var(--mono);font-size:11px;flex-shrink:0;color:var(--teal)}
 .ev.xr .mk{color:var(--violet)}
 .ev .c{font-family:var(--mono);font-size:11.5px;color:var(--bright)}
-.ev .d{font-size:11px;color:#6b7280;margin-top:2px;overflow:hidden;text-overflow:ellipsis;
+.ev .d{font-size:11px;color:var(--sub);margin-top:2px;overflow:hidden;text-overflow:ellipsis;
   white-space:nowrap}
-.ev .m{font-family:var(--mono);font-size:9.5px;color:#4b5563;margin-top:2px}
+.ev .m{font-family:var(--mono);font-size:9.5px;color:var(--idle);margin-top:2px}
 .ev.xr .m{color:var(--violet)}
 
 .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 10px;
@@ -177,41 +259,50 @@ header .sep{color:var(--line2)}
 .logrow .d{font-size:10.5px;color:var(--dim);line-height:1.4;min-width:0;word-break:break-word}
 
 .empty{padding:22px;display:flex;flex-direction:column;align-items:center;gap:7px;
-  border:1px dashed #1f242c;border-radius:5px;text-align:center}
-.empty .t{font-size:12px;color:#4b5563}
+  border:1px dashed var(--line-dash);border-radius:5px;text-align:center}
+.empty .t{font-size:12px;color:var(--idle)}
 .empty .s{font-family:var(--mono);font-size:10.5px;color:var(--faint)}
 .banner{padding:10px 14px;border-radius:5px;font-size:12.5px;line-height:1.5}
 .banner.err{background:color-mix(in oklab,var(--red) 10%,var(--panel));
-  border:1px solid color-mix(in oklab,var(--red) 38%,var(--panel));color:oklch(.84 .10 25)}
+  border:1px solid color-mix(in oklab,var(--red) 38%,var(--panel));color:var(--red-fg)}
 .banner.abs{background:color-mix(in oklab,var(--violet) 9%,var(--panel));
-  border:1px solid color-mix(in oklab,var(--violet) 34%,var(--panel));color:#c3bde0}
+  border:1px solid color-mix(in oklab,var(--violet) 34%,var(--panel));color:var(--violet-fg)}
 .pill{font-family:var(--mono);font-size:10.5px;padding:2px 9px;border-radius:3px;
   background:var(--panel2);border:1px solid var(--line2);color:var(--dim)}
 .pill.ok{background:color-mix(in oklab,var(--teal) 12%,var(--panel));
-  border-color:color-mix(in oklab,var(--teal) 38%,var(--panel));color:oklch(.86 .11 165)}
+  border-color:color-mix(in oklab,var(--teal) 38%,var(--panel));color:var(--teal-fg)}
 .pill.run{background:color-mix(in oklab,var(--amber) 12%,var(--panel));
-  border-color:color-mix(in oklab,var(--amber) 38%,var(--panel));color:oklch(.86 .11 72)}
+  border-color:color-mix(in oklab,var(--amber) 38%,var(--panel));color:var(--amber-fg)}
 .pill.abs{background:color-mix(in oklab,var(--violet) 12%,var(--panel));
-  border-color:color-mix(in oklab,var(--violet) 38%,var(--panel));color:oklch(.84 .10 295)}
+  border-color:color-mix(in oklab,var(--violet) 38%,var(--panel));color:var(--violet-fg)}
 .pill.bad{background:color-mix(in oklab,var(--red) 12%,var(--panel));
-  border-color:color-mix(in oklab,var(--red) 38%,var(--panel));color:oklch(.80 .13 25)}
+  border-color:color-mix(in oklab,var(--red) 38%,var(--panel));color:var(--red-fg)}
 @media (max-width:1200px){.body{flex-direction:column}.col-side{width:100%}}
 </style>
 </head>
 <body>
 
 <header>
-  <div><span class="brand">contract-research</span><span class="sub">trace inspector — read only</span></div>
-  <div class="stats">
-    <span id="corpus">—</span><span class="sep">|</span>
-    <span id="arm-lbl">—</span><span class="sep">|</span>
-    <span><i class="livedot" id="livedot"></i><span id="model">—</span></span>
+  <!-- <div><span class="brand">contract-research</span><span class="sub">trace inspector — read only</span></div> -->
+  <div class="right">
+    <div class="stats">
+      <span id="corpus">—</span><span class="sep">|</span>
+      <!-- <span id="arm-lbl">—</span><span class="sep">|</span> -->
+      <span><i class="livedot" id="livedot"></i><span id="model">—</span></span>
+    </div>
+    <div class="theme">
+      <select id="theme" aria-label="Colour theme" title="Colour theme">
+        <option value="auto">auto</option>
+        <option value="light">light</option>
+        <option value="dark">dark</option>
+      </select>
+    </div>
   </div>
 </header>
 
 <form class="query" id="form">
   <div class="field grow">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5c6470" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
     <input id="q" autocomplete="off" placeholder="What limits liability, and does it always apply?">
   </div>
   <div class="field"><label for="docs">docs</label><select id="docs"></select></div>
@@ -230,7 +321,7 @@ header .sep{color:var(--line2)}
       <span><i style="background:var(--teal)"></i>done</span>
       <span><i style="background:var(--amber)"></i>running</span>
       <span><i style="background:var(--violet)"></i>cross-reference</span>
-      <span><i style="background:#2a313b"></i>not taken</span>
+      <span><i style="background:var(--inert)"></i>not taken</span>
       <span class="sep" style="color:var(--line2)">|</span><span id="steps">idle</span>
     </div>
   </div>
@@ -303,8 +394,33 @@ const EDGES = [
 ];
 
 const $ = (id) => document.getElementById(id);
+
+/* Header stats are optional markup — any one of them can be commented out of the
+   header without these writes throwing on a missing element. Both the /health boot
+   and the per-run "start" event carry the same fields, so they share one painter. */
+function paintStats(h) {
+  const set = (id, text) => { const el = $(id); if (el) el.textContent = text; };
+  set("corpus", `${h.documents} docs · ${h.chunks.toLocaleString()} chunks`);
+  set("arm-lbl", h.retriever);
+  set("model", h.live_model ? `model: ${h.model_id}` : "model: stub");
+  const dot = $("livedot");
+  if (dot) dot.className = "livedot" + (h.live_model ? " on" : "");
+}
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
   ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" })[c]);
+
+/* Render the small, predictable Markdown subset the writer uses. Escape first, then
+   add only UI-owned tags: model output never becomes executable HTML. Full Markdown
+   is intentionally unsupported because tables, raw HTML and nested blocks make a
+   compact evidence inspector less stable and require a sanitizer dependency. */
+function renderInlineMarkdown(text) {
+  return esc(text)
+    .replace(/`([^`\n]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/__([^_\n]+)__/g, "<strong>$1</strong>")
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1<em>$2</em>")
+    .replace(/(^|[^_])_([^_\n]+)_(?!_)/g, "$1<em>$2</em>");
+}
 
 function buildStrip() {
   const strip = $("strip");
@@ -403,10 +519,7 @@ function run(ev) {
 
   source.addEventListener("start", (e) => {
     const d = JSON.parse(e.data);
-    $("corpus").textContent = `${d.documents} docs · ${d.chunks.toLocaleString()} chunks`;
-    $("arm-lbl").textContent = d.retriever;
-    $("model").textContent = d.live_model ? `model: ${d.model_id}` : "model: stub";
-    $("livedot").className = "livedot" + (d.live_model ? " on" : "");
+    paintStats(d);
   });
 
   source.addEventListener("node", (e) => {
@@ -461,7 +574,7 @@ function render(d, lastNode) {
   $("steps").textContent = `${d.steps} steps · ${(d.total_ms/1000).toFixed(2)} s`;
 
   /* Answer, with each citation replaced by a numbered chip that scrolls to its card. */
-  let answer = esc(d.answer);
+  let answer = renderInlineMarkdown(d.answer);
   d.citations.forEach((c) => {
     const cls = c.pulled_by === "cross_reference" ? "chip xr" : "chip";
     answer = answer.split(esc(c.internal)).join(
@@ -491,9 +604,9 @@ function render(d, lastNode) {
     el.style.marginBottom = "10px";
     el.innerHTML =
       `<div class="top"><span class="num">${c.index}</span>` +
-      `<span class="ref">${esc(c.internal)}</span><span style="color:#6b7280">·</span>` +
+      `<span class="ref">${esc(c.internal)}</span><span style="color:var(--sub)">·</span>` +
       `<span class="ttl">${esc(c.document_title)}</span>` +
-      `<span class="ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="oklch(.80 .11 165)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>verified</span></div>` +
+      `<span class="ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>verified</span></div>` +
       (c.excerpt ? `<div class="ex">${esc(c.excerpt)}</div>` : "") +
       `<div class="pv">${c.source_chunk_id ? `<span>chunk ${esc(c.source_chunk_id)}</span>` : ""}` +
       (xr ? `<span class="xrk">pulled_by cross_reference</span>`
@@ -562,6 +675,27 @@ function render(d, lastNode) {
   }
 }
 
+/* ── theme ────────────────────────────────────────────── */
+/* The head script already resolved and applied the theme; this only wires the
+   control and keeps "auto" following the OS while the page stays open. */
+const media = window.matchMedia("(prefers-color-scheme: light)");
+let themePref = window.__themePref || "auto";
+
+const themeSel = $("theme");
+
+function applyTheme() {
+  const light = themePref === "light" || (themePref === "auto" && media.matches);
+  document.documentElement.dataset.theme = light ? "light" : "dark";
+  themeSel.value = themePref;
+}
+themeSel.addEventListener("change", () => {
+  themePref = themeSel.value;
+  try { localStorage.setItem("cri-theme", themePref); } catch (_) { /* private mode */ }
+  applyTheme();
+});
+media.addEventListener("change", applyTheme);
+applyTheme();
+
 /* ── boot ─────────────────────────────────────────────── */
 buildStrip();
 $("form").addEventListener("submit", run);
@@ -587,10 +721,7 @@ Promise.all([
   });
   if (health) {
     armSel.value = arms.includes(health.retriever) ? health.retriever : arms[0] || "";
-    $("corpus").textContent = `${health.documents} docs · ${health.chunks.toLocaleString()} chunks`;
-    $("arm-lbl").textContent = health.retriever;
-    $("model").textContent = health.live_model ? `model: ${health.model_id}` : "model: stub";
-    $("livedot").className = "livedot" + (health.live_model ? " on" : "");
+    paintStats(health);
     if (health.note) {
       $("note").textContent = health.note;
       $("note-wrap").style.display = "block";
