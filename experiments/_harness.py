@@ -43,9 +43,18 @@ class ConditionResult:
         return {c: (sum(v) / len(v), len(v)) for c, v in sorted(buckets.items())}
 
 
-def record(condition: ConditionResult, task: EvalTask, result: ResearchResult, k: int) -> None:
+def record(
+    condition: ConditionResult,
+    task: EvalTask,
+    result: ResearchResult,
+    k: int,
+    *,
+    excluded_metrics: frozenset[str] = frozenset(),
+) -> None:
     grades = grade_retrieval(task, result.retrieved, k) + grade_answer(task, result)
-    condition.per_task[task.task_id] = {g.name: g.score for g in grades}
+    condition.per_task[task.task_id] = {
+        grade.name: grade.score for grade in grades if grade.name not in excluded_metrics
+    }
     condition.category[task.task_id] = task.category
     condition.answers[task.task_id] = result.answer
     condition.statuses[task.task_id] = result.status
@@ -61,7 +70,9 @@ def paired(
     for task_id, scores in sorted(left.per_task.items()):
         if task_id not in right.per_task:
             continue
-        a, b = scores.get(metric, 0.0), right.per_task[task_id].get(metric, 0.0)
+        if metric not in scores or metric not in right.per_task[task_id]:
+            continue
+        a, b = scores[metric], right.per_task[task_id][metric]
         if a > b:
             wins += 1
         elif a < b:
@@ -78,7 +89,8 @@ METRICS = (
     "abstention_correctness",
     "forbidden_claims",
     "required_points",
-    "citation_validity",
+    "post_gate_citation_validity",
+    "citation_coverage",
 )
 
 
@@ -98,6 +110,13 @@ def print_report(
     width = max(len(baseline.name), len(variant.name)) + 2
     print(f"{'metric':<26}{baseline.name:>{width}}{variant.name:>{width}}{'delta':>10}")
     for metric in METRICS:
+        baseline_has = any(metric in scores for scores in baseline.per_task.values())
+        variant_has = any(metric in scores for scores in variant.per_task.values())
+        if not baseline_has or not variant_has:
+            left = f"{baseline.mean(metric):.3f}" if baseline_has else "not applicable"
+            right = f"{variant.mean(metric):.3f}" if variant_has else "not applicable"
+            print(f"{metric:<26}{left:>{width}}{right:>{width}}{'':>10}")
+            continue
         a, b = baseline.mean(metric), variant.mean(metric)
         print(f"{metric:<26}{a:>{width}.3f}{b:>{width}.3f}{b - a:>+10.3f}")
     print(f"{'total tokens':<26}{baseline.tokens:>{width}}{variant.tokens:>{width}}")
@@ -181,7 +200,11 @@ def write_artifact(
         ),
         "conditions": {
             c.name: {
-                "means": {m: c.mean(m) for m in METRICS},
+                "means": {
+                    metric: c.mean(metric)
+                    for metric in METRICS
+                    if any(metric in scores for scores in c.per_task.values())
+                },
                 "by_category": {
                     k: {"mean": v[0], "n": v[1]}
                     for k, v in c.by_category("evidence_span_recall").items()

@@ -67,6 +67,19 @@ def render_eval(payload: dict[str, Any]) -> list[str]:
     versions = payload.get("grader_versions", {})
     for name, mean in sorted(payload.get("means", {}).items()):
         out.append(f"| `{name}` | `{versions.get(name, '?')}` | {fmt(mean)} |")
+    if support := payload.get("claim_support_aggregate"):
+        out += [
+            "",
+            f"Citation-scoped claim support: macro **{fmt(support['macro'])}**, "
+            f"micro **{fmt(support['micro'])}** "
+            f"({support['supported_claims']}/{support['evaluated_claims']} claims).",
+        ]
+    if coverage := payload.get("citation_coverage_aggregate"):
+        out += [
+            f"Citation coverage: macro **{fmt(coverage['macro'])}**, "
+            f"micro **{fmt(coverage['micro'])}** "
+            f"({coverage['cited_claims']}/{coverage['factual_claims']} claims).",
+        ]
     return out
 
 
@@ -116,6 +129,21 @@ def render_conditions(payload: dict[str, Any]) -> list[str]:
             f"- failure codes: {payload.get('failure_codes') or 'none'}",
             f"- tasks affected: {len(payload.get('affected_tasks', []))}/{payload['task_count']}",
         ]
+    elif "raw_invalid_citation_rate" in payload:
+        post_gate = payload.get("post_gate_citation_validity")
+        repair_success = payload.get("repair_success_rate")
+        out += [
+            "",
+            f"- raw invalid citation rate: **{payload['raw_invalid_citation_rate']:.1%}** "
+            f"({payload['raw_invalid_citations']}/{payload['raw_citation_attempts']} attempts)",
+            f"- unsafe answer exposure rate: **{payload['unsafe_answer_exposure_rate']:.1%}**",
+            "- post-gate citation validity: "
+            + (f"**{post_gate:.1%}**" if post_gate is not None else "not applicable"),
+            f"- repair trigger rate: **{payload['repair_trigger_rate']:.1%}**",
+            "- repair success rate: "
+            + (f"**{repair_success:.1%}**" if repair_success is not None else "not applicable"),
+            f"- failure codes: {payload.get('failure_codes') or 'none'}",
+        ]
 
     out += [
         "",
@@ -123,7 +151,12 @@ def render_conditions(payload: dict[str, Any]) -> list[str]:
         "|---" * (len(names) + 1) + "|",
     ]
     for metric in metrics:
-        cells = " | ".join(fmt(conditions[n]["means"].get(metric, 0.0)) for n in names)
+        cells = " | ".join(
+            fmt(conditions[name]["means"][metric])
+            if metric in conditions[name]["means"]
+            else "not applicable"
+            for name in names
+        )
         out.append(f"| `{metric}` | {cells} |")
     for label, key in (("total tokens", "tokens"), ("total searches", "searches")):
         cells = " | ".join(f"{conditions[n].get(key, 0):,}" for n in names)

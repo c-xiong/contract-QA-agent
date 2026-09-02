@@ -51,7 +51,12 @@ async def claim_support(
             score=1.0,
             passed=True,
             detail="abstained; no claims asserted",
-            data={"abstained": True},
+            data={
+                "abstained": True,
+                "claims": 0,
+                "evaluated_claims": 0,
+                "supported": 0,
+            },
         )
 
     verdicts = await check_answer(result.answer, result.evidence, client, live=live)
@@ -63,36 +68,62 @@ async def claim_support(
             score=1.0,
             passed=True,
             detail="no checkable factual claims in the answer",
+            data={"claims": 0, "evaluated_claims": 0, "supported": 0},
         )
 
-    if all(v.verdict == "unknown" for v in verdicts):
+    evaluated = [verdict for verdict in verdicts if verdict.verdict != "unknown"]
+    if not evaluated:
         return GradeResult(
             name="claim_support",
             version=CLAIM_SUPPORT_VERSION,
             score=0.0,
             passed=False,
             detail="not evaluated (requires CRA_LIVE_MODEL=1)",
-            data={"evaluated": False},
+            data={
+                "evaluated": False,
+                "claims": len(verdicts),
+                "evaluated_claims": 0,
+                "supported": 0,
+            },
         )
 
-    supported = sum(1 for v in verdicts if v.verdict == "supported")
-    problems = [v for v in verdicts if v.is_problem]
-    score = supported / len(verdicts)
+    supported = sum(1 for verdict in evaluated if verdict.verdict == "supported")
+    problems = [verdict for verdict in evaluated if verdict.is_problem]
+    score = supported / len(evaluated)
+    counts = {
+        status: sum(1 for verdict in verdicts if verdict.verdict == status)
+        for status in (
+            "supported",
+            "contradicted",
+            "not_addressed",
+            "uncited",
+            "malformed_citation",
+            "citation_not_in_evidence",
+            "unknown",
+        )
+    }
 
     return GradeResult(
         name="claim_support",
         version=CLAIM_SUPPORT_VERSION,
         score=score,
-        passed=not problems,
-        detail=f"{supported}/{len(verdicts)} claims supported by the cited evidence",
+        passed=supported == len(verdicts),
+        detail=f"{supported}/{len(evaluated)} evaluated claims supported by their citations",
         data={
             "evaluated": True,
             "claims": len(verdicts),
-            "contradicted": sum(1 for v in verdicts if v.verdict == "contradicted"),
-            "not_addressed": sum(1 for v in verdicts if v.verdict == "not_addressed"),
+            "evaluated_claims": len(evaluated),
+            "supported": supported,
+            **counts,
             "unsupported_examples": [
-                {"claim": v.claim[:160], "verdict": v.verdict, "reason": v.reason[:160]}
-                for v in problems[:3]
+                {
+                    "claim": verdict.claim[:160],
+                    "verdict": verdict.verdict,
+                    "reason": verdict.reason[:160],
+                    "citations": list(verdict.citations),
+                    "evidence_ids": list(verdict.evidence_ids),
+                }
+                for verdict in problems[:3]
             ],
         },
     )

@@ -20,6 +20,18 @@ from evals.graders.retrieval import GradeResult, grade_retrieval
 from evals.schema import EvalTask
 
 
+def _counter(data: dict[str, object], key: str) -> int:
+    """Read an integer counter out of a grader's untyped `data` payload.
+
+    Grade payloads are `dict[str, object]` because each grader records different
+    detail. Aggregation reads only the counters it knows about, and a missing or
+    non-integer value contributes nothing rather than raising: an aggregate is a
+    summary, and one malformed grade must not take down a whole run's report.
+    """
+    value = data.get(key)
+    return value if isinstance(value, int) else 0
+
+
 @dataclass
 class TaskRun:
     """One task's outcome, with enough detail to re-grade without re-running."""
@@ -66,6 +78,41 @@ class SuiteReport:
         values = [r.scores[grader] for r in self.runs if grader in r.scores]
         return sum(values) / len(values) if values else 0.0
 
+    def claim_support_aggregate(self) -> dict[str, float | int] | None:
+        """Return citation-scoped macro and micro support for current-version grades."""
+        grades = [
+            grade
+            for run in self.runs
+            for grade in run.grades
+            if grade.name == "claim_support" and grade.version == "claim_support@2"
+        ]
+        if not grades:
+            return None
+        supported = sum(_counter(grade.data, "supported") for grade in grades)
+        evaluated = sum(_counter(grade.data, "evaluated_claims") for grade in grades)
+        return {
+            "macro": sum(grade.score for grade in grades) / len(grades),
+            "micro": supported / evaluated if evaluated else 1.0,
+            "supported_claims": supported,
+            "evaluated_claims": evaluated,
+        }
+
+    def citation_coverage_aggregate(self) -> dict[str, float | int] | None:
+        """Return macro task coverage and micro factual-claim coverage."""
+        grades = [
+            grade for run in self.runs for grade in run.grades if grade.name == "citation_coverage"
+        ]
+        if not grades:
+            return None
+        cited = sum(_counter(grade.data, "cited_claims") for grade in grades)
+        claims = sum(_counter(grade.data, "claims") for grade in grades)
+        return {
+            "macro": sum(grade.score for grade in grades) / len(grades),
+            "micro": cited / claims if claims else 1.0,
+            "cited_claims": cited,
+            "factual_claims": claims,
+        }
+
     def summary(self) -> str:
         if not self.runs:
             return "no tasks run"
@@ -89,6 +136,10 @@ class SuiteReport:
         graders = sorted({g.name for r in self.runs for g in r.grades})
         for name in graders:
             lines.append(f"{name:24s} mean {self.mean(name):.3f}")
+        if support := self.claim_support_aggregate():
+            lines.append(f"{'claim_support micro':24s} {support['micro']:.3f}")
+        if coverage := self.citation_coverage_aggregate():
+            lines.append(f"{'citation_coverage micro':24s} {coverage['micro']:.3f}")
 
         matched = sum(r.behavior_matched for r in self.runs)
         lines.append(f"{'expected_behavior match':24s} {matched}/{self.task_count}")
@@ -108,7 +159,7 @@ class SuiteReport:
         return "\n".join(lines)
 
     def to_json(self) -> dict[str, object]:
-        return {
+        payload: dict[str, object] = {
             "suite": self.suite,
             "dataset_version": self.dataset_version,
             "retriever": self.retriever,
@@ -123,6 +174,11 @@ class SuiteReport:
             },
             "runs": [asdict(run) for run in self.runs],
         }
+        if support := self.claim_support_aggregate():
+            payload["claim_support_aggregate"] = support
+        if coverage := self.citation_coverage_aggregate():
+            payload["citation_coverage_aggregate"] = coverage
+        return payload
 
 
 def behavior_matches(task: EvalTask, result: ResearchResult) -> bool:

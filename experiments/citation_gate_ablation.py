@@ -31,10 +31,12 @@ from app.agent.runner import ResearchAgent
 from app.config import get_settings
 from app.evidence.citation_parser import extract_citations
 from app.evidence.citation_verifier import CitationVerifier, VerificationResult
+from app.evidence.claim_support import extract_cited_claims
 from app.ingestion.store import ChunkStore, StoreError
 from app.retrieval.factory import build_retriever
 from app.schemas.evidence import Evidence
 from app.schemas.retrieval import RetrievedChunk
+from evals.citation_metrics import CitationAblationObservation, summarize_citation_ablation
 from evals.loader import DatasetError, load_suite
 
 
@@ -177,10 +179,13 @@ async def main_async(args: argparse.Namespace) -> int:
     baseline = ConditionResult(name="gate_off")
     variant = ConditionResult(name="gate_on")
 
-    unverified: Counter[str] = Counter()
-    total_citations = 0
-    bad_citations = 0
+    invalid_by_code: Counter[str] = Counter()
     affected_tasks: list[str] = []
+    ungated_audits: dict[str, VerificationResult] = {}
+    gated_audits: dict[str, VerificationResult] = {}
+    gated_answers: dict[str, str] = {}
+    gated_delivered: dict[str, bool] = {}
+    repair_triggered: dict[str, bool] = {}
 
     for label, agent, condition in (("gate_off", ungated, baseline), ("gate_on", gated, variant)):
         print(f"running {label}...", flush=True)
@@ -188,7 +193,17 @@ async def main_async(args: argparse.Namespace) -> int:
             result = await agent.research(
                 task.question, allowed_document_ids=task.allowed_document_ids
             )
-            record(condition, task, result, settings.retrieval_top_k)
+            record(
+                condition,
+                task,
+                result,
+                settings.retrieval_top_k,
+                excluded_metrics=(
+                    frozenset({"post_gate_citation_validity"})
+                    if label == "gate_off"
+                    else frozenset()
+                ),
+            )
 
             if label == "gate_off":
                 audited = audit.verify(
@@ -196,24 +211,56 @@ async def main_async(args: argparse.Namespace) -> int:
                     result.retrieved,
                     allowed_document_ids=task.allowed_document_ids,
                 )
-                total_citations += len(audited.citations)
-                bad_citations += len(audited.errors)
+                ungated_audits[task.task_id] = audited
                 for error in audited.errors:
-                    unverified[error.code] += 1
-                if audited.errors or audited.uncited:
+                    invalid_by_code[error.code] += 1
+                claims = extract_cited_claims(result.answer) if not result.abstained else []
+                if audited.errors or any(not claim.citations for claim in claims):
                     affected_tasks.append(task.task_id)
+            else:
+                gated_audits[task.task_id] = audit.verify(
+                    result.answer,
+                    result.retrieved,
+                    allowed_document_ids=task.allowed_document_ids,
+                )
+                gated_answers[task.task_id] = result.answer
+                gated_delivered[task.task_id] = result.status == "completed"
+                repair_triggered[task.task_id] = any(
+                    event.step == "repair" for event in result.trace
+                )
+
+    observations = [
+        CitationAblationObservation(
+            ungated_answer=baseline.answers[task.task_id],
+            ungated_audit=ungated_audits[task.task_id],
+            gated_answer=gated_answers[task.task_id],
+            gated_audit=gated_audits[task.task_id],
+            gated_delivered=gated_delivered[task.task_id],
+            repair_triggered=repair_triggered[task.task_id],
+        )
+        for task in tasks
+    ]
+    citation_metrics = summarize_citation_ablation(observations)
 
     print("\n" + "=" * 78)
     print("WHAT THE GATE CAUGHT")
     print("=" * 78)
-    print(f"citations emitted with the gate off : {total_citations}")
-    print(f"of those, failing verification      : {bad_citations}")
-    rate = bad_citations / total_citations if total_citations else 0.0
-    print(f"unverified-citation rate            : {rate:.1%}")
+    print(f"raw citation attempts               : {citation_metrics['raw_citation_attempts']}")
+    print(f"raw invalid citations               : {citation_metrics['raw_invalid_citations']}")
+    print(
+        f"raw invalid-citation rate          : {citation_metrics['raw_invalid_citation_rate']:.1%}"
+    )
+    print(
+        "unsafe answer exposure rate        : "
+        f"{citation_metrics['unsafe_answer_exposure_rate']:.1%}"
+    )
+    post_gate = citation_metrics["post_gate_citation_validity"]
+    post_gate_display = f"{post_gate:.1%}" if post_gate is not None else "not applicable"
+    print(f"post-gate citation validity         : {post_gate_display}")
     print(f"tasks affected                      : {len(affected_tasks)}/{len(tasks)}")
-    if unverified:
+    if invalid_by_code:
         print("\nby failure code:")
-        for code, count in unverified.most_common():
+        for code, count in invalid_by_code.most_common():
             print(f"  {code:24s} {count}")
     if affected_tasks:
         print(f"\naffected: {', '.join(affected_tasks[:10])}")
@@ -249,10 +296,8 @@ async def main_async(args: argparse.Namespace) -> int:
         {
             "retriever": retriever.name,
             "model_id": gated.client.model_id,
-            "citations_emitted_ungated": total_citations,
-            "citations_failing_verification": bad_citations,
-            "unverified_rate": rate,
-            "failure_codes": dict(unverified),
+            **citation_metrics,
+            "failure_codes": dict(invalid_by_code),
             "affected_tasks": affected_tasks,
             "fault_injection_every": args.fault_every,
         },

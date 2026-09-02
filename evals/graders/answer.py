@@ -13,6 +13,7 @@ wrong, or correct and uncited, and a single blended score hides which.
 from __future__ import annotations
 
 from app.agent.runner import ResearchResult
+from app.evidence.claim_support import extract_cited_claims
 from app.ingestion.text import normalize_for_matching
 from evals.graders.retrieval import GradeResult
 from evals.schema import EvalTask
@@ -20,7 +21,9 @@ from evals.schema import EvalTask
 ABSTENTION_VERSION = "abstention@1"
 FORBIDDEN_VERSION = "forbidden_claims@1"
 REQUIRED_VERSION = "required_points@1"
-CITATION_VERSION = "citation_validity@1"
+POST_GATE_CITATION_VERSION = "post_gate_citation_validity@1"
+LEGACY_CITATION_VERSION = "citation_validity@1"
+CITATION_COVERAGE_VERSION = "citation_coverage@1"
 
 # DECISION: a forbidden claim counts as asserted on a normalized substring match of a
 # meaningful prefix, not on exact string equality and not on a model judgement.
@@ -158,8 +161,8 @@ def required_points(task: EvalTask, result: ResearchResult) -> GradeResult:
     )
 
 
-def citation_validity(task: EvalTask, result: ResearchResult) -> GradeResult:
-    """Did every citation in the answer survive the deterministic gate?
+def post_gate_citation_validity(task: EvalTask, result: ResearchResult) -> GradeResult:
+    """Did every citation in the final delivered answer survive the runtime gate?
 
     Measures the gate's output, not the gate itself. A run where the gate rejected
     everything and the system abstained scores 1.0 here and 0.0 on abstention
@@ -167,32 +170,110 @@ def citation_validity(task: EvalTask, result: ResearchResult) -> GradeResult:
     """
     if result.abstained:
         return GradeResult(
+            name="post_gate_citation_validity",
+            version=POST_GATE_CITATION_VERSION,
+            score=1.0,
+            passed=True,
+            detail="not applicable; abstention delivered no citations",
+            data={"abstained": True, "applicable": False},
+        )
+
+    attempts = {citation.raw for citation in result.citations} | {
+        error.raw for error in result.citation_errors
+    }
+    total = len(attempts)
+    if total == 0:
+        return GradeResult(
+            name="post_gate_citation_validity",
+            version=POST_GATE_CITATION_VERSION,
+            score=0.0,
+            passed=False,
+            detail="answer contained no citations at all",
+            data={"applicable": True, "valid_citations": 0, "citation_attempts": 0},
+        )
+
+    bad = {error.raw for error in result.citation_errors}
+    valid = sum(citation.raw not in bad for citation in result.citations)
+    score = valid / total
+    return GradeResult(
+        name="post_gate_citation_validity",
+        version=POST_GATE_CITATION_VERSION,
+        score=score,
+        passed=not result.citation_errors,
+        detail=f"{valid}/{total} citations verified",
+        data={
+            "applicable": True,
+            "valid_citations": valid,
+            "citation_attempts": total,
+            "errors": [f"{e.code}: {e.raw}" for e in result.citation_errors],
+        },
+    )
+
+
+def citation_validity(task: EvalTask, result: ResearchResult) -> GradeResult:
+    """Return the historical ``citation_validity@1`` shape for legacy callers."""
+    if result.abstained:
+        return GradeResult(
             name="citation_validity",
-            version=CITATION_VERSION,
+            version=LEGACY_CITATION_VERSION,
             score=1.0,
             passed=True,
             detail="abstained; no citations to validate",
             data={"abstained": True},
         )
-
     total = len(result.citations) + len(result.citation_errors)
-    if total == 0:
-        return GradeResult(
-            name="citation_validity",
-            version=CITATION_VERSION,
-            score=0.0,
-            passed=False,
-            detail="answer contained no citations at all",
-        )
-
-    score = len(result.citations) / total
+    score = len(result.citations) / total if total else 0.0
     return GradeResult(
         name="citation_validity",
-        version=CITATION_VERSION,
+        version=LEGACY_CITATION_VERSION,
         score=score,
-        passed=not result.citation_errors,
-        detail=f"{len(result.citations)}/{total} citations verified",
-        data={"errors": [f"{e.code}: {e.raw}" for e in result.citation_errors]},
+        passed=bool(total) and not result.citation_errors,
+        detail=(
+            f"{len(result.citations)}/{total} citations verified"
+            if total
+            else "answer contained no citations at all"
+        ),
+        data={"errors": [f"{error.code}: {error.raw}" for error in result.citation_errors]},
+    )
+
+
+def citation_coverage(task: EvalTask, result: ResearchResult) -> GradeResult:
+    """Fraction of factual claims carrying at least one parseable citation."""
+    if result.abstained:
+        return GradeResult(
+            name="citation_coverage",
+            version=CITATION_COVERAGE_VERSION,
+            score=1.0,
+            passed=True,
+            detail="abstained; no factual claims asserted",
+            data={"claims": 0, "cited_claims": 0, "applicable": False},
+        )
+
+    claims = extract_cited_claims(result.answer)
+    cited = sum(bool(claim.citations) for claim in claims)
+    if not claims:
+        return GradeResult(
+            name="citation_coverage",
+            version=CITATION_COVERAGE_VERSION,
+            score=1.0,
+            passed=True,
+            detail="no checkable factual claims in the answer",
+            data={"claims": 0, "cited_claims": 0, "applicable": False},
+        )
+
+    score = cited / len(claims)
+    return GradeResult(
+        name="citation_coverage",
+        version=CITATION_COVERAGE_VERSION,
+        score=score,
+        passed=cited == len(claims),
+        detail=f"{cited}/{len(claims)} factual claims carry a parseable citation",
+        data={
+            "claims": len(claims),
+            "cited_claims": cited,
+            "applicable": True,
+            "malformed_claims": sum(bool(claim.malformed_citations) for claim in claims),
+        },
     )
 
 
@@ -202,5 +283,6 @@ def grade_answer(task: EvalTask, result: ResearchResult) -> list[GradeResult]:
         abstention_correctness(task, result),
         forbidden_claims(task, result),
         required_points(task, result),
-        citation_validity(task, result),
+        post_gate_citation_validity(task, result),
+        citation_coverage(task, result),
     ]

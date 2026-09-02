@@ -12,6 +12,7 @@ from app.agent.llm import ModelError, ModelResponse, StubClient
 from app.agent.runner import ResearchAgent
 from app.agent.state import Budget
 from app.config import Settings
+from app.evidence.claim_support import CLAIM_SUPPORT_SYSTEM
 from app.ingestion.store import ChunkStore
 from evals.runner import behavior_matches, run_suite
 from evals.schema import EvalTask
@@ -122,7 +123,63 @@ class FailingClient:
         raise ModelError("Model call exceeded 60.0s")
 
 
+class CompoundCitationClient:
+    """Reproduces the live model's two locators inside one pair of brackets."""
+
+    model_id = "compound-citation-stub"
+
+    async def complete(self, system: str, user: str) -> ModelResponse:
+        return ModelResponse(
+            text=(
+                "Liability is capped, subject to an exclusion "
+                "[doc-900, p. 1, §8.1; doc-900, p. 2, §8.3]."
+            ),
+            output_tokens=20,
+            model_id=self.model_id,
+        )
+
+
+class CitationScopedEvalClient:
+    """Offline writer and semantic judge for the claim-support integration path."""
+
+    model_id = "fixture-judge"
+
+    async def complete(self, system: str, user: str) -> ModelResponse:
+        if system == CLAIM_SUPPORT_SYSTEM:
+            assert "governed by the laws of Delaware" in user
+            assert "aggregate liability" not in user
+            return ModelResponse(
+                text=(
+                    '{"verdict":"supported","quote":"governed by the laws of '
+                    'Delaware","reason":"fixture"}'
+                ),
+                model_id=self.model_id,
+            )
+        return ModelResponse(
+            text="The agreement is governed by Delaware law [doc-900, p. 3, §14.2].",
+            model_id=self.model_id,
+        )
+
+
 class TestCitationGate:
+    async def test_compound_citation_is_normalized_without_repair(
+        self, store: ChunkStore, settings: Settings
+    ) -> None:
+        from app.agent.graph import build_graph
+
+        agent = ResearchAgent(store, settings)
+        agent.client = CompoundCitationClient()  # type: ignore[assignment]
+        agent.graph = build_graph(agent.retriever, agent.verifier, agent.client, store)
+
+        result = await agent.research("What limits aggregate liability?")
+
+        assert result.status == "completed"
+        assert result.citation_errors == []
+        assert [citation.section_id for citation in result.citations] == ["8.1", "8.3"]
+        assert ";" not in result.answer
+        assert "[doc-900, p. 1, §8.1] [doc-900, p. 2, §8.3]" in result.answer
+        assert not any(event.step == "repair" for event in result.trace)
+
     async def test_ungrounded_citation_is_repaired_once_then_abstains(
         self, store: ChunkStore, settings: Settings
     ) -> None:
@@ -243,6 +300,65 @@ class TestEvalLoop:
         payload = report.to_json()
         assert payload["task_count"] == 1
         assert "grader_versions" in payload
+
+    async def test_claim_support_v2_is_citation_scoped_and_reports_macro_micro(
+        self, store: ChunkStore, settings: Settings
+    ) -> None:
+        from app.agent.graph import build_graph
+
+        scoped_agent = ResearchAgent(store, settings)
+        scoped_agent.client = CitationScopedEvalClient()  # type: ignore[assignment]
+        scoped_agent.graph = build_graph(
+            scoped_agent.retriever,
+            scoped_agent.verifier,
+            scoped_agent.client,
+            store,
+        )
+        live_settings = settings.model_copy(update={"live_model": True})
+        task = EvalTask.model_validate(
+            {
+                "task_id": "fixture-claim-support",
+                "category": "single_document_fact_lookup",
+                "question": "Which state's law governs this agreement?",
+                "expected_behavior": "answer",
+                "dataset_version": "fixture-v1",
+                "allowed_document_ids": ["doc-900"],
+                "expected_document_ids": ["doc-900"],
+                "expected_evidence": [
+                    {
+                        "document_id": "doc-900",
+                        "page_number": 3,
+                        "section_id": "14.2",
+                        "span_text": "governed by the laws of Delaware",
+                        "source": "manual",
+                    }
+                ],
+            }
+        )
+
+        report = await run_suite(
+            "fixture",
+            [task],
+            scoped_agent,
+            live_settings,
+            with_claim_support=True,
+        )
+        payload = report.to_json()
+
+        assert report.grader_versions["claim_support"] == "claim_support@2"
+        assert report.grader_versions["citation_coverage"] == "citation_coverage@1"
+        assert payload["claim_support_aggregate"] == {
+            "macro": 1.0,
+            "micro": 1.0,
+            "supported_claims": 1,
+            "evaluated_claims": 1,
+        }
+        assert payload["citation_coverage_aggregate"] == {
+            "macro": 1.0,
+            "micro": 1.0,
+            "cited_claims": 1,
+            "factual_claims": 1,
+        }
 
 
 class TestStubClient:

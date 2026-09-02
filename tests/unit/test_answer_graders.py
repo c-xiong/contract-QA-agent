@@ -6,9 +6,11 @@ from app.agent.runner import ResearchResult
 from app.schemas.evidence import Citation, CitationError
 from evals.graders.answer import (
     abstention_correctness,
+    citation_coverage,
     citation_validity,
     forbidden_claims,
     grade_answer,
+    post_gate_citation_validity,
     required_points,
 )
 from evals.schema import EvalTask
@@ -152,6 +154,75 @@ class TestCitationValidity:
         grade = citation_validity(task(), result(status="abstained", answer="", citations=0))
         assert grade.passed
 
+    def test_new_runs_use_explicit_post_gate_name(self) -> None:
+        grade = post_gate_citation_validity(task(), result())
+        assert grade.name == "post_gate_citation_validity"
+        assert grade.version == "post_gate_citation_validity@1"
+
+    def test_rejected_parsed_citation_is_not_also_counted_as_valid(self) -> None:
+        citation = Citation(
+            document_id="doc-901",
+            page_number=1,
+            raw="[doc-901, p. 1]",
+        )
+        rejected = result(citations=0)
+        rejected = ResearchResult(
+            question=rejected.question,
+            answer="Unsupported [doc-901, p. 1].",
+            status="completed",
+            citations=[citation],
+            citation_errors=[
+                CitationError(
+                    code="not_in_evidence",
+                    raw=citation.raw,
+                    citation=citation,
+                    detail="never retrieved",
+                )
+            ],
+            retrieved=[],
+            evidence=[],
+            trace=[],
+            input_tokens=0,
+            output_tokens=0,
+        )
+        grade = post_gate_citation_validity(task(), rejected)
+        assert grade.score == 0.0
+        assert grade.data["valid_citations"] == 0
+        assert grade.data["citation_attempts"] == 1
+
+
+class TestCitationCoverage:
+    def test_counts_factual_claims_not_raw_citation_occurrences(self) -> None:
+        grade = citation_coverage(
+            task(),
+            result(
+                answer=(
+                    "New York law governs [doc-900, p. 1]. The agreement also requires arbitration."
+                )
+            ),
+        )
+        assert grade.version == "citation_coverage@1"
+        assert grade.score == 0.5
+        assert grade.data == {
+            "claims": 2,
+            "cited_claims": 1,
+            "applicable": True,
+            "malformed_claims": 0,
+        }
+
+    def test_malformed_attempt_does_not_count_as_coverage(self) -> None:
+        grade = citation_coverage(
+            task(),
+            result(answer="New York law governs [doc-900, page nope].", citations=0),
+        )
+        assert grade.score == 0.0
+        assert grade.data["malformed_claims"] == 1
+
+    def test_abstention_has_no_factual_claim_denominator(self) -> None:
+        grade = citation_coverage(task(), result(status="abstained", answer="", citations=0))
+        assert grade.score == 1.0
+        assert grade.data["applicable"] is False
+
 
 class TestGradeAnswer:
     def test_runs_every_grader_and_versions_each(self) -> None:
@@ -160,6 +231,7 @@ class TestGradeAnswer:
             "abstention_correctness",
             "forbidden_claims",
             "required_points",
-            "citation_validity",
+            "post_gate_citation_validity",
+            "citation_coverage",
         }
         assert all(g.version for g in grades)
