@@ -47,7 +47,7 @@ published by the U.S. Securities and Exchange Commission and are public records.
 Used here: `full_contract_pdf/` as the ingestion corpus, and `master_clauses.csv` as
 the ground-truth source. `full_contract_txt/` is deliberately not ingested — parsing
 the real PDFs exercises the parser on real layout problems (running headers, page
-breaks mid-clause, signature blocks), which is the point.
+breaks mid-clause, signature blocks) that the extracted text would hide.
 
 ### ContractNLI
 
@@ -102,10 +102,10 @@ period, and the `edits` record names which field actually changed. See
 | CUAD | 40 | 40 | Retrieval and citation ground truth |
 | ContractNLI | 10 | 10 | Abstention and claim-support ground truth |
 | Synthetic | 6 | 6 | Conflicts, injection, distractors |
-| **Total** | **56** | **56** | 7,453 chunks |
+| **Total** | **56** | **56** | 6,270 chunks |
 
-Within SPEC 6.7's 55–60 target. Document count is not the selling point — annotation
-quality is.
+Within the 55-60 target set in `docs/SPEC.md` §6.7. The corpus is deliberately small:
+it is selected for annotation coverage, not for document count.
 
 ## Sampling criterion
 

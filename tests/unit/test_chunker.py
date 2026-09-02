@@ -7,7 +7,12 @@ says what changed.
 
 from __future__ import annotations
 
-from app.ingestion.chunker import _match_heading, chunk_document, extract_references
+from app.ingestion.chunker import (
+    _logical_lengths,
+    _match_heading,
+    chunk_document,
+    extract_references,
+)
 from app.ingestion.pdf_parser import ParsedDocument, ParsedPage
 
 
@@ -168,3 +173,143 @@ class TestChunking:
         ids = [c.chunk_id for c in result]
         assert len(ids) == len(set(ids))
         assert ids == sorted(ids)
+
+
+class TestHardWrappedText:
+    """The corpus is hard-wrapped at ~76 columns, so a physical line is not a paragraph.
+
+    Measuring "short" on the wrap column made the first line of every long subsection
+    look like a heading, which severed carve-outs from the caps they qualify.
+    """
+
+    # Verbatim from doc-019 p.25, the case that surfaced this: a liability cap whose
+    # exceptions were split into three chunks of their own.
+    WRAPPED_CAP = (
+        "6.2      LIMIT OF LIABILITY\n"
+        "(a)      FOR ANY BREACH OR DEFAULT BY CHANGEPOINT OF ANY OF THE PROVISIONS OF\n"
+        "THIS AGREEMENT, OR WITH RESPECT TO ANY CLAIM ARISING HEREFROM OR RELATED HERETO,\n"
+        "EXCEPT FOR ANY CLAIM FOR BREACH OF SECTION 5.2 (UNAUTHORIZED DISCLOSURE OF\n"
+        "CONFIDENTIAL INFORMATION), CHANGEPOINT SHALL NOT BE LIABLE TO CUSTOMER FOR AN\n"
+        "AMOUNT EXCEEDING THE LICENSE FEES PAID UNDER THIS AGREEMENT."
+    )
+
+    def test_wrapped_subsection_is_measured_by_paragraph_not_by_wrap_column(self) -> None:
+        """The 77-char first line opens a 300-char paragraph. It is body, not a heading."""
+        lines = self.WRAPPED_CAP.splitlines()
+        logical = _logical_lengths(lines)
+        assert len(lines[1]) <= 90, "the physical line is short enough to look like a heading"
+        assert logical[1] > 90, "the paragraph it opens is not"
+        assert _match_heading(lines[1], ["6", "6.2"], logical_length=logical[1]) is None
+
+    def test_a_heading_line_stays_a_heading_when_the_next_line_opens_its_own_paragraph(
+        self,
+    ) -> None:
+        """Continuation stops at a marker, so "6.2 LIMIT OF LIABILITY" measures 27, not 400."""
+        lines = self.WRAPPED_CAP.splitlines()
+        logical = _logical_lengths(lines)
+        assert _match_heading(lines[0], [], logical_length=logical[0]) == (
+            ["6", "6.2"],
+            "LIMIT OF LIABILITY",
+        )
+
+    def test_cap_and_its_carve_out_land_in_one_chunk(self) -> None:
+        """The failure that started this: the cap was citable, the exception was not."""
+        result = chunks_of(self.WRAPPED_CAP)
+        assert len(result) == 1
+        assert "LIMIT OF LIABILITY" in result[0].text
+        assert "EXCEPT FOR ANY CLAIM" in result[0].text
+        assert result[0].section_path == ["6", "6.2"]
+
+    def test_wrapped_clause_does_not_store_a_truncated_prose_fragment_as_its_title(self) -> None:
+        """section_title is a label. A wrap-truncated sentence in it is not a label."""
+        page = (
+            '1.2      "Acquired Party Family" means, in the case of a Change of Control\n'
+            "of a Party or its Affiliate, such Party or such Affiliate existing immediately\n"
+            "prior to the closing of such Change of Control."
+        )
+        result = chunks_of(page)
+        assert all(c.section_title is None for c in result)
+
+
+class TestBareHeadings:
+    def test_a_heading_severed_from_its_body_is_folded_into_it(self) -> None:
+        """A heading-only chunk is a strong lexical match for text it does not contain."""
+        result = chunks_of("12.2 Termination.\n(a) Terminations by Sanofi. Sanofi may terminate.")
+        assert len(result) == 1
+        assert result[0].text.startswith("12.2 Termination.")
+        assert "Sanofi may terminate" in result[0].text
+
+    def test_the_folded_chunk_keeps_the_descendant_path_so_both_ids_resolve(self) -> None:
+        """find_section matches on containment, so the ancestor id still finds the chunk."""
+        result = chunks_of("12.2 Termination.\n(a) Terminations by Sanofi. Sanofi may terminate.")
+        assert result[0].section_path == ["12", "12.2", "(a)"]
+        assert "12.2" in result[0].section_path
+
+    def test_folding_chains_through_consecutive_bare_headings(self) -> None:
+        result = chunks_of("8. LIABILITY\n8.1 CAP\n(a) The cap is one million dollars.")
+        assert len(result) == 1
+        assert result[0].text.splitlines() == [
+            "8. LIABILITY",
+            "8.1 CAP",
+            "(a) The cap is one million dollars.",
+        ]
+
+    def test_a_short_but_complete_section_is_not_folded_into_its_sibling(self) -> None:
+        """'1.65 "Territory" means Japan.' is 7 tokens and complete. Siblings stay apart."""
+        result = chunks_of('1.64 "Term" means ten years.\n1.65 "Territory" means Japan.')
+        assert len(result) == 2
+        assert result[0].section_path == ["1", "1.64"]
+        assert result[1].section_path == ["1", "1.65"]
+
+    def test_a_carried_continuation_line_is_not_mistaken_for_a_bare_heading(self) -> None:
+        """The first block on a page has no heading of its own; its one line is body text."""
+        result = chunks_of("8.1 Liability\nThe cap is", "one million dollars.\n(a) Except:")
+        second = [c for c in result if c.page_number == 2]
+        assert second[0].text.startswith("one million dollars.")
+
+
+class TestDecimalArticleNumbering:
+    """Three documents number articles "1.0", "2.0". A trailing zero is not a subsection."""
+
+    def test_decimal_article_number_collapses_to_the_article(self) -> None:
+        assert _match_heading("9.0 Limitation of Liability", []) == (
+            ["9"],
+            "Limitation of Liability",
+        )
+
+    def test_a_real_subsection_keeps_its_full_path(self) -> None:
+        assert _match_heading("9.1 IBM's Limitation of Liability", []) == (
+            ["9", "9.1"],
+            "IBM's Limitation of Liability",
+        )
+
+    def test_ten_point_zero_is_article_ten_not_article_one(self) -> None:
+        """The strip is on components, not on characters."""
+        assert _match_heading("10.0 Notices", []) == (["10"], "Notices")
+
+    def test_references_are_normalized_the_same_way_as_paths(self) -> None:
+        """A reference only resolves if it is spelled the way the target is labeled."""
+        assert extract_references("as provided in Section 9.0 above") == ["9"]
+
+    def test_the_heading_and_its_first_clause_now_land_in_one_chunk(self) -> None:
+        """9.0/9.1 were siblings, so the bare-heading fold could not reunite them."""
+        result = chunks_of("9.0   Limitation of Liability\n9.1   Circumstances may arise where.")
+        assert len(result) == 1
+        assert result[0].text.startswith("9.0   Limitation of Liability")
+        assert result[0].section_path == ["9", "9.1"]
+
+
+class TestSplitRemainders:
+    def test_a_trailing_fragment_is_merged_back_not_emitted(self) -> None:
+        """64 chunks in the corpus were 'ion.', 'es.', 'r.' -- unretrievable by anyone."""
+        body = "This sentence is filler repeated to overflow the budget. " * 12
+        result = chunks_of(f"8.1 Long Section\n{body}ion.", max_tokens=64)
+        assert len(result) > 1
+        assert all(c.token_count >= 20 for c in result[1:]), [c.text for c in result]
+        assert result[-1].text.endswith("ion.")
+
+    def test_a_short_but_complete_section_is_not_subject_to_the_floor(self) -> None:
+        """The floor applies to splitter tails, never to a section that is simply short."""
+        result = chunks_of('1.65 "Territory" means Japan.')
+        assert len(result) == 1
+        assert result[0].token_count < 20

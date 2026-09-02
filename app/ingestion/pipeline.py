@@ -15,6 +15,7 @@ would mean synthesizing pages, which SPEC 6.3 rejects.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -72,16 +73,32 @@ def title_from_entry(entry: ManifestEntry) -> str:
     versions of the same agreement, so titles are not unique. See CLAUDE.md.
     """
     stem = Path(entry.source_filename).stem
-    # CUAD filenames are either "Company_date_form_EX-n_id_EX-n_Type" or
-    # "COMPANY_date-EX-n-TITLE". The trailing component is the readable part.
-    for separator in ("_EX-", "-EX-"):
-        if separator in stem:
-            tail = stem.rsplit(separator, 1)[-1]
-            parts = tail.split("_", 1)
-            if len(parts) == 2 and parts[1]:
-                return parts[1].strip()
-            if "-" in tail:
-                return tail.split("-", 1)[-1].strip()
+    # CUAD uses two incompatible separators around the final exhibit locator:
+    #
+    #   COMPANY_date-EX-10.5-DISTRIBUTOR AGREEMENT_New
+    #   Company_date_form_EX-10.1_id_EX-10.1_Development Agreement
+    #
+    # They must be parsed separately. Applying the underscore rule to the first form
+    # mistakes its version suffix for the title (doc-027 became literally "New").
+    title: str | None = None
+    if "-EX-" in stem:
+        tail = stem.rsplit("-EX-", 1)[-1]
+        _, separator, candidate = tail.partition("-")
+        if separator and candidate:
+            title = candidate
+    elif "_EX" in stem:
+        # `_EX`, rather than only `_EX-`, also covers CUAD locators such as
+        # `EX1A-6 MAT CTRCT` (doc-020).
+        tail = stem.rsplit("_EX", 1)[-1]
+        _, separator, candidate = tail.partition("_")
+        if separator and candidate:
+            title = candidate
+
+    if title is not None:
+        # `_New` is a source-side version marker, not part of the agreement title.
+        cleaned = re.sub(r"_new$", "", title.strip(), flags=re.IGNORECASE).strip()
+        if cleaned:
+            return cleaned
     return stem.strip()
 
 

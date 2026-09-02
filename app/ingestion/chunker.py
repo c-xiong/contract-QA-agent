@@ -58,6 +58,14 @@ _SUBSECTION = re.compile(r"^\s*\(([a-z]{1,2}|[ivxlcdm]{1,5})\)\s+(\S.*)$")
 #   title-case with no punctuation.
 _MAX_HEADING_CHARS = 90
 
+
+def _strip_decimal_article(parts: list[str]) -> list[str]:
+    """Drop trailing zero components: "9.0" is Article 9. Never empties the list."""
+    while len(parts) > 1 and parts[-1] == "0":
+        parts = parts[:-1]
+    return parts
+
+
 # --- Cross-reference extraction ------------------------------------------------
 #
 # Populates Chunk.outbound_references, which SPEC 9.5 consumes in Sprint 2 to pull
@@ -77,10 +85,19 @@ class _Block:
     section_path: list[str]
     section_title: str | None
     lines: list[str] = field(default_factory=list)
+    # True when a detected heading opened this block, as opposed to the block being
+    # the continuation carried in from the previous page. Only a heading-opened block
+    # can be a *bare* heading; a carried block's single line is body text.
+    from_heading: bool = False
 
     @property
     def text(self) -> str:
         return "\n".join(self.lines).strip()
+
+    @property
+    def is_bare_heading(self) -> bool:
+        """The block holds its heading line and no body."""
+        return self.from_heading and sum(1 for line in self.lines if line.strip()) == 1
 
 
 def _roman_to_int(value: str) -> int | None:
@@ -96,7 +113,9 @@ def _roman_to_int(value: str) -> int | None:
     return total
 
 
-def _match_heading(line: str, current_path: list[str]) -> tuple[list[str], str | None] | None:
+def _match_heading(
+    line: str, current_path: list[str], *, logical_length: int | None = None
+) -> tuple[list[str], str | None] | None:
     """Return (section_path, title) if `line` starts a new section, else None.
 
     DECISION: a numbered clause written as a long paragraph is still a section
@@ -115,11 +134,30 @@ def _match_heading(line: str, current_path: list[str]) -> tuple[list[str], str |
       number opening a long line is almost always a clause.
       Rejected: raising _MAX_HEADING_CHARS. It admits the prose cases too, and there
       is no length that separates them -- the distinguishing feature is the dot.
+
+    DECISION: "short" is a property of the logical paragraph, not of the physical line.
+      `logical_length` is the length of the whole paragraph this line opens, computed by
+      `_logical_lengths` and supplied by `_page_blocks`; callers that pass nothing fall
+      back to the line's own length, which is correct only for unwrapped text.
+      This exists because the corpus is hard-wrapped: the median physical line in the
+      processed CUAD text is 76 characters, comfortably under _MAX_HEADING_CHARS. So the
+      first line of *every* long subsection looked short --
+      "(a)      FOR ANY BREACH OR DEFAULT BY CHANGEPOINT OF ANY OF THE PROVISIONS OF"
+      is 77 characters, while the subsection it opens is 1137 -- and the guard below
+      that keeps a carve-out attached to the cap it qualifies never fired on real data.
+      Measured before the fix: 79 chunks were a section heading severed from its own
+      body, and section titles like "OTHER THAN THE WARRANTIES EXPRESSLY SET FORTH IN
+      SECTION 6.1(A) AND" were wrap-truncated prose stored in a label field.
+      Rejected: unwrapping the page text before chunking. It fixes the measurement the
+      same way, but rewrites every chunk's `text`, so quoted spans no longer match the
+      source byte-for-byte and every citation in a stored trace has to be re-verified.
+      Measuring differently changes which boundaries are found; it does not change what
+      the chunk says.
     """
     stripped = line.strip()
     if not stripped:
         return None
-    is_short = len(stripped) <= _MAX_HEADING_CHARS
+    is_short = (len(stripped) if logical_length is None else logical_length) <= _MAX_HEADING_CHARS
 
     if is_short and (match := _ARTICLE.match(stripped)):
         raw, title = match.group(1), (match.group(2) or "").strip()
@@ -145,7 +183,23 @@ def _match_heading(line: str, current_path: list[str]) -> tuple[list[str], str |
         #   document structure, but a single missed ARTICLE line silently misfiles
         #   every subsequent section under the wrong parent, and the failure is
         #   invisible until a cross-reference resolves to the wrong place.
-        parts = dotted.split(".")
+        # DECISION: a trailing ".0" is an article heading written in decimal form, so
+        # it is stripped: "9.0" is Article 9, not subsection 0 of Article 9.
+        #   Three documents number their articles this way -- "1.0 DEFINITIONS.",
+        #   "6.0 Force Majeure.", "2.0 IBM Services Responsibilities" -- and every one
+        #   of the 101 chunks involved is an article heading, never a numbered clause
+        #   beneath one. Without the strip, "9.0 Limitation of Liability" gets the path
+        #   ["9", "9.0"] while the clause below it gets ["9", "9.1"], the two are
+        #   siblings rather than parent and child, and `_fold_bare_headings` cannot
+        #   reunite them -- so the heading survives as a 7-token chunk that still
+        #   outranks real text on a liability question. Stripping makes the heading
+        #   ["9"], the clause its descendant, and the existing fold does the rest.
+        #   `extract_references` strips the same way, so "Section 9.0" still resolves.
+        #   Rejected: teaching the fold to merge siblings. `1.64 "Term" means ten
+        #   years.` and `1.65 "Territory" means Japan.` are structurally identical to
+        #   the 9.0/9.1 pair -- same shape, same token count -- and are two complete
+        #   definitions that must stay apart. The numbering is the only real signal.
+        parts = _strip_decimal_article(dotted.split("."))
         path = [".".join(parts[: i + 1]) for i in range(len(parts))]
         return path, title or None
 
@@ -165,8 +219,94 @@ def _match_heading(line: str, current_path: list[str]) -> tuple[list[str], str |
     return None
 
 
+def _opens_paragraph(line: str) -> bool:
+    """True if `line` begins a new logical paragraph rather than continuing one.
+
+    DECISION: continuation is decided on the physical line, by the same heading
+    regexes, and deliberately not recursively on logical length.
+      A continuation run has to terminate at *something*, and "a line that would read
+      as a heading on its own" is the only local, non-circular test available. A false
+      positive here (a wrapped line opening "10 days after notice...") only truncates
+      the run early, which under-measures the paragraph and degrades that one case back
+      to the pre-fix behavior -- never to something worse.
+    """
+    return _match_heading(line, []) is not None
+
+
+def _logical_lengths(lines: list[str]) -> list[int]:
+    """For each line, the length of the logical paragraph it opens.
+
+    A paragraph is the line plus every following non-blank line that does not itself
+    open one. Blank lines measure zero; they are never headings.
+    """
+    total = len(lines)
+    # continuation[i] = combined length of the continuation run starting at line i.
+    continuation = [0] * (total + 1)
+    for index in range(total - 1, -1, -1):
+        stripped = lines[index].strip()
+        if not stripped or _opens_paragraph(stripped):
+            continuation[index] = 0
+        else:
+            continuation[index] = len(stripped) + 1 + continuation[index + 1]
+    return [len(lines[i].strip()) + continuation[i + 1] for i in range(total)]
+
+
+def _is_descendant(child: list[str], parent: list[str]) -> bool:
+    return len(child) > len(parent) and child[: len(parent)] == parent
+
+
+def _fold_bare_headings(blocks: list[_Block]) -> list[_Block]:
+    """Fold a heading-only block into the descendant block that carries its body.
+
+    DECISION: a chunk is never just a section heading when the body is one block away.
+      A heading-only chunk is worse than useless in retrieval, because it is not merely
+      empty -- it is a *strong lexical match* for the topic it names. "6.2 LIMIT OF
+      LIABILITY" outranks most real text on a liability question, is selected as
+      evidence, is cited, and then passes the citation verifier, because the quoted span
+      genuinely does occur in the chunk. The gate cannot catch it: the citation is
+      valid. Only the content is absent. So the invariant belongs here, at the point
+      where the empty unit would otherwise be created.
+      The merged block takes the *descendant's* section path, not the heading's, because
+      that is where the text actually lives, and `ChunkStore.find_section` matches on
+      path containment -- so a reference to "6.2" still resolves to a chunk labeled
+      6.2(a). Taking the ancestor path would make the citation less precise for no gain.
+      Rejected: (a) dropping the heading line, which loses the section title that is the
+      strongest BM25 signal the chunk has; (b) a minimum-token filter at evidence
+      selection, which is downstream of the defect and would also discard legitimately
+      short chunks -- '1.65 "Territory" means Japan.' is 7 tokens and complete.
+      Not handled here: a heading whose body starts on the next page, and short
+      enumerated siblings ("(a) bankruptcy;"). Both need merges this function is not
+      allowed to make -- across a page boundary, and between siblings -- see
+      docs/review-questions.md.
+    """
+    folded: list[_Block] = []
+    pending: list[str] = []
+    for index, block in enumerate(blocks):
+        following = blocks[index + 1] if index + 1 < len(blocks) else None
+        if (
+            block.is_bare_heading
+            and following is not None
+            and _is_descendant(following.section_path, block.section_path)
+        ):
+            pending.extend(block.lines)
+            continue
+        if pending:
+            block.lines = [*pending, *block.lines]
+            pending = []
+        folded.append(block)
+    if pending:  # pragma: no cover - pending only accrues when a following block exists
+        folded.append(_Block(blocks[-1].page_number, blocks[-1].section_path, None, pending))
+    return folded
+
+
 def extract_references(text: str) -> list[str]:
-    """Section identifiers cited inside `text`, deduplicated, in order of appearance."""
+    """Section identifiers cited inside `text`, deduplicated, in order of appearance.
+
+    Identifiers are normalized the same way `_match_heading` builds a path -- roman
+    numerals to integers, trailing ".0" stripped -- because a reference is only useful
+    if it is spelled the way the target chunk is labeled. 19 references in the corpus
+    are of the form "Section 9.0"; without the strip they resolve to nothing.
+    """
     seen: dict[str, None] = {}
     for match in _REFERENCE.finditer(text):
         value = match.group(1)
@@ -175,8 +315,16 @@ def extract_references(text: str) -> list[str]:
             if number is None:
                 continue
             value = str(number)
-        seen.setdefault(value, None)
+        seen.setdefault(".".join(_strip_decimal_article(value.split("."))), None)
     return list(seen)
+
+
+# DECISION: 20 estimated tokens is the floor below which a *fragment* is merged back
+# into the part before it. It is not a floor on chunks: a whole section that is genuinely
+# short stays short -- '1.65 "Territory" means Japan.' is 7 tokens and complete. The floor
+# only applies to a tail the splitter itself produced, where the text before it is the
+# rest of the same sentence.
+_MIN_CHUNK_TOKENS = 20
 
 
 def _split_long_text(
@@ -230,7 +378,32 @@ def _split_long_text(
             continue
         step = max_chars - int(overlap_tokens * chars_per_token) or max_chars
         final.extend(part[i : i + max_chars] for i in range(0, len(part), step))
-    return [p for p in final if p.strip()]
+
+    # DECISION: a trailing fragment is merged back into the part before it, not emitted.
+    #   Both loops above can leave a tail of a few characters -- the unit loop when the
+    #   last sentence is short, the hard cut when the length is barely over a multiple
+    #   of the step. The corpus had 64 of them: 'ion.', 'es.', 'r.', 'List.'. They are
+    #   not wrong, they are unretrievable: an independent chunk that no query can match
+    #   and no reader can use, carrying a page number and a section path that make it
+    #   look citable. Merging is preferred to dropping because dropping loses text that
+    #   is genuinely part of the clause.
+    #   The merge is allowed to overshoot the budget by one floor's worth. That is
+    #   deliberate: the alternative is re-balancing the hard cut so every slice is the
+    #   same size, which spreads the distortion across all of them to avoid it in one.
+    #   Rejected: dropping short tails (loses text); lowering the floor to zero (the
+    #   crumbs come back).
+    min_chars = int(_MIN_CHUNK_TOKENS * chars_per_token)
+    merged: list[str] = []
+    for part in (p for p in final if p.strip()):
+        if (
+            merged
+            and len(part) < min_chars
+            and len(merged[-1]) + len(part) <= max_chars + min_chars
+        ):
+            merged[-1] = f"{merged[-1]}\n{part}"
+        else:
+            merged.append(part)
+    return merged
 
 
 def _page_blocks(
@@ -255,14 +428,18 @@ def _page_blocks(
     path, title = carried
     current = _Block(page_number=page.page_number, section_path=list(path), section_title=title)
 
-    for line in page.text.splitlines():
-        heading = _match_heading(line, path)
+    lines = page.text.splitlines()
+    for line, logical in zip(lines, _logical_lengths(lines), strict=True):
+        heading = _match_heading(line, path, logical_length=logical)
         if heading is not None:
             if current.lines:
                 blocks.append(current)
             path, title = heading
             current = _Block(
-                page_number=page.page_number, section_path=list(path), section_title=title
+                page_number=page.page_number,
+                section_path=list(path),
+                section_title=title,
+                from_heading=True,
             )
             # Keep the heading line in the block: it carries the section title, which
             # is strong lexical signal for BM25 ("Governing Law", "Limitation of
@@ -273,7 +450,7 @@ def _page_blocks(
 
     if current.lines:
         blocks.append(current)
-    return [b for b in blocks if b.text], (path, title)
+    return [b for b in _fold_bare_headings(blocks) if b.text], (path, title)
 
 
 def chunk_document(
