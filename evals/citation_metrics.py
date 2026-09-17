@@ -1,6 +1,6 @@
 """Exact aggregation semantics for citation-gate ablations.
 
-DECISION-BEARING MODULE. See docs/review-questions.md.
+DECISION-BEARING MODULE. See docs/decisions.md.
 
 DECISION: the ungated arm is scored by an independent audit of the writer's raw output,
   never by the runtime verifier's own report.

@@ -1,4 +1,4 @@
-"""Retrieval interface types. See docs/SPEC.md sections 10.1 and 10.3."""
+"""Retrieval interface types. See docs/decisions.md"""
 
 from __future__ import annotations
 

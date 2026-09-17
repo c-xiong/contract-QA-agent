@@ -1,4 +1,4 @@
-"""Evidence normalization. See docs/SPEC.md section 13.2.
+"""Evidence normalization. See docs/decisions.md
 
 Deduplicate, group by topic, preserve conflicting evidence, assign stable ids.
 """

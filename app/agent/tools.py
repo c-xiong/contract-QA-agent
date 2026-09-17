@@ -1,4 +1,4 @@
-"""Typed tool contracts. See docs/SPEC.md section 12.
+"""Typed tool contracts. See docs/decisions.md
 
 Each tool is an ordinary, testable Python function underneath its LLM-facing wrapper.
 Input validation is Pydantic, so an out-of-range top_k or a malformed locator is

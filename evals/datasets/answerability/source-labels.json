@@ -1,0 +1,197 @@
+{
+  "dataset_version": "provisional-generated-answerability-v1",
+  "selection": "first sorted labelled hypothesis per document and class",
+  "tasks_sha256": "72f9085feec75886d943ab14b60e9c2130f5bd7e522b69789d90a8d3137e30e7",
+  "sources": {
+    "answerability-doc-041-notmentioned": {
+      "source_document_id": 134,
+      "hypothesis_key": "nda-10",
+      "hypothesis": "Receiving Party shall not disclose the fact that Agreement was agreed or negotiated.",
+      "label": "NotMentioned",
+      "span_indices": [],
+      "document_sha256": "12e0522f592a38c1eedd837d0e633fc5068b196bc3a013ae233c3e802242327d"
+    },
+    "answerability-doc-041-entailment": {
+      "source_document_id": 134,
+      "hypothesis_key": "nda-15",
+      "hypothesis": "Agreement shall not grant Receiving Party any right to Confidential Information.",
+      "label": "Entailment",
+      "span_indices": [
+        22,
+        23,
+        24
+      ],
+      "document_sha256": "12e0522f592a38c1eedd837d0e633fc5068b196bc3a013ae233c3e802242327d"
+    },
+    "answerability-doc-042-notmentioned": {
+      "source_document_id": 222,
+      "hypothesis_key": "nda-18",
+      "hypothesis": "Receiving Party shall not solicit some of Disclosing Party's representatives.",
+      "label": "NotMentioned",
+      "span_indices": [],
+      "document_sha256": "0382a4df9c10fef939af785c06107008122d6917384c2ad1b37e01b9b577cdd9"
+    },
+    "answerability-doc-042-entailment": {
+      "source_document_id": 222,
+      "hypothesis_key": "nda-10",
+      "hypothesis": "Receiving Party shall not disclose the fact that Agreement was agreed or negotiated.",
+      "label": "Entailment",
+      "span_indices": [
+        9,
+        10,
+        14
+      ],
+      "document_sha256": "0382a4df9c10fef939af785c06107008122d6917384c2ad1b37e01b9b577cdd9"
+    },
+    "answerability-doc-043-notmentioned": {
+      "source_document_id": 288,
+      "hypothesis_key": "nda-10",
+      "hypothesis": "Receiving Party shall not disclose the fact that Agreement was agreed or negotiated.",
+      "label": "NotMentioned",
+      "span_indices": [],
+      "document_sha256": "fe7779c49e441f0e675c6293468350cc99c13bf739901b06622c2377f69cc3aa"
+    },
+    "answerability-doc-043-entailment": {
+      "source_document_id": 288,
+      "hypothesis_key": "nda-1",
+      "hypothesis": "All Confidential Information shall be expressly identified by the Disclosing Party.",
+      "label": "Entailment",
+      "span_indices": [
+        41
+      ],
+      "document_sha256": "fe7779c49e441f0e675c6293468350cc99c13bf739901b06622c2377f69cc3aa"
+    },
+    "answerability-doc-044-notmentioned": {
+      "source_document_id": 119,
+      "hypothesis_key": "nda-10",
+      "hypothesis": "Receiving Party shall not disclose the fact that Agreement was agreed or negotiated.",
+      "label": "NotMentioned",
+      "span_indices": [],
+      "document_sha256": "b9b7a580c0b5acfddc732d5cf745f4f4eae81eaa74f2dc5f784cddd68cfcdddf"
+    },
+    "answerability-doc-044-entailment": {
+      "source_document_id": 119,
+      "hypothesis_key": "nda-12",
+      "hypothesis": "Receiving Party may independently develop information similar to Confidential Information.",
+      "label": "Entailment",
+      "span_indices": [
+        9
+      ],
+      "document_sha256": "b9b7a580c0b5acfddc732d5cf745f4f4eae81eaa74f2dc5f784cddd68cfcdddf"
+    },
+    "answerability-doc-045-notmentioned": {
+      "source_document_id": 239,
+      "hypothesis_key": "nda-1",
+      "hypothesis": "All Confidential Information shall be expressly identified by the Disclosing Party.",
+      "label": "NotMentioned",
+      "span_indices": [],
+      "document_sha256": "8588161a38c3aab6aa3de4e8bc3272cfae9d4853b6e43aa3d520b7d1e401944a"
+    },
+    "answerability-doc-045-entailment": {
+      "source_document_id": 239,
+      "hypothesis_key": "nda-16",
+      "hypothesis": "Receiving Party shall destroy or return some Confidential Information upon the termination of Agreement.",
+      "label": "Entailment",
+      "span_indices": [
+        13,
+        14,
+        15
+      ],
+      "document_sha256": "8588161a38c3aab6aa3de4e8bc3272cfae9d4853b6e43aa3d520b7d1e401944a"
+    },
+    "answerability-doc-046-notmentioned": {
+      "source_document_id": 232,
+      "hypothesis_key": "nda-10",
+      "hypothesis": "Receiving Party shall not disclose the fact that Agreement was agreed or negotiated.",
+      "label": "NotMentioned",
+      "span_indices": [],
+      "document_sha256": "15387425d2a4d9be3d0f173d43cb5327156af269d799fdcbcd8bd68630ef3eb4"
+    },
+    "answerability-doc-046-entailment": {
+      "source_document_id": 232,
+      "hypothesis_key": "nda-12",
+      "hypothesis": "Receiving Party may independently develop information similar to Confidential Information.",
+      "label": "Entailment",
+      "span_indices": [
+        26,
+        29
+      ],
+      "document_sha256": "15387425d2a4d9be3d0f173d43cb5327156af269d799fdcbcd8bd68630ef3eb4"
+    },
+    "answerability-doc-047-notmentioned": {
+      "source_document_id": 358,
+      "hypothesis_key": "nda-10",
+      "hypothesis": "Receiving Party shall not disclose the fact that Agreement was agreed or negotiated.",
+      "label": "NotMentioned",
+      "span_indices": [],
+      "document_sha256": "ec2a08afd1a1e7beaac1148b147b226edd673c05ce45fdab04ff537e1bab9224"
+    },
+    "answerability-doc-047-entailment": {
+      "source_document_id": 358,
+      "hypothesis_key": "nda-12",
+      "hypothesis": "Receiving Party may independently develop information similar to Confidential Information.",
+      "label": "Entailment",
+      "span_indices": [
+        26,
+        30
+      ],
+      "document_sha256": "ec2a08afd1a1e7beaac1148b147b226edd673c05ce45fdab04ff537e1bab9224"
+    },
+    "answerability-doc-048-notmentioned": {
+      "source_document_id": 338,
+      "hypothesis_key": "nda-1",
+      "hypothesis": "All Confidential Information shall be expressly identified by the Disclosing Party.",
+      "label": "NotMentioned",
+      "span_indices": [],
+      "document_sha256": "b11c0ddbd214563472fe2613876565144b7b921a1a4b58120bef4ee74ec15417"
+    },
+    "answerability-doc-048-entailment": {
+      "source_document_id": 338,
+      "hypothesis_key": "nda-15",
+      "hypothesis": "Agreement shall not grant Receiving Party any right to Confidential Information.",
+      "label": "Entailment",
+      "span_indices": [
+        24,
+        39
+      ],
+      "document_sha256": "b11c0ddbd214563472fe2613876565144b7b921a1a4b58120bef4ee74ec15417"
+    },
+    "answerability-doc-049-notmentioned": {
+      "source_document_id": 341,
+      "hypothesis_key": "nda-11",
+      "hypothesis": "Receiving Party shall not reverse engineer any objects which embody Disclosing Party's Confidential Information.",
+      "label": "NotMentioned",
+      "span_indices": [],
+      "document_sha256": "15ef7e5883df892adb163e371688148c8e3456ae2c2e03ce07dda9ca10fcdebc"
+    },
+    "answerability-doc-049-entailment": {
+      "source_document_id": 341,
+      "hypothesis_key": "nda-10",
+      "hypothesis": "Receiving Party shall not disclose the fact that Agreement was agreed or negotiated.",
+      "label": "Entailment",
+      "span_indices": [
+        17
+      ],
+      "document_sha256": "15ef7e5883df892adb163e371688148c8e3456ae2c2e03ce07dda9ca10fcdebc"
+    },
+    "answerability-doc-050-notmentioned": {
+      "source_document_id": 133,
+      "hypothesis_key": "nda-10",
+      "hypothesis": "Receiving Party shall not disclose the fact that Agreement was agreed or negotiated.",
+      "label": "NotMentioned",
+      "span_indices": [],
+      "document_sha256": "59d697feb007ed957899126dbb1ae16ff58548a47f5c07cb8ca0add194fd8a05"
+    },
+    "answerability-doc-050-entailment": {
+      "source_document_id": 133,
+      "hypothesis_key": "nda-12",
+      "hypothesis": "Receiving Party may independently develop information similar to Confidential Information.",
+      "label": "Entailment",
+      "span_indices": [
+        32,
+        35
+      ],
+      "document_sha256": "59d697feb007ed957899126dbb1ae16ff58548a47f5c07cb8ca0add194fd8a05"
+    }
+  }
+}

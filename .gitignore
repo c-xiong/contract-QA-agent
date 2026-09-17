@@ -33,16 +33,8 @@ design/trace-inspector.html
 design/_*.py
 design/_*.html
 
-# Private working documents. These are the author's own planning and study material,
-# not part of the published project: the full specification, the decisions log, the
-# review-question list, and the eval-methodology worksheet.
-docs/SPEC.md
-docs/decisions.md
-docs/review-questions.md
-docs/eval-methodology.md
-docs/authoring-eval-tasks.md
+# Local agent instructions. Maintained project documentation in docs/ is published.
 .claude/
-# Cites docs/SPEC.md by section throughout; SPEC.md is private, so this would dangle.
 CLAUDE.md
 
 # OS / editor

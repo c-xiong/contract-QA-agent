@@ -32,6 +32,7 @@ from app.ingestion.contractnli import ContractNliFormatError, load_corpus
 from app.ingestion.cuad import (
     CATEGORY_COLUMNS,
     CuadFormatError,
+    CuadRow,
     index_contract_pdfs,
     load_master_clauses,
 )
@@ -90,7 +91,7 @@ def build(out_dir: Path, seed: int) -> tuple[list[dict[str, object]], dict[str, 
     rows = {r.filename: r for r in load_master_clauses(cuad_root / "master_clauses.csv", pdf_index)}
 
     # doc_id -> CuadRow, for CUAD entries only
-    cuad_docs: dict[str, object] = {}
+    cuad_docs: dict[str, CuadRow] = {}
     for entry in manifest.active.values():
         if entry.corpus_source == "cuad" and entry.source_filename in rows:
             cuad_docs[entry.document_id] = rows[entry.source_filename]
@@ -202,7 +203,7 @@ def build(out_dir: Path, seed: int) -> tuple[list[dict[str, object]], dict[str, 
         for doc_id, row in sorted(cuad_docs.items()):
             if counts["query_refinement"] >= 5:
                 break
-            spans = row.clause_spans.get(category)
+            spans = row.clause_spans.get(category, [])
             if not spans:
                 continue
             page = page_of(doc_id, spans[0])

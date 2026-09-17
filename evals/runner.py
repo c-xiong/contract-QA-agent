@@ -17,6 +17,7 @@ from app.config import Settings
 from evals.graders.answer import grade_answer
 from evals.graders.claim_support import claim_support
 from evals.graders.retrieval import GradeResult, grade_retrieval
+from evals.provenance import capture_provenance
 from evals.schema import EvalTask
 
 
@@ -69,6 +70,7 @@ class SuiteReport:
     started_at: str
     runs: list[TaskRun] = field(default_factory=list)
     grader_versions: dict[str, str] = field(default_factory=dict)
+    provenance: dict[str, object] = field(default_factory=dict)
 
     @property
     def task_count(self) -> int:
@@ -160,6 +162,7 @@ class SuiteReport:
 
     def to_json(self) -> dict[str, object]:
         payload: dict[str, object] = {
+            **self.provenance,
             "suite": self.suite,
             "dataset_version": self.dataset_version,
             "retriever": self.retriever,
@@ -210,6 +213,16 @@ async def run_suite(
         top_k=settings.retrieval_top_k,
         started_at=datetime.now(UTC).isoformat(timespec="seconds"),
     )
+    report.provenance = capture_provenance(
+        agent.store,
+        dataset_name=suite,
+        dataset_version=report.dataset_version,
+        retrieval_arm=agent.retriever.name,
+        top_k=settings.retrieval_top_k,
+        model_id=agent.client.model_id,
+        started_at=report.started_at,
+    )
+    report.provenance["answerability_gate"] = agent.answerability_gate
 
     for task in tasks:
         result = await agent.research(task.question, allowed_document_ids=task.allowed_document_ids)

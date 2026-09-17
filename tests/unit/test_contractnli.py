@@ -148,6 +148,7 @@ class TestValidation:
             load_split(path)
 
 
+@pytest.mark.corpus
 class TestRealRelease:
     """Runs only when the corpus has been downloaded."""
 

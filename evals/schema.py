@@ -1,4 +1,4 @@
-"""Eval task schema. See docs/SPEC.md section 15.2.
+"""Eval task schema. See docs/eval-methodology.md
 
 This module defines the *shape* of a task. It contains no task content, and it must
 not: a dataset authored by the model family under evaluation is circular and voids

@@ -1,4 +1,4 @@
-"""Evidence and citation types. See docs/SPEC.md sections 13.1 and 13.3."""
+"""Evidence and citation types. See docs/decisions.md"""
 
 from __future__ import annotations
 

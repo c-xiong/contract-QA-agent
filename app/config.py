@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     )
     model_id: str = Field(
         default="claude-sonnet-5",
-        description="Single model provider by design. See docs/SPEC.md section 7.3.",
+        description="Single model provider by design. See docs/decisions.md",
     )
     model_timeout_s: float = Field(
         default=60.0,
@@ -58,6 +58,11 @@ class Settings(BaseSettings):
             "Gate for anything that spends money. False routes model calls to a "
             "deterministic stub. See .claude/rules/evals.md."
         ),
+    )
+    answerability_gate: bool = Field(
+        default=False,
+        description="Opt-in pre-write evidence gate. Disabled after the closeout ablation "
+        "showed increased over-abstention; see results/experiment-d-answerability.json.",
     )
 
     # --- Retrieval --------------------------------------------------------

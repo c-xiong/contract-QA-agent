@@ -1,4 +1,4 @@
-"""Document-level schema. See docs/SPEC.md section 9.1."""
+"""Document-level schema. See docs/decisions.md"""
 
 from __future__ import annotations
 

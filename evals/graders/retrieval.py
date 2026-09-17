@@ -1,4 +1,4 @@
-"""Retrieval graders. See docs/SPEC.md section 15.4.
+"""Retrieval graders. See docs/eval-methodology.md
 
 AUTHOR-OWNED (CLAUDE.md rule 2, .claude/rules/evals.md). Every `# DECISION:` is a
 choice to defend, and the thresholds are yours to set.

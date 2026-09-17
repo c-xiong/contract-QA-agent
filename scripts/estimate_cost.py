@@ -37,10 +37,10 @@ PROBE_QUERIES = [
     "insurance coverage requirements",
 ]
 
-# Published rates, docs/SPEC.md model choice. Verified 2026-08-25.
+# Standard API rates verified 2026-09-16; the Sonnet 5 scheduled increase was cancelled.
+# https://platform.claude.com/docs/en/about-claude/pricing
 PRICING = {
-    "claude-sonnet-5": {"input": 3.00, "output": 15.00},
-    "claude-sonnet-5-intro": {"input": 2.00, "output": 10.00},
+    "claude-sonnet-5": {"input": 2.00, "output": 10.00},
     "claude-opus-5": {"input": 5.00, "output": 25.00},
     "claude-haiku-4-5": {"input": 1.00, "output": 5.00},
 }
@@ -100,9 +100,11 @@ async def main() -> int:
         print(f"  {name:26s} {run_cost:10.2f} {run_cost * args.arms:10.2f}")
 
     configured = settings.model_id
-    rates = PRICING.get(configured)
-    if rates:
-        run_cost = run_in / 1e6 * rates["input"] + run_out / 1e6 * rates["output"]
+    configured_rates = PRICING.get(configured)
+    if configured_rates:
+        run_cost = (
+            run_in / 1e6 * configured_rates["input"] + run_out / 1e6 * configured_rates["output"]
+        )
         print(f"\nConfigured model is {configured}.")
         print(f"  A full {args.arms}-arm sweep costs about ${run_cost * args.arms:.2f}.")
         print(f"  Ten such sweeps over the project: about ${run_cost * args.arms * 10:.2f}.")

@@ -1,6 +1,6 @@
 """Model-based claim-support grader. SPEC 13.4 layer 2, SPEC 15.5.
 
-DECISION-BEARING MODULE. See docs/review-questions.md.
+DECISION-BEARING MODULE. See docs/decisions.md.
 
 Layer 1 (`citation_verifier`) proves a citation points somewhere real that was actually
 retrieved. It cannot prove the cited text *supports* the claim attached to it, because

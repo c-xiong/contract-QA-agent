@@ -25,7 +25,7 @@ from app.ingestion.store import ChunkStore
 def app(store: ChunkStore, settings: Settings) -> FastAPI:
     # bm25 so the fixture store is not measured against the on-disk FAISS index,
     # which is built for the real corpus.
-    application = create_app(retrieval_arm="bm25")
+    application = create_app(retrieval_arm="bm25", settings=settings)
     application.state.agent = ResearchAgent(store, settings)
     return application
 

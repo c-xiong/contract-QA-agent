@@ -277,7 +277,7 @@ def _fold_bare_headings(blocks: list[_Block]) -> list[_Block]:
       Not handled here: a heading whose body starts on the next page, and short
       enumerated siblings ("(a) bankruptcy;"). Both need merges this function is not
       allowed to make -- across a page boundary, and between siblings -- see
-      docs/review-questions.md.
+      docs/decisions.md.
     """
     folded: list[_Block] = []
     pending: list[str] = []

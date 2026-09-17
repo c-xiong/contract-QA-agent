@@ -1,6 +1,6 @@
-"""Answer-level graders. See docs/SPEC.md sections 15.4 and 15.5.
+"""Answer-level graders. See docs/eval-methodology.md
 
-DECISION-BEARING MODULE. See docs/review-questions.md.
+DECISION-BEARING MODULE. See docs/decisions.md.
 
 Deterministic graders first: a metric that can be computed exactly is never delegated to
 a model (.claude/rules/evals.md). Everything here except claim support is exact.

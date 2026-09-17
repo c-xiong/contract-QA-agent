@@ -1,4 +1,4 @@
-"""FastAPI application. See docs/SPEC.md section 14.
+"""FastAPI application. See docs/decisions.md
 
 Thin by design. The API validates input, resolves an agent, and renders the result;
 every decision that matters lives in the layers beneath it.
@@ -72,7 +72,8 @@ def build_agent(settings: Settings, arm: str = "bm25") -> tuple[ResearchAgent, s
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    settings = get_settings()
+    settings: Settings = app.state.settings or get_settings()
+    app.state.settings = settings
 
     # An agent injected before startup wins. Tests assemble a small synthetic corpus and
     # attach it directly; without this the lifespan would load the real 56-document
@@ -121,7 +122,7 @@ def agent_for_arm(app: FastAPI, arm: str) -> ResearchAgent:
 
     cache: dict[str, ResearchAgent] = app.state.arm_cache
     if arm not in cache:
-        settings = get_settings()
+        settings: Settings = app.state.settings
         try:
             retriever = build_retriever(arm, base.store, settings.index_dir)
         except (UnknownArmError, RuntimeError) as exc:
@@ -134,7 +135,7 @@ def agent_for_arm(app: FastAPI, arm: str) -> ResearchAgent:
     return cache[arm]
 
 
-def create_app(retrieval_arm: str = "rrf_hybrid") -> FastAPI:
+def create_app(retrieval_arm: str = "rrf_hybrid", *, settings: Settings | None = None) -> FastAPI:
     app = FastAPI(
         title="Eval-Driven Contract Research Agent",
         description=(
@@ -145,6 +146,7 @@ def create_app(retrieval_arm: str = "rrf_hybrid") -> FastAPI:
         lifespan=lifespan,
     )
     app.state.retrieval_arm = retrieval_arm
+    app.state.settings = settings
     app.state.arm_cache = {}
     app.state.degraded = None
 
@@ -168,7 +170,7 @@ def create_app(retrieval_arm: str = "rrf_hybrid") -> FastAPI:
     @app.get("/health", response_model=HealthResponse)
     async def health(request: Request) -> HealthResponse:
         agent: ResearchAgent | None = getattr(request.app.state, "agent", None)
-        settings = get_settings()
+        settings: Settings = request.app.state.settings
         degraded = getattr(request.app.state, "degraded", None)
         if agent is None:
             return HealthResponse(

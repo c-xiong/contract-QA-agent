@@ -1,11 +1,12 @@
 """Experiment C: citation gate ablation. See SPEC 16.3.
 
-What does the deterministic citation gate actually buy? Two conditions:
+What does the deterministic citation gate actually buy? Three conditions:
 
   gate_off  the writer's answer is returned as written. Citations are parsed for
             reporting but never checked, and nothing is ever repaired or abstained
             on citation grounds. This is what a system without a gate does.
-  gate_on   the full layer-1 gate: document exists, page exists, section exists,
+  verify_only  verify and abstain on failure, with no repair.
+  verify_repair  the full layer-1 gate: document exists, page exists, section exists,
             document is within the allowlist, and the citation points at evidence
             that was actually retrieved. One repair attempt, then abstention.
 
@@ -21,23 +22,31 @@ import argparse
 import asyncio
 import sys
 from collections import Counter
+from dataclasses import replace
 from pathlib import Path
-
-from _harness import ConditionResult, print_report, record, write_artifact
+from time import perf_counter
 
 from app.agent.graph import build_graph
-from app.agent.llm import ModelResponse, StubClient
+from app.agent.llm import ModelClient, ModelResponse, StubClient
 from app.agent.runner import ResearchAgent
+from app.agent.state import Budget
 from app.config import get_settings
 from app.evidence.citation_parser import extract_citations
 from app.evidence.citation_verifier import CitationVerifier, VerificationResult
-from app.evidence.claim_support import extract_cited_claims
 from app.ingestion.store import ChunkStore, StoreError
 from app.retrieval.factory import build_retriever
 from app.schemas.evidence import Evidence
 from app.schemas.retrieval import RetrievedChunk
 from evals.citation_metrics import CitationAblationObservation, summarize_citation_ablation
 from evals.loader import DatasetError, load_suite
+from evals.provenance import capture_provenance
+from experiments._harness import (
+    ConditionResult,
+    limited_tasks,
+    paired_summary,
+    record,
+    write_conditions_artifact,
+)
 
 
 class FaultInjectingClient(StubClient):
@@ -110,205 +119,198 @@ class UngatedVerifier(CitationVerifier):
         return VerificationResult(citations=citations, errors=[], uncited=False)
 
 
+class RecordingWriter(StubClient):
+    """Observe raw drafts without changing the delegated model's responses."""
+
+    def __init__(self, delegate: ModelClient, drafts: list[str]) -> None:
+        super().__init__()
+        self.delegate = delegate
+        self.drafts = drafts
+        self.model_id = delegate.model_id
+
+    def with_evidence(self, evidence: list[Evidence]) -> RecordingWriter:
+        active = (
+            self.delegate.with_evidence(evidence)
+            if isinstance(self.delegate, StubClient)
+            else self.delegate
+        )
+        return RecordingWriter(active, self.drafts)
+
+    async def complete(self, system: str, user: str) -> ModelResponse:
+        response = await self.delegate.complete(system, user)
+        self.drafts.append(response.text)
+        return response
+
+
 async def main_async(args: argparse.Namespace) -> int:
     settings = get_settings()
     try:
-        tasks = load_suite(args.suite)
+        tasks = limited_tasks(load_suite(args.suite), args.limit)
         store = ChunkStore.load(settings.processed_dir)
-    except (DatasetError, StoreError) as exc:
+    except (DatasetError, StoreError, ValueError) as exc:
         print(f"FAILED: {exc}", file=sys.stderr)
         return 1
-
-    retriever = build_retriever(args.arm, store, settings.index_dir)
-    generated = tasks[0].dataset_version.startswith("provisional-generated")
-
-    # DECISION: fault injection is OFF by default and is only meaningful against the stub.
-    #   The injecting client subclasses StubClient, so switching it on replaces the real
-    #   model entirely. An earlier version installed it unconditionally, which meant a
-    #   CRA_LIVE_MODEL=1 run silently measured the injection rate instead of the model --
-    #   the number looked like a live measurement and was not one.
-    #   With a live model, no injection: the rate reported is then what the model
-    #   actually does, which is the number worth having.
-    inject = args.fault_every > 0
-    if inject and settings.live_model:
-        print(
-            "REFUSING: --fault-every replaces the live model with a stub, so the result "
-            "would not be a live measurement. Drop the flag, or unset CRA_LIVE_MODEL.",
-            file=sys.stderr,
-        )
+    if args.fault_every < 0 or (args.fault_every and settings.live_model):
+        print("REFUSING: fault injection must be non-negative and is stub-only.", file=sys.stderr)
         return 1
-    if not inject and not settings.live_model:
-        print(
-            "NOTE: against the stub with no injection the writer always cites correctly, "
-            "so the gate has nothing to catch. Pass --fault-every N to exercise it.",
-            file=sys.stderr,
-        )
-
-    gated = ResearchAgent(store, settings, retriever=retriever)
-    ungated = ResearchAgent(store, settings, retriever=retriever)
-    if inject:
-        gated.client = FaultInjectingClient(every=args.fault_every)
-        ungated.client = FaultInjectingClient(every=args.fault_every)
-        gated.graph = build_graph(gated.retriever, gated.verifier, gated.client, store)
-    ungated.verifier = UngatedVerifier(store)
-    ungated.graph = build_graph(ungated.retriever, ungated.verifier, ungated.client, store)
-
-    # The honest gate is the real verifier, run over the ungated condition's output as a
-    # measurement instrument. It never influences that condition's behaviour; it only
-    # counts what would have reached a reader.
+    retriever = build_retriever(args.arm, store, settings.index_dir)
+    base = Budget(max_chunks_per_query=settings.retrieval_top_k)
+    budgets = {
+        "ungated": replace(base, max_repair_attempts=0),
+        "verify_only": replace(base, max_repair_attempts=0),
+        "verify_repair": base,
+    }
+    agents = {
+        name: ResearchAgent(store, settings, retriever=retriever, answerability_gate=False)
+        for name in budgets
+    }
+    model_id = agents["ungated"].client.model_id
+    provenance = capture_provenance(
+        store,
+        dataset_name=args.suite,
+        dataset_version=tasks[0].dataset_version,
+        retrieval_arm=retriever.name,
+        top_k=settings.retrieval_top_k,
+        model_id=model_id,
+    )
+    print(f"Experiment C: 3 arms x {len(tasks)} tasks, 1 trial; model={model_id}")
+    print(f"Projected research calls: {3 * len(tasks)}; writer calls <= {4 * len(tasks)}")
+    print(f"Fault injection: {args.fault_every or 'off'}; answerability gate: off")
+    conditions = {name: ConditionResult(name=name) for name in budgets}
     audit = CitationVerifier(store)
+    final_results = {}
+    raw_answers = {}
+    raw_audits = {}
+    final_audits = {}
+    raw_details = {}
 
-    print("=" * 78)
-    print("EXPERIMENT C -- CITATION GATE ABLATION")
-    print("=" * 78)
-    print(f"corpus    : {len(store.documents)} documents, {len(store)} chunks")
-    print(f"retriever : {retriever.name}")
-    print(f"model     : {gated.client.model_id}")
-    print(f"suite     : {args.suite} ({tasks[0].dataset_version}), n={len(tasks)}")
-    if inject:
-        print(f"fault     : injected, 1 in {args.fault_every} answers")
-        print()
-        print("!! FAULT INJECTION. Every N-th answer is deliberately miscited, to ask the")
-        print("!! conditional question: WHEN the writer errs, does the gate catch it? The")
-        print("!! rate is a TEST PARAMETER and says nothing about how often a real model")
-        print("!! miscites.")
-    else:
-        print("fault     : none -- measuring what the model actually does")
-    print()
-
-    baseline = ConditionResult(name="gate_off")
-    variant = ConditionResult(name="gate_on")
-
-    invalid_by_code: Counter[str] = Counter()
-    affected_tasks: list[str] = []
-    ungated_audits: dict[str, VerificationResult] = {}
-    gated_audits: dict[str, VerificationResult] = {}
-    gated_answers: dict[str, str] = {}
-    gated_delivered: dict[str, bool] = {}
-    repair_triggered: dict[str, bool] = {}
-
-    for label, agent, condition in (("gate_off", ungated, baseline), ("gate_on", gated, variant)):
-        print(f"running {label}...", flush=True)
-        for task in tasks:
+    async def run_condition(name: str, agent: ResearchAgent) -> None:
+        print(f"running {name}...", flush=True)
+        for task_index, task in enumerate(tasks):
+            # DECISION: reset injection by task, so a repair call cannot shift the
+            # fault schedule for every subsequent question in just one arm.
+            delegate = agent.client
+            if args.fault_every:
+                delegate = FaultInjectingClient(every=args.fault_every, counter=[task_index])
+            drafts: list[str] = []
+            writer = RecordingWriter(delegate, drafts)
+            verifier = UngatedVerifier(store) if name == "ungated" else agent.verifier
+            agent.graph = build_graph(retriever, verifier, writer, store, answerability_gate=False)
+            start = perf_counter()
             result = await agent.research(
-                task.question, allowed_document_ids=task.allowed_document_ids
+                task.question, allowed_document_ids=task.allowed_document_ids, budget=budgets[name]
             )
+            elapsed = perf_counter() - start
             record(
-                condition,
+                conditions[name],
                 task,
                 result,
                 settings.retrieval_top_k,
-                excluded_metrics=(
-                    frozenset({"post_gate_citation_validity"})
-                    if label == "gate_off"
-                    else frozenset()
-                ),
+                excluded_metrics=frozenset({"post_gate_citation_validity"})
+                if name == "ungated"
+                else frozenset(),
+                elapsed_seconds=elapsed,
             )
+            key = (name, task.task_id)
+            final_results[key] = result
+            raw = drafts[0] if drafts else ""
+            raw_answers[key] = raw
+            raw_audits[key] = audit.verify(
+                raw, result.retrieved, allowed_document_ids=task.allowed_document_ids
+            )
+            final_audits[key] = audit.verify(
+                result.answer, result.retrieved, allowed_document_ids=task.allowed_document_ids
+            )
+            raw_details[f"{name}/{task.task_id}"] = {
+                "raw_answer": raw,
+                "draft_count": len(drafts),
+                "raw_failure_codes": [e.code for e in raw_audits[key].errors],
+                "delivered": result.status == "completed",
+            }
 
-            if label == "gate_off":
-                audited = audit.verify(
-                    result.answer,
-                    result.retrieved,
-                    allowed_document_ids=task.allowed_document_ids,
+    await asyncio.gather(*(run_condition(name, agent) for name, agent in agents.items()))
+    comparisons = {}
+    for name in ("verify_only", "verify_repair"):
+        observations = []
+        for task in tasks:
+            key, off = (name, task.task_id), ("ungated", task.task_id)
+            result = final_results[key]
+            observations.append(
+                CitationAblationObservation(
+                    ungated_answer=raw_answers[off],
+                    ungated_audit=raw_audits[off],
+                    gated_answer=result.answer,
+                    gated_audit=final_audits[key],
+                    gated_delivered=result.status == "completed",
+                    repair_triggered=any(event.step == "repair" for event in result.trace),
                 )
-                ungated_audits[task.task_id] = audited
-                for error in audited.errors:
-                    invalid_by_code[error.code] += 1
-                claims = extract_cited_claims(result.answer) if not result.abstained else []
-                if audited.errors or any(not claim.citations for claim in claims):
-                    affected_tasks.append(task.task_id)
-            else:
-                gated_audits[task.task_id] = audit.verify(
-                    result.answer,
-                    result.retrieved,
-                    allowed_document_ids=task.allowed_document_ids,
+            )
+        comparisons[name] = summarize_citation_ablation(observations)
+        print(f"{name}: {comparisons[name]}")
+    raw_by_arm = {}
+    for name in budgets:
+        observations = []
+        for task in tasks:
+            key = (name, task.task_id)
+            result = final_results[key]
+            observations.append(
+                CitationAblationObservation(
+                    ungated_answer=raw_answers[key],
+                    ungated_audit=raw_audits[key],
+                    gated_answer=result.answer,
+                    gated_audit=final_audits[key],
+                    gated_delivered=result.status == "completed",
+                    repair_triggered=any(event.step == "repair" for event in result.trace),
                 )
-                gated_answers[task.task_id] = result.answer
-                gated_delivered[task.task_id] = result.status == "completed"
-                repair_triggered[task.task_id] = any(
-                    event.step == "repair" for event in result.trace
-                )
-
-    observations = [
-        CitationAblationObservation(
-            ungated_answer=baseline.answers[task.task_id],
-            ungated_audit=ungated_audits[task.task_id],
-            gated_answer=gated_answers[task.task_id],
-            gated_audit=gated_audits[task.task_id],
-            gated_delivered=gated_delivered[task.task_id],
-            repair_triggered=repair_triggered[task.task_id],
-        )
-        for task in tasks
-    ]
-    citation_metrics = summarize_citation_ablation(observations)
-
-    print("\n" + "=" * 78)
-    print("WHAT THE GATE CAUGHT")
-    print("=" * 78)
-    print(f"raw citation attempts               : {citation_metrics['raw_citation_attempts']}")
-    print(f"raw invalid citations               : {citation_metrics['raw_invalid_citations']}")
-    print(
-        f"raw invalid-citation rate          : {citation_metrics['raw_invalid_citation_rate']:.1%}"
+            )
+        raw_by_arm[name] = summarize_citation_ablation(observations)
+    failures = Counter(
+        e.code
+        for (name, _), audit_result in raw_audits.items()
+        if name == "ungated"
+        for e in audit_result.errors
     )
-    print(
-        "unsafe answer exposure rate        : "
-        f"{citation_metrics['unsafe_answer_exposure_rate']:.1%}"
-    )
-    post_gate = citation_metrics["post_gate_citation_validity"]
-    post_gate_display = f"{post_gate:.1%}" if post_gate is not None else "not applicable"
-    print(f"post-gate citation validity         : {post_gate_display}")
-    print(f"tasks affected                      : {len(affected_tasks)}/{len(tasks)}")
-    if invalid_by_code:
-        print("\nby failure code:")
-        for code, count in invalid_by_code.most_common():
-            print(f"  {code:24s} {count}")
-    if affected_tasks:
-        print(f"\naffected: {', '.join(affected_tasks[:10])}")
-
-    print_report(
-        "EXPERIMENT C",
-        baseline,
-        variant,
-        tasks,
-        k=settings.retrieval_top_k,
-        generated=generated,
-        notes=[
-            "Both conditions share retriever, writer, corpus, and budget. Only citation",
-            "  verification differs.",
-            "The gate is layer 1 only: it proves a citation points somewhere real that",
-            "  was retrieved. It cannot prove the text supports the claim -- that is",
-            "  layer 2 (claim support), and it is not exercised here.",
-            (
-                f"Faults injected 1-in-{args.fault_every}: a test parameter, not an "
-                "estimate of how often a model miscites."
-                if inject
-                else "No injection: the rate below is what this model actually produced."
-            ),
-        ],
-    )
-
-    path = write_artifact(
+    path = write_conditions_artifact(
         args.out,
         "experiment-c",
-        baseline,
-        variant,
+        list(conditions.values()),
         tasks,
         {
             "retriever": retriever.name,
-            "model_id": gated.client.model_id,
-            **citation_metrics,
-            "failure_codes": dict(invalid_by_code),
-            "affected_tasks": affected_tasks,
+            "model_id": model_id,
+            "answerability_gate": False,
+            "citation_auditor_version": "citation_ablation@2",
+            "citation_comparisons": comparisons,
+            "raw_and_final_by_arm": raw_by_arm,
+            "raw_drafts": raw_details,
+            "failure_codes": dict(failures),
             "fault_injection_every": args.fault_every,
+            "paired_contrasts": {
+                "verify_vs_ungated": paired_summary(
+                    conditions["ungated"], conditions["verify_only"]
+                ),
+                "repair_vs_verify": paired_summary(
+                    conditions["verify_only"], conditions["verify_repair"]
+                ),
+            },
+            "initial_drafts_shared": False,
+            "limitations": [
+                "One trial; independently sampled initial drafts can differ across arms.",
+                "Citation validity measures location and format, not semantic claim support.",
+            ],
         },
+        provenance=provenance,
+        output=args.output,
     )
-    print(f"\nArtifact: {path}")
+    print(f"Artifact: {path}")
     return 0
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--suite", default="full")
+    parser.add_argument("--suite", default="hand")
+    parser.add_argument("--limit", type=int)
+    parser.add_argument("--output", type=Path, help="exact output filename")
     parser.add_argument("--arm", default="rrf_hybrid_rerank")
     parser.add_argument(
         "--fault-every",

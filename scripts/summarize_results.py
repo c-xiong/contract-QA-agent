@@ -20,6 +20,10 @@ RESULTS = Path("results")
 # Which pinned file backs which claim. Anything else in results/ is reported as extra
 # rather than silently ignored.
 KNOWN = {
+    "experiment-a-current.json": "Current A — retrieval comparison",
+    "experiment-b-factorial.json": "Current B — loop x cross-reference",
+    "experiment-c-isolated.json": "Current C — verification and repair",
+    "experiment-d-answerability.json": "Current D — answerability off/on",
     "eval-hand-bm25.json": "Full eval suite \u2014 BM25 arm",
     "eval-hand-rerank.json": "Full eval suite \u2014 RRF hybrid + rerank arm",
     "experiment-a-retrieval.json": "Experiment A — retrieval comparison",
@@ -130,9 +134,11 @@ def render_conditions(payload: dict[str, Any]) -> list[str]:
     if "unverified_rate" in payload:
         out += [
             "",
-            f"- citations emitted with the gate off: **{payload['citations_emitted_ungated']}**",
-            f"- failing verification: **{payload['citations_failing_verification']} "
-            f"({payload['unverified_rate']:.1%})**",
+            "**Historical citation rate withdrawn:** this artifact counts malformed errors "
+            "in the numerator but omits those attempts from the denominator. Keep the raw "
+            "file for auditability; do not use its percentage as a capability claim.",
+            f"- parseable citations: {payload['citations_emitted_ungated']}; "
+            f"verification errors: {payload['citations_failing_verification']}",
             f"- failure codes: {payload.get('failure_codes') or 'none'}",
             f"- tasks affected: {len(payload.get('affected_tasks', []))}/{payload['task_count']}",
         ]
@@ -168,6 +174,38 @@ def render_conditions(payload: dict[str, Any]) -> list[str]:
     for label, key in (("total tokens", "tokens"), ("total searches", "searches")):
         cells = " | ".join(f"{conditions[n].get(key, 0):,}" for n in names)
         out.append(f"| {label} | {cells} |")
+    if behavior := payload.get("behavior"):
+        out += ["", "| behavior | " + " | ".join(names) + " |", "|---" * (len(names) + 1) + "|"]
+        for metric in (
+            "unanswerable_tasks",
+            "false_answers",
+            "correct_abstentions",
+            "answerable_tasks",
+            "over_abstentions",
+            "execution_failures",
+            "answerable_required_points",
+            "delivered_answerable_support_micro",
+        ):
+            out.append(
+                "| "
+                + metric
+                + " | "
+                + " | ".join(fmt(behavior[name].get(metric)) for name in names)
+                + " |"
+            )
+        out += ["", f"Independent judge usage: `{payload.get('judge_usage', {})}`."]
+    if arms := payload.get("raw_and_final_by_arm"):
+        out += [
+            "",
+            "| arm | raw invalid / attempts | delivered valid / attempts | repair successes / triggers |",
+            "|---|---:|---:|---:|",
+        ]
+        for name, row in arms.items():
+            out.append(
+                f"| {name} | {row['raw_invalid_citations']}/{row['raw_citation_attempts']} | "
+                f"{row['post_gate_valid_citations']}/{row['post_gate_citation_attempts']} | "
+                f"{row['repair_successes']}/{row['repair_triggers']} |"
+            )
     return out
 
 
@@ -181,7 +219,17 @@ def render(path: Path) -> list[str]:
     out.append(provenance(payload))
     out.append("")
 
-    if "grader_versions" in payload:
+    if payload.get("artifact_schema_version") == "2":
+        out += [
+            f"Corpus: {payload['document_count']} documents / {payload['chunk_count']} chunks; "
+            f"chunk hash `{payload['chunks_sha256']}`.",
+            f"Code: `{payload['git_sha']}`; dirty={payload['git_worktree_dirty']}; "
+            f"source hash `{payload.get('source_sha256', 'not recorded')}`.",
+            "",
+        ]
+    else:
+        out += ["**Legacy artifact:** code/corpus fingerprints were not recorded at run time.", ""]
+    if "runs" in payload:
         out += render_eval(payload)
     elif "arms" in payload:
         out += render_experiment_a(payload)

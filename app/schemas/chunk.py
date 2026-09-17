@@ -1,4 +1,4 @@
-"""Chunk-level schema. See docs/SPEC.md section 9.2."""
+"""Chunk-level schema. See docs/decisions.md"""
 
 from __future__ import annotations
 

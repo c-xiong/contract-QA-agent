@@ -15,7 +15,7 @@ import sys
 from collections import Counter
 
 from app.config import get_settings
-from app.ingestion.contractnli import ContractNliFormatError, load_corpus
+from app.ingestion.contractnli import ContractNliFormatError, NliDocument, load_corpus
 from app.ingestion.manifest import CorpusManifest, ManifestError, manifest_path
 
 DEFAULT_SIZE = 10
@@ -48,7 +48,7 @@ def main() -> int:
     # Selection: prefer documents carrying BOTH Contradiction and NotMentioned labels.
     # Those two are the entire reason this corpus is here -- a document with neither
     # contributes nothing the CUAD slice does not already provide.
-    def score(doc) -> tuple[int, int, str]:
+    def score(doc: NliDocument) -> tuple[int, int, str]:
         choices = Counter(a.choice for a in doc.annotations.values())
         has_both = int(choices["Contradiction"] > 0 and choices["NotMentioned"] > 0)
         return (has_both, choices["Contradiction"], doc.file_name)

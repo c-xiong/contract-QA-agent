@@ -1,26 +1,44 @@
-"""Dense retrieval and reranking.
-
-These load real models, so they are slower than the rest of the unit suite. They stay
-here rather than in integration because they exercise one module each and need no
-corpus on disk.
-"""
+"""Dense index and reranker mechanics using controlled model outputs, entirely offline."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 from app.ingestion.store import ChunkStore
 from app.retrieval.base import Retriever
 from app.retrieval.dense import DenseIndexError, DenseRetriever
+from app.retrieval.embeddings import Embedder
 from app.retrieval.rerank import CrossEncoderReranker
 from app.schemas.retrieval import RetrievalFilters
 from tests.conftest import make_chunk, make_document
 
 
-@pytest.fixture(scope="module")
-def dense(request: pytest.FixtureRequest) -> DenseRetriever:
+class FakeEmbedder(Embedder):
+    """Orthogonal fixture vectors; these assert index behavior, not model quality."""
+
+    def __init__(self) -> None:
+        self.model_id = "fixture-vectors"
+        self.dimension = 3
+
+    def encode(self, texts: list[str], *, batch_size: int = 64) -> np.ndarray:
+        vectors = []
+        for text in texts:
+            lowered = text.lower()
+            if "law" in lowered:
+                vectors.append([0.0, 1.0, 0.0])
+            elif "insurance" in lowered:
+                vectors.append([0.0, 0.0, 1.0])
+            else:
+                vectors.append([1.0, 0.0, 0.0])
+        return np.asarray(vectors, dtype="float32")
+
+
+@pytest.fixture
+def dense(monkeypatch: pytest.MonkeyPatch) -> DenseRetriever:
+    monkeypatch.setattr("app.retrieval.dense.get_embedder", lambda model_id: FakeEmbedder())
     documents = [make_document("doc-900", page_count=3), make_document("doc-901", page_count=1)]
     chunks = [
         make_chunk(
@@ -62,10 +80,15 @@ class TestIndexText:
 
 
 class TestSearch:
-    async def test_matches_on_meaning_not_wording(self, dense: DenseRetriever) -> None:
-        """The reason a dense arm exists: no shared vocabulary with the clause."""
-        results = await dense.search("which state's courts decide disputes", top_k=1)
+    async def test_orders_by_inner_product(self, dense: DenseRetriever) -> None:
+        results = await dense.search("governing law", top_k=1)
         assert results and results[0].chunk.chunk_id == "doc-900-c2"
+        assert results[0].fused_score == pytest.approx(1.0)
+
+    async def test_faiss_padding_does_not_duplicate_results(self, dense: DenseRetriever) -> None:
+        results = await dense.search("law", top_k=10)
+        assert len(results) == 3
+        assert len({item.chunk.chunk_id for item in results}) == 3
 
     async def test_records_the_dense_rank_only(self, dense: DenseRetriever) -> None:
         results = await dense.search("governing law", top_k=2)
@@ -85,15 +108,19 @@ class TestSearch:
         assert results
         assert all(r.chunk.document_id == "doc-901" for r in results)
 
+    async def test_allowlist_with_no_candidates_returns_empty(self, dense: DenseRetriever) -> None:
+        assert await dense.search("law", 2, RetrievalFilters(document_ids=["doc-999"])) == []
+
     def test_satisfies_the_retriever_protocol(self, dense: DenseRetriever) -> None:
         assert isinstance(dense, Retriever)
 
 
 class TestPersistence:
-    def test_round_trips(self, dense: DenseRetriever, tmp_path: Path) -> None:
+    async def test_round_trips(self, dense: DenseRetriever, tmp_path: Path) -> None:
         dense.save(tmp_path)
         reloaded = DenseRetriever.load(dense._store, tmp_path)
         assert reloaded.total_candidates == dense.total_candidates
+        assert await reloaded.search("law", 3) == await dense.search("law", 3)
 
     def test_missing_index_names_the_build_command(self, tmp_path: Path) -> None:
         store = ChunkStore([make_document()], [make_chunk()])
@@ -112,15 +139,43 @@ class TestPersistence:
 
 
 class TestReranker:
+    @pytest.fixture(autouse=True)
+    def cross_encoder(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        class ControlledCrossEncoder:
+            def __init__(self, model_id: str) -> None:
+                pass
+
+            def predict(
+                self, pairs: list[tuple[str, str]], *, show_progress_bar: bool
+            ) -> list[float]:
+                return [3.0 if "Governing Law" in text else -2.0 for _, text in pairs]
+
+        monkeypatch.setattr("app.retrieval.rerank.CrossEncoder", ControlledCrossEncoder)
+
     async def test_reorders_and_preserves_the_fused_score(self, dense: DenseRetriever) -> None:
         """Both numbers are kept so a trace can show fusion ranked a chunk 12th and the
         reranker promoted it to 1st -- the evidence for whether reranking helped."""
         reranker = CrossEncoderReranker(dense, depth=3)
-        results = await reranker.search("what law governs this contract", top_k=2)
+        baseline = await dense.search("liability", top_k=3)
+        assert baseline[0].chunk.chunk_id == "doc-900-c1"
+        results = await reranker.search("liability", top_k=2)
         assert results
         assert results[0].rerank_score is not None
         assert results[0].fused_score is not None
         assert results[0].chunk.chunk_id == "doc-900-c2"
+        assert results[0].rerank_score == 3.0
+        assert results[0].fused_score == 0.0
+        assert all(item.rerank_score is None for item in baseline)
+
+    async def test_forwards_document_filter(self, dense: DenseRetriever) -> None:
+        results = await CrossEncoderReranker(dense, depth=3).search(
+            "law", top_k=2, filters=RetrievalFilters(document_ids=["doc-901"])
+        )
+        assert [item.chunk.document_id for item in results] == ["doc-901"]
+
+    async def test_ties_use_chunk_id_order(self, dense: DenseRetriever) -> None:
+        results = await CrossEncoderReranker(dense, depth=3).search("liability", top_k=3)
+        assert [item.chunk.chunk_id for item in results[1:]] == ["doc-900-c1", "doc-901-c1"]
 
     async def test_empty_base_result_returns_empty(self, dense: DenseRetriever) -> None:
         reranker = CrossEncoderReranker(dense, depth=3)

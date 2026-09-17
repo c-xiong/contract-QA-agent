@@ -1,4 +1,4 @@
-"""Experiment A: retrieval comparison. See docs/SPEC.md section 16.1.
+"""Experiment A: retrieval comparison. See docs/eval-methodology.md
 
 Compares BM25, dense, RRF hybrid, and RRF+cross-encoder rerank on the same annotated
 tasks, at the same k. Retrieval calls no model, so this experiment is free, fully
@@ -31,6 +31,7 @@ from app.retrieval.factory import ARM_NAMES, build_retriever
 from app.schemas.retrieval import RetrievalFilters
 from evals.graders.retrieval import grade_retrieval
 from evals.loader import DatasetError, load_suite
+from evals.provenance import capture_provenance
 from evals.schema import EvalTask
 
 
@@ -41,6 +42,7 @@ class ArmResult:
     arm: str
     per_task: dict[str, dict[str, float]] = field(default_factory=dict)
     per_task_category: dict[str, str] = field(default_factory=dict)
+    grader_versions: dict[str, str] = field(default_factory=dict)
 
     def mean(self, metric: str) -> float:
         values = [s[metric] for s in self.per_task.values() if metric in s]
@@ -113,6 +115,7 @@ async def run_arm(
         retrieved = await retriever.search(task.question, top_k=k, filters=filters)
         grades = grade_retrieval(task, retrieved, k)
         result.per_task[task.task_id] = {g.name: g.score for g in grades}
+        result.grader_versions.update({g.name: g.version for g in grades})
         result.per_task_category[task.task_id] = task.category
 
         if any(g.name == "document_recall" and g.score < 1.0 for g in grades):
@@ -131,6 +134,14 @@ async def main_async(args: argparse.Namespace) -> int:
         return 1
 
     generated = tasks[0].dataset_version.startswith("provisional-generated")
+    provenance = capture_provenance(
+        store,
+        dataset_name=args.suite,
+        dataset_version=tasks[0].dataset_version,
+        retrieval_arm="four-arm-comparison",
+        top_k=args.k,
+        model_id="none",
+    )
 
     # DECISION: abstain tasks are excluded from the retrieval aggregate.
     #   They carry no expected documents, so every retrieval grader scores them 1.0 by
@@ -254,6 +265,8 @@ async def main_async(args: argparse.Namespace) -> int:
         print("    capability measurement.")
 
     payload = {
+        **provenance,
+        "grader_versions": {k: v for r in results.values() for k, v in r.grader_versions.items()},
         "experiment": "A_retrieval_comparison",
         "run_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "suite": args.suite,
@@ -274,13 +287,18 @@ async def main_async(args: argparse.Namespace) -> int:
                     for c, v in results[arm].mean_by_category("document_recall").items()
                 },
                 "per_task": results[arm].per_task,
+                "span_recall_by_category": {
+                    c: {"mean": v[0], "n": v[1]}
+                    for c, v in results[arm].mean_by_category("evidence_span_recall").items()
+                },
             }
             for arm in args.arms
         },
     }
     args.out.mkdir(parents=True, exist_ok=True)
     stamp = payload["run_at"].replace(":", "").replace("-", "")
-    path = args.out / f"experiment-a-{stamp}.json"
+    path = args.output or args.out / f"experiment-a-{stamp}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     print(f"\nArtifact: {path}")
     return 0
@@ -297,6 +315,7 @@ def main() -> int:
         help="ignore each task's allowed_document_ids and search the whole corpus",
     )
     parser.add_argument("--out", type=Path, default=Path("experiments/runs"))
+    parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     return asyncio.run(main_async(args))
 

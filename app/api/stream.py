@@ -33,6 +33,7 @@ GRAPH_NODES = (
     "refine",
     "resolve_refs",
     "select_evidence",
+    "answerability",
     "write",
     "verify",
     "repair",
@@ -92,6 +93,11 @@ def extract_metrics(node: str, delta: dict[str, Any], seen_chunks: int) -> dict[
         metrics["via_cross_reference"] = sum(
             1 for e in evidence if e.pulled_by == "cross_reference"
         )
+
+    elif node == "answerability":
+        decision = delta.get("answerability")
+        metrics["verdict"] = decision.verdict if decision else "failed"
+        metrics["model_calls"] = delta.get("model_calls")
 
     elif node == "write":
         metrics["input_tokens"] = delta.get("input_tokens")

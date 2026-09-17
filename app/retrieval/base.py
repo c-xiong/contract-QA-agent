@@ -1,4 +1,4 @@
-"""The retriever interface. See docs/SPEC.md section 10.1.
+"""The retriever interface. See docs/decisions.md
 
 Every retriever implements this and nothing else. The agent must not know which one
 is active: that is what makes Experiment A a swap of one object rather than a

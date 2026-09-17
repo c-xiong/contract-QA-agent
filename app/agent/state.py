@@ -1,4 +1,4 @@
-"""Agent state. See docs/SPEC.md section 11.2.
+"""Agent state. See docs/decisions.md
 
 AUTHOR-OWNED (CLAUDE.md rule 2). Every `# DECISION:` is a choice to defend.
 
@@ -13,6 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from typing import Literal, TypedDict
 
+from app.agent.answerability import AnswerabilityDecision
 from app.schemas.evidence import Citation, CitationError, Evidence
 from app.schemas.retrieval import RetrievedChunk
 
@@ -109,6 +110,7 @@ class ResearchState(TypedDict, total=False):
     assessed_chunk_count: int
     retrieved_chunks: list[RetrievedChunk]
     evidence: list[Evidence]
+    answerability: AnswerabilityDecision
 
     # --- Generation ---
     draft_answer: str
@@ -128,6 +130,7 @@ class ResearchState(TypedDict, total=False):
     # --- Cost ---
     input_tokens: int
     output_tokens: int
+    model_calls: int
 
     # Still absent rather than present-and-unused (SPEC 11.2): research_brief,
     # research_topics, messages. An unused field reads as implemented; these arrive with

@@ -1,6 +1,6 @@
 """Citation-scoped claim support checking.
 
-DECISION-BEARING MODULE. See docs/review-questions.md.
+DECISION-BEARING MODULE. See docs/decisions.md.
 
 Layer 1 (``citation_verifier``) establishes that citation locators are valid and were
 present in the selected evidence. This module supplies layer 2: deterministic claim

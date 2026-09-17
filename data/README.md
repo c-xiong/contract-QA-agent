@@ -104,13 +104,12 @@ period, and the `edits` record names which field actually changed. See
 | Synthetic | 6 | 6 | Conflicts, injection, distractors |
 | **Total** | **56** | **56** | 6,270 chunks |
 
-Within the 55-60 target set in `docs/SPEC.md` §6.7. The corpus is deliberately small:
-it is selected for annotation coverage, not for document count.
+The corpus is deliberately small: it is selected for annotation coverage, not document count.
 
 ## Sampling criterion
 
 Recorded verbatim in `data/corpus_manifest.json` and reproduced in
-`docs/eval-methodology.md` §2, so the corpus can be rebuilt rather than merely
+the sampling scripts, so the corpus can be rebuilt rather than merely
 described. The sampler is seeded and append-only.
 
 ## Document identity

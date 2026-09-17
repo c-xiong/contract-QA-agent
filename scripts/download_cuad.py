@@ -2,7 +2,7 @@
 
 CUAD is 510 real commercial contracts drawn from SEC EDGAR, with 13,101 clause
 annotations across 41 categories, labeled under attorney supervision. Licensed
-CC BY 4.0. See docs/SPEC.md section 6.2.
+CC BY 4.0. See docs/decisions.md
 
 Idempotent: a verified archive is not re-downloaded, and an existing extraction
 is not re-extracted unless --force is given.

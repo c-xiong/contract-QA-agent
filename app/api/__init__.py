@@ -1,1 +1,1 @@
-"""FastAPI application. See docs/SPEC.md section 14."""
+"""FastAPI application. See docs/decisions.md"""

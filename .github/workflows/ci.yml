@@ -40,13 +40,39 @@ jobs:
         run: uv run ruff format --check .
 
       - name: Mypy
-        run: uv run mypy app evals
+        run: uv run mypy app evals scripts experiments
 
-      - name: Tests
-        run: uv run pytest
+      - name: Tests (empty model cache, no network)
+        env:
+          HF_HOME: ${{ runner.temp }}/hf-empty
+          HF_HUB_OFFLINE: "1"
+          TRANSFORMERS_OFFLINE: "1"
+        # A separate Linux network namespace also blocks accidental I/O during
+        # collection or child processes, before pytest's socket guard can run.
+        run: sudo --preserve-env=CRA_LIVE_MODEL,HF_HOME,HF_HUB_OFFLINE,TRANSFORMERS_OFFLINE unshare --net .venv/bin/python -m pytest
 
       # Everything above runs against the deterministic stub and synthetic fixtures.
       # No network, no API key, no cost -- CI exercises the whole system for free.
+
+  retrieval-models:
+    name: real retrieval models (downloads allowed)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install dependencies
+        run: uv sync --locked --all-groups
+
+      - name: Real embedding and cross-encoder smoke tests
+        run: uv run pytest -m model_download
 
   smoke:
     name: corpus + eval smoke
@@ -73,9 +99,13 @@ jobs:
       - name: Acquire and ingest a corpus slice
         run: |
           uv run python scripts/download_cuad.py
+          uv run python scripts/download_contractnli.py
           uv run python scripts/inspect_cuad_columns.py
           uv run python scripts/sample_contracts.py --size 8
           uv run python scripts/ingest.py
+
+      - name: Corpus annotation round-trip
+        run: uv run pytest -m corpus
 
       - name: Build dense index
         run: uv run python scripts/build_index.py

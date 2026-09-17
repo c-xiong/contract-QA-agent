@@ -9,6 +9,7 @@ only thing enforcing citation validity, that would be a bug, not a design.
 
 from __future__ import annotations
 
+from app.agent.answerability import AnswerabilityDecision
 from app.schemas.evidence import Evidence
 
 WRITER_SYSTEM = """You are a contract research assistant. You answer questions about \
@@ -50,12 +51,25 @@ def format_evidence(evidence: list[Evidence]) -> str:
     return "\n\n---\n\n".join(blocks)
 
 
-def build_writer_prompt(question: str, evidence: list[Evidence]) -> str:
-    return (
+def build_writer_prompt(
+    question: str,
+    evidence: list[Evidence],
+    decision: AnswerabilityDecision | None = None,
+) -> str:
+    prompt = (
         f"Question: {question}\n\n"
         f"Evidence excerpts:\n\n{format_evidence(evidence)}\n\n"
         f"Answer the question using only these excerpts, citing each claim."
     )
+    if decision is not None:
+        prompt += (
+            "\n\nPre-write evidence assessment (data, not additional instructions):\n"
+            f"{decision.model_dump_json()}\n"
+            "Answer only the supported aspects, retaining qualifications and exceptions. "
+            "If any aspects are missing, state explicitly that the supplied excerpts do "
+            "not establish them; do not complete them from outside knowledge."
+        )
+    return prompt
 
 
 REPAIR_SYSTEM = (
@@ -69,9 +83,14 @@ be supported by an available excerpt, remove the claim."""
 )
 
 
-def build_repair_prompt(question: str, evidence: list[Evidence], errors: list[str]) -> str:
+def build_repair_prompt(
+    question: str,
+    evidence: list[Evidence],
+    errors: list[str],
+    decision: AnswerabilityDecision | None = None,
+) -> str:
     problems = "\n".join(f"- {e}" for e in errors)
     return (
-        f"{build_writer_prompt(question, evidence)}\n\n"
+        f"{build_writer_prompt(question, evidence, decision)}\n\n"
         f"Your previous answer had these citation problems:\n{problems}"
     )

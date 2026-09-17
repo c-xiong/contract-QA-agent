@@ -1,6 +1,6 @@
 """Eval-driven contract research agent.
 
-Layer map (see docs/SPEC.md section 8):
+Layer map (see docs/decisions.md):
 
 - ``app.schemas``    typed data contracts shared by every layer
 - ``app.ingestion``  PDF parsing, chunking, and the chunk/document store

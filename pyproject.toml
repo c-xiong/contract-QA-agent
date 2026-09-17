@@ -88,10 +88,12 @@ disallow_untyped_calls = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q --strict-markers --strict-config"
+addopts = "-q --strict-markers --strict-config -m 'not model_download and not corpus and not live_model'"
 asyncio_mode = "auto"
 markers = [
     "live_model: hits a real model API; skipped unless CRA_LIVE_MODEL=1",
+    "model_download: loads real Hugging Face models; opt in with -m model_download",
+    "corpus: requires a downloaded corpus; opt in with -m corpus",
 ]
 filterwarnings = [
     "error",

@@ -1,6 +1,6 @@
-"""Execution limits and control policy. See docs/SPEC.md section 11.3.
+"""Execution limits and control policy. See docs/decisions.md
 
-DECISION-BEARING MODULE. See docs/review-questions.md.
+DECISION-BEARING MODULE. See docs/decisions.md.
 
 Every limit here is deterministic code with a test. None of them is a prompt
 instruction. That distinction is the point of CLAUDE.md rule 5: a model told to stop

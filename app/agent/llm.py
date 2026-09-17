@@ -17,6 +17,7 @@ import asyncio
 from dataclasses import dataclass
 from typing import Protocol
 
+from app.agent.answerability import ANSWERABILITY_SYSTEM, AnswerabilityDecision, EvidenceQuote
 from app.config import Settings
 from app.schemas.evidence import Evidence
 
@@ -61,6 +62,29 @@ class StubClient:
         return StubClient(evidence)
 
     async def complete(self, system: str, user: str) -> ModelResponse:
+        if system == ANSWERABILITY_SYSTEM:
+            # This is a routing fixture, not a semantic answerability model. Simulating
+            # an answer with evidence preserves the offline wiring check; adversarial
+            # and partial verdicts are exercised by explicit test clients.
+            top = self._evidence[0] if self._evidence else None
+            decision = AnswerabilityDecision(
+                verdict="answerable" if top else "unanswerable",
+                supported_aspects=["Stub wiring fixture; semantic support is not evaluated"]
+                if top
+                else [],
+                missing_aspects=[] if top else ["No evidence was supplied"],
+                evidence_ids=[top.evidence_id] if top else [],
+                quotes=[EvidenceQuote(evidence_id=top.evidence_id, quote=top.excerpt[:4000])]
+                if top
+                else [],
+                reason="Deterministic stub; this verdict does not measure answerability.",
+            )
+            return ModelResponse(
+                text=decision.model_dump_json(),
+                input_tokens=len(user) // 4,
+                output_tokens=len(decision.model_dump_json()) // 4,
+                model_id=self.model_id,
+            )
         if not self._evidence:
             return ModelResponse(
                 text=(

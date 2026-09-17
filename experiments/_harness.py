@@ -15,7 +15,7 @@ from pathlib import Path
 
 from app.agent.runner import ResearchResult
 from evals.graders.answer import grade_answer
-from evals.graders.retrieval import grade_retrieval
+from evals.graders.retrieval import GradeResult, grade_retrieval
 from evals.schema import EvalTask
 
 
@@ -30,6 +30,11 @@ class ConditionResult:
     statuses: dict[str, str] = field(default_factory=dict)
     tokens: int = 0
     searches: int = 0
+    model_calls: int = 0
+    elapsed_seconds: float = 0.0
+    grader_versions: dict[str, str] = field(default_factory=dict)
+    grade_data: dict[str, dict[str, dict[str, object]]] = field(default_factory=dict)
+    costs: dict[str, dict[str, int | float]] = field(default_factory=dict)
 
     def mean(self, metric: str) -> float:
         values = [s[metric] for s in self.per_task.values() if metric in s]
@@ -50,8 +55,11 @@ def record(
     k: int,
     *,
     excluded_metrics: frozenset[str] = frozenset(),
+    elapsed_seconds: float = 0.0,
+    extra_grades: list[GradeResult] | None = None,
 ) -> None:
     grades = grade_retrieval(task, result.retrieved, k) + grade_answer(task, result)
+    grades += extra_grades or []
     condition.per_task[task.task_id] = {
         grade.name: grade.score for grade in grades if grade.name not in excluded_metrics
     }
@@ -60,6 +68,21 @@ def record(
     condition.statuses[task.task_id] = result.status
     condition.tokens += result.input_tokens + result.output_tokens
     condition.searches += sum(1 for e in result.trace if e.step == "search")
+    condition.grader_versions.update(
+        {g.name: g.version for g in grades if g.name not in excluded_metrics}
+    )
+    condition.grade_data[task.task_id] = {
+        g.name: g.data for g in grades if g.name not in excluded_metrics
+    }
+    calls = getattr(result, "model_calls", sum(e.step == "write" for e in result.trace))
+    condition.model_calls += calls
+    condition.elapsed_seconds += elapsed_seconds
+    condition.costs[task.task_id] = {
+        "input_tokens": result.input_tokens,
+        "output_tokens": result.output_tokens,
+        "model_calls": calls,
+        "elapsed_seconds": elapsed_seconds,
+    }
 
 
 def paired(
@@ -91,6 +114,7 @@ METRICS = (
     "required_points",
     "post_gate_citation_validity",
     "citation_coverage",
+    "claim_support",
 )
 
 
@@ -113,9 +137,9 @@ def print_report(
         baseline_has = any(metric in scores for scores in baseline.per_task.values())
         variant_has = any(metric in scores for scores in variant.per_task.values())
         if not baseline_has or not variant_has:
-            left = f"{baseline.mean(metric):.3f}" if baseline_has else "not applicable"
-            right = f"{variant.mean(metric):.3f}" if variant_has else "not applicable"
-            print(f"{metric:<26}{left:>{width}}{right:>{width}}{'':>10}")
+            left_cell = f"{baseline.mean(metric):.3f}" if baseline_has else "not applicable"
+            right_cell = f"{variant.mean(metric):.3f}" if variant_has else "not applicable"
+            print(f"{metric:<26}{left_cell:>{width}}{right_cell:>{width}}{'':>10}")
             continue
         a, b = baseline.mean(metric), variant.mean(metric)
         print(f"{metric:<26}{a:>{width}.3f}{b:>{width}.3f}{b - a:>+10.3f}")
@@ -188,12 +212,33 @@ def write_artifact(
     variant: ConditionResult,
     tasks: list[EvalTask],
     extra: dict[str, object],
+    *,
+    provenance: dict[str, object] | None = None,
+    output: Path | None = None,
 ) -> Path:
+    return write_conditions_artifact(
+        out, experiment, [baseline, variant], tasks, extra, provenance=provenance, output=output
+    )
+
+
+def write_conditions_artifact(
+    out: Path,
+    experiment: str,
+    conditions: list[ConditionResult],
+    tasks: list[EvalTask],
+    extra: dict[str, object],
+    *,
+    provenance: dict[str, object] | None = None,
+    output: Path | None = None,
+) -> Path:
+    versions = {k: v for c in conditions for k, v in c.grader_versions.items()}
     payload = {
+        **(provenance or {}),
         "experiment": experiment,
         "run_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "task_count": len(tasks),
         "trials": 1,
+        "grader_versions": versions,
         "dataset_version": tasks[0].dataset_version if tasks else "unknown",
         "questions_generated": bool(
             tasks and tasks[0].dataset_version.startswith("provisional-generated")
@@ -211,14 +256,43 @@ def write_artifact(
                 },
                 "tokens": c.tokens,
                 "searches": c.searches,
+                "model_calls": c.model_calls,
+                "elapsed_seconds": c.elapsed_seconds,
+                "grader_versions": c.grader_versions,
                 "per_task": c.per_task,
+                "answers": c.answers,
+                "statuses": c.statuses,
+                "grade_data": c.grade_data,
+                "costs": c.costs,
             }
-            for c in (baseline, variant)
+            for c in conditions
         },
         **extra,
     }
-    out.mkdir(parents=True, exist_ok=True)
     stamp = str(payload["run_at"]).replace(":", "").replace("-", "")
-    path = out / f"{experiment}-{stamp}.json"
+    suffix = str(payload.get("run_id", ""))[:8]
+    path = output or out / f"{experiment}-{stamp}{'-' + suffix if suffix else ''}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     return path
+
+
+def limited_tasks(tasks: list[EvalTask], limit: int | None) -> list[EvalTask]:
+    if limit is not None and limit < 1:
+        raise ValueError("--limit must be positive")
+    return tasks[:limit] if limit is not None else tasks
+
+
+def paired_summary(baseline: ConditionResult, variant: ConditionResult) -> dict[str, object]:
+    summary: dict[str, object] = {}
+    for metric in METRICS:
+        wins, losses, ties, lost = paired(variant, baseline, metric)
+        if wins + losses + ties:
+            summary[metric] = {
+                "delta": variant.mean(metric) - baseline.mean(metric),
+                "wins": wins,
+                "losses": losses,
+                "ties": ties,
+                "lost_on": lost,
+            }
+    return summary

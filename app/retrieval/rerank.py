@@ -1,6 +1,6 @@
 """Cross-encoder reranking over fused candidates.
 
-DECISION-BEARING MODULE. See docs/review-questions.md.
+DECISION-BEARING MODULE. See docs/decisions.md.
 
 SPEC 7.2 lists this as the highest-priority optional item and the fourth arm of
 Experiment A. It is the one place in the retrieval stack where the query and the chunk

@@ -1,6 +1,6 @@
 """Reciprocal Rank Fusion over BM25 and dense retrieval.
 
-DECISION-BEARING MODULE. See docs/review-questions.md.
+DECISION-BEARING MODULE. See docs/decisions.md.
 
     RRF(d) = sum over lists of 1 / (k + rank_i(d))
 

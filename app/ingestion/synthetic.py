@@ -1,4 +1,4 @@
-"""Synthetic document construction. See docs/SPEC.md section 6.6.
+"""Synthetic document construction. See docs/decisions.md
 
 Exactly three uses, and no others. Each exists because a real annotated corpus cannot
 supply it, and each is derived from a real contract so the surrounding language stays

@@ -1,6 +1,6 @@
-"""Cross-reference resolution. See docs/SPEC.md section 9.5.
+"""Cross-reference resolution. See docs/decisions.md
 
-DECISION-BEARING MODULE. See docs/review-questions.md.
+DECISION-BEARING MODULE. See docs/decisions.md.
 
 **The problem, concretely.** A liability cap in Section 8.1 is qualified by carve-outs in
 Section 8.3. Retrieval returns 8.1, because "liability cap" matches 8.1 both lexically

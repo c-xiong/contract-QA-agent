@@ -365,6 +365,7 @@ const NODES = {
   refine:          [206,126,118,38,"refine","widen query"],
   resolve_refs:    [546,52,152,44,"resolve_refs","follow §refs"],
   select_evidence: [546,126,152,38,"select_evidence","dedupe"],
+  answerability:   [774,126,142,38,"answerability","evidence sufficient?"],
   write:           [798,52,118,44,"write","model call"],
   verify:          [946,52,118,44,"verify","5 checks"],
   finalize:        [1094,52,118,44,"finalize","completed"],
@@ -374,7 +375,7 @@ const NODES = {
 };
 const GROUPS = [
   [24,20,476,168,"RESEARCH","bounded loop"],
-  [516,20,200,168,"EVIDENCE","SPEC 9.5"],
+  [516,20,200,168,"EVIDENCE","provenance"],
   [766,20,618,168,"GENERATE","citation gate"],
 ];
 const EDGES = [
@@ -385,6 +386,9 @@ const EDGES = [
   ["e-arr","M324 74 L540 74",""],
   ["e-rrse","M622 96 L622 120","xr"],
   ["e-sew","M698 145 L744 145 L744 74 L792 74",""],
+  ["e-sea","M698 145 L768 145",""],
+  ["e-aw","M845 126 L845 108 L857 108 L857 98",""],
+  ["e-aa","M845 164 L845 178 L1153 178 L1153 170","xr"],
   ["e-wv","M916 74 L940 74",""],
   ["e-vf","M1064 74 L1088 74",""],
   ["e-vr","M1005 96 L1005 120","loop"],
@@ -484,7 +488,7 @@ function markNode(node, state) {
 }
 const ON = {
   search: ["e-entry"], assess: ["e-sa"], refine: ["e-ar","e-rs"],
-  resolve_refs: ["e-arr"], select_evidence: ["e-rrse"], write: ["e-sew"],
+  resolve_refs: ["e-arr"], select_evidence: ["e-rrse"], answerability: ["e-sea"], write: ["e-sew"],
   verify: ["e-wv"], repair: ["e-vr","e-rw"], finalize: ["e-vf"], abstain: ["e-va"],
   fail: ["e-xf"],
 };
@@ -528,7 +532,10 @@ function run(ev) {
       markNode(previous, previous === "resolve_refs" ? "xref" : "done");
     }
     markNode(d.node, "active");
-    (ON[d.node] || []).forEach((id) => $(id)?.classList.add("on"));
+    const incoming = previous === "answerability"
+      ? ({write: ["e-aw"], abstain: ["e-aa"]}[d.node] || ON[d.node])
+      : ON[d.node];
+    (incoming || []).forEach((id) => $(id)?.classList.add("on"));
     previous = d.node;
     $("steps").textContent = `step ${d.index} · ${(d.total_ms/1000).toFixed(2)} s`;
     addLog(d);

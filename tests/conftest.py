@@ -7,13 +7,77 @@ dataset content, which is author-written -- see .claude/rules/evals.md.
 
 from __future__ import annotations
 
+import os
+import socket
+from collections.abc import Iterator
+from pathlib import Path
+from typing import NoReturn
+
 import pytest
 
-from app.config import Settings
+from app.config import Settings, get_settings
 from app.ingestion.store import ChunkStore
 from app.schemas.chunk import Chunk
 from app.schemas.document import Document
 from app.schemas.retrieval import RetrievedChunk
+
+
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    if os.environ.get("CRA_LIVE_MODEL") != "1":
+        for item in items:
+            if item.get_closest_marker("live_model"):
+                item.add_marker(pytest.mark.skip(reason="Requires CRA_LIVE_MODEL=1"))
+
+
+@pytest.fixture(autouse=True)
+def isolated_runtime(
+    monkeypatch: pytest.MonkeyPatch, request: pytest.FixtureRequest
+) -> Iterator[None]:
+    """Local credentials and .env must not alter tests or enable paid calls."""
+    if request.node.get_closest_marker("live_model"):
+        yield
+        return
+
+    for key in os.environ:
+        if key.startswith("CRA_") or key == "ANTHROPIC_API_KEY":
+            monkeypatch.delenv(key)
+    monkeypatch.setitem(Settings.model_config, "env_file", None)
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
+
+
+@pytest.fixture(autouse=True)
+def offline_runtime(monkeypatch: pytest.MonkeyPatch, request: pytest.FixtureRequest) -> None:
+    """Fail closed on external I/O; asyncio's local socketpair remains usable."""
+    if request.node.get_closest_marker("model_download") or request.node.get_closest_marker(
+        "live_model"
+    ):
+        return
+
+    monkeypatch.setenv("HF_HUB_OFFLINE", "1")
+    monkeypatch.setenv("TRANSFORMERS_OFFLINE", "1")
+
+    def denied(*args: object, **kwargs: object) -> NoReturn:
+        raise AssertionError("Network/model access is disabled in the default test suite")
+
+    for method in ("connect", "connect_ex", "sendto", "sendmsg"):
+        original = getattr(socket.socket, method, None)
+        if original is None:
+            continue
+
+        def guard(sock: socket.socket, *args: object, _original=original, **kwargs: object):
+            if sock.family in (socket.AF_INET, socket.AF_INET6):
+                denied()
+            return _original(sock, *args, **kwargs)
+
+        monkeypatch.setattr(socket.socket, method, guard)
+    for method in ("getaddrinfo", "gethostbyname", "gethostbyname_ex", "gethostbyaddr"):
+        monkeypatch.setattr(socket, method, denied)
+
+    # Blocking constructors also detects accidental cache-dependent model loading.
+    monkeypatch.setattr("app.retrieval.embeddings.SentenceTransformer", denied)
+    monkeypatch.setattr("app.retrieval.rerank.CrossEncoder", denied)
 
 
 def make_chunk(
@@ -58,8 +122,8 @@ def make_retrieved(chunk: Chunk, rank: int = 1, score: float = 1.0) -> Retrieved
 
 
 @pytest.fixture
-def settings() -> Settings:
-    return Settings(_env_file=None)
+def settings(tmp_path: Path) -> Settings:
+    return Settings(_env_file=None, data_dir=tmp_path / "corpus", live_model=False)
 
 
 @pytest.fixture

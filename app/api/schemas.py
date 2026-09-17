@@ -1,4 +1,4 @@
-"""Request and response models for the HTTP API. See docs/SPEC.md section 14."""
+"""Request and response models for the HTTP API. See docs/decisions.md"""
 
 from __future__ import annotations
 

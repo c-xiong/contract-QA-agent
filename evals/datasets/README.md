@@ -1,12 +1,13 @@
 # Eval datasets
 
-Three suites live under `evals/datasets/`:
+Suites live under `evals/datasets/`:
 
 | Suite | Questions | Evidence labels | Version | Status |
 |---|---|---|---|---|
 | `hand` | hand-written | expert annotation | `hand-v1` | **41 tasks. The reporting suite — every figure in the top-level README comes from it.** |
 | `full` | model-generated | expert annotation | `provisional-generated-v1` | 41 tasks. Superseded by `hand`; kept so earlier runs stay interpretable. |
 | `smoke` | — | — | — | Empty. A scratch suite for local checks. |
+| `answerability` | AI-authored generic wrapper | Transcribed ContractNLI labels and hypotheses | `provisional-generated-answerability-v1` | 20 supplementary diagnostic tasks; never headline or resume evidence. |
 
 ## Why `full` is not reported
 
@@ -32,7 +33,7 @@ That prints `expected_document_ids` and `expected_evidence` with pages already r
 You supply `question`, `category`, `expected_behavior`, `required_points`,
 `forbidden_claims`, and `dataset_version`.
 
-`docs/authoring-eval-tasks.md` walks through what the job actually involves.
+See [evaluation methodology](../../docs/eval-methodology.md) for provenance and reporting rules.
 
 ## Format
 
@@ -46,7 +47,7 @@ with `#` are ignored, so notes can live in the file.
   the answer and measures nothing.
 - **Do not echo the clause heading.** A question that is literally "governing law" is
   matched by BM25 on the heading alone; it tests keyword search, not retrieval. The eight
-  categories in `docs/SPEC.md` §6.2 were chosen to differ in retrieval character so that
+  categories were chosen to differ in retrieval character so that
   the suite does not become eight copies of one result.
 - **Are specific enough to have one right document.** "Can a party terminate for
   convenience?" is answerable from most of the corpus. Scope it, or set
@@ -66,8 +67,7 @@ of every reported metric. It rejects:
 
 ## Composition
 
-41 tasks, in both `hand` and `full`. `docs/SPEC.md` §6.8 maps every category to its
-ground-truth source.
+41 tasks, in both `hand` and `full`, with ground-truth sources below.
 
 | Category | n | Ground truth |
 |---|---:|---|

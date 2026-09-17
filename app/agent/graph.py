@@ -1,4 +1,4 @@
-"""The LangGraph research workflow. See docs/SPEC.md section 11.1.
+"""The LangGraph research workflow. See docs/decisions.md
 
 AUTHOR-OWNED (CLAUDE.md rule 2). Every `# DECISION:` is a choice to defend.
 
@@ -6,7 +6,10 @@ The Sprint 2 workflow:
 
     search ──▶ assess ──┬─(insufficient)─▶ refine ──▶ search      (bounded loop)
                         │
-                        └─(stop)─▶ resolve_refs ──▶ select_evidence ──▶ write
+                        └─(stop)─▶ resolve_refs ──▶ select_evidence ──▶ answerability
+                                                                         │
+                                                          answer/partial ─┴─▶ write
+                                                          unanswerable ────▶ END
                                                                           │
                                         ┌─────────────────────────────────┘
                                         ▼
@@ -30,6 +33,14 @@ from __future__ import annotations
 from langgraph.graph import END, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
+from app.agent.answerability import (
+    ANSWERABILITY_SYSTEM,
+    ANSWERABILITY_VERSION,
+    AnswerabilityError,
+    build_answerability_prompt,
+    render_abstention,
+    validate_answerability,
+)
 from app.agent.llm import ModelClient, ModelError, StubClient
 from app.agent.policies import locations, refine_query, should_continue_research
 from app.agent.prompts import REPAIR_SYSTEM, WRITER_SYSTEM, build_repair_prompt, build_writer_prompt
@@ -105,6 +116,8 @@ def build_graph(
     verifier: CitationVerifier,
     client: ModelClient,
     store: ChunkStore | None = None,
+    *,
+    answerability_gate: bool = False,
 ) -> ResearchGraph:
     """Compile the research workflow.
 
@@ -258,6 +271,56 @@ def build_graph(
             ),
         )
 
+    async def answerability(state: ResearchState) -> ResearchState:
+        evidence = state.get("evidence", [])
+        active = client.with_evidence(evidence) if isinstance(client, StubClient) else client
+        calls = state.get("model_calls", 0) + 1
+        try:
+            response = await active.complete(
+                ANSWERABILITY_SYSTEM, build_answerability_prompt(state["question"], evidence)
+            )
+        except ModelError as exc:
+            return ResearchState(
+                status="failed",
+                failure="model_timeout" if "exceeded" in str(exc) else "internal_error",
+                failure_detail=str(exc),
+                model_calls=calls,
+                trace=_trace(state, "answerability", f"model error: {exc}"),
+            )
+        usage = ResearchState(
+            input_tokens=state.get("input_tokens", 0) + response.input_tokens,
+            output_tokens=state.get("output_tokens", 0) + response.output_tokens,
+            model_calls=calls,
+        )
+        try:
+            decision = validate_answerability(response.text, evidence)
+        except AnswerabilityError as exc:
+            # DECISION: invalid output is a failure, not a correct abstention. Returning
+            # abstained here would reward a broken judge on every unanswerable eval task.
+            return ResearchState(
+                **usage,
+                status="failed",
+                failure="output_validation",
+                failure_detail=str(exc),
+                trace=_trace(state, "answerability", f"invalid verdict: {exc}"),
+            )
+        update = ResearchState(
+            **usage,
+            answerability=decision,
+            trace=_trace(
+                state,
+                "answerability",
+                f"{decision.verdict}: {decision.reason}",
+                version=ANSWERABILITY_VERSION,
+                verdict=decision.verdict,
+                simulated=isinstance(client, StubClient),
+            ),
+        )
+        if decision.verdict == "unanswerable":
+            update["status"] = "abstained"
+            update["final_answer"] = render_abstention(state["question"], decision, evidence)
+        return update
+
     async def write(state: ResearchState) -> ResearchState:
         evidence = state.get("evidence", [])
         active = client.with_evidence(evidence) if isinstance(client, StubClient) else client
@@ -265,9 +328,17 @@ def build_graph(
         repairing = state.get("repair_attempts", 0) > 0
         if repairing:
             errors = [e.detail for e in state.get("citation_errors", [])]
-            system, user = REPAIR_SYSTEM, build_repair_prompt(state["question"], evidence, errors)
+            system, user = (
+                REPAIR_SYSTEM,
+                build_repair_prompt(
+                    state["question"], evidence, errors, state.get("answerability")
+                ),
+            )
         else:
-            system, user = WRITER_SYSTEM, build_writer_prompt(state["question"], evidence)
+            system, user = (
+                WRITER_SYSTEM,
+                build_writer_prompt(state["question"], evidence, state.get("answerability")),
+            )
 
         try:
             response = await active.complete(system, user)
@@ -276,6 +347,7 @@ def build_graph(
                 status="failed",
                 failure="model_timeout" if "exceeded" in str(exc) else "internal_error",
                 failure_detail=str(exc),
+                model_calls=state.get("model_calls", 0) + 1,
                 trace=_trace(state, "write", f"model error: {exc}"),
             )
 
@@ -283,6 +355,7 @@ def build_graph(
             draft_answer=response.text,
             input_tokens=state.get("input_tokens", 0) + response.input_tokens,
             output_tokens=state.get("output_tokens", 0) + response.output_tokens,
+            model_calls=state.get("model_calls", 0) + 1,
             # "rewrite", not "repair": the repair node already emits a "repair" event,
             # and two different steps sharing one trace label makes a trace unreadable
             # exactly when it is needed -- counting attempts during a failure.
@@ -408,6 +481,13 @@ def build_graph(
         return "select_evidence"
 
     def after_select(state: ResearchState) -> str:
+        if state.get("status") == "abstained":
+            return END
+        return "answerability" if answerability_gate else "write"
+
+    def after_answerability(state: ResearchState) -> str:
+        if state.get("status") == "failed":
+            return "fail"
         return END if state.get("status") == "abstained" else "write"
 
     def after_write(state: ResearchState) -> str:
@@ -436,6 +516,7 @@ def build_graph(
     graph.add_node("refine", refine)
     graph.add_node("resolve_refs", resolve_refs)
     graph.add_node("select_evidence", select_evidence)
+    graph.add_node("answerability", answerability)
     graph.add_node("write", write)
     graph.add_node("verify", verify)
     graph.add_node("finalize", finalize)
@@ -448,7 +529,8 @@ def build_graph(
     graph.add_conditional_edges("assess", after_assess, ["refine", "resolve_refs"])
     graph.add_conditional_edges("refine", after_refine, ["search", "resolve_refs"])
     graph.add_edge("resolve_refs", "select_evidence")
-    graph.add_conditional_edges("select_evidence", after_select, ["write", END])
+    graph.add_conditional_edges("select_evidence", after_select, ["answerability", "write", END])
+    graph.add_conditional_edges("answerability", after_answerability, ["write", "fail", END])
     graph.add_conditional_edges("write", after_write, ["verify", "fail"])
     graph.add_conditional_edges("verify", after_verify, ["finalize", "repair", "abstain"])
     graph.add_edge("repair", "write")

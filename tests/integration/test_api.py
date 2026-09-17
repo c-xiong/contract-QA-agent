@@ -16,7 +16,7 @@ from app.ingestion.store import ChunkStore
 
 @pytest.fixture
 def app(store: ChunkStore, settings: Settings) -> FastAPI:
-    application = create_app()
+    application = create_app(settings=settings)
     application.state.agent = ResearchAgent(store, settings)
     return application
 
@@ -37,14 +37,20 @@ class TestHealth:
         assert body["chunks"] == 4
         assert body["live_model"] is False, "nothing spends money by default"
 
-    def test_missing_corpus_is_reported_not_crashed(self) -> None:
+    def test_missing_corpus_is_reported_not_crashed(self, settings: Settings) -> None:
         """A container that exits on a missing corpus gives a crash loop and no diagnostic."""
-        application = create_app()
-        application.state.agent = None
+        assert not settings.processed_dir.exists()
+        application = create_app(settings=settings)
         with TestClient(application) as test_client:
-            test_client.app.state.agent = None  # type: ignore[attr-defined]
             body = test_client.get("/health").json()
-            assert body["status"] in ("no_corpus", "ok")
+            assert body["status"] == "no_corpus"
+            assert body["documents"] == body["chunks"] == 0
+            assert body["live_model"] is False
+            assert str(settings.processed_dir) in body["note"]
+            assert test_client.get("/documents").status_code == 503
+            assert (
+                test_client.post("/research", json={"question": "governing law"}).status_code == 503
+            )
 
 
 class TestDocuments:
