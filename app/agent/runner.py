@@ -2,17 +2,20 @@
 
 from __future__ import annotations
 
+from contextlib import aclosing
 from dataclasses import dataclass
 from time import perf_counter
 from typing import cast
 
 from app.agent.answerability import AnswerabilityDecision
+from app.agent.execution import v2_states
 from app.agent.graph import build_graph
 from app.agent.llm import build_client
 from app.agent.state import Budget, ResearchState, TraceEvent, initial_state
 from app.config import Settings
 from app.evidence.citation_verifier import CitationVerifier
 from app.ingestion.store import ChunkStore
+from app.observability.events import index_hash, recover_interrupted
 from app.retrieval.base import Retriever
 from app.retrieval.bm25 import Bm25Retriever
 from app.schemas.evidence import Citation, CitationError, Evidence
@@ -38,6 +41,11 @@ class ResearchResult:
     answerability: AnswerabilityDecision | None = None
     model_calls: int = 0
     elapsed_seconds: float = 0.0
+    run_id: str | None = None
+    trace_path: str | None = None
+    tool_calls: int = 0
+    stop_reason: str | None = None
+    usage_known: bool = True
 
     @property
     def abstained(self) -> bool:
@@ -62,6 +70,8 @@ class ResearchAgent:
         *,
         answerability_gate: bool | None = None,
     ):
+        if settings.agent_mode == "v2":
+            recover_interrupted(settings.runs_dir)
         self.store = store
         self.settings = settings
         self.retriever = retriever or Bm25Retriever(store)
@@ -76,6 +86,11 @@ class ResearchAgent:
             self.client,
             store,
             answerability_gate=self.answerability_gate,
+            agent_mode=settings.agent_mode,
+            runs_dir=settings.runs_dir,
+            index_fingerprint=index_hash(settings.index_dir)
+            if settings.agent_mode == "v2"
+            else None,
         )
 
     async def research(
@@ -84,17 +99,33 @@ class ResearchAgent:
         *,
         allowed_document_ids: list[str] | None = None,
         budget: Budget | None = None,
+        requested_versions: dict[str, str] | None = None,
     ) -> ResearchResult:
         state = initial_state(
             question,
             allowed_document_ids=allowed_document_ids,
             budget=budget or Budget(max_chunks_per_query=self.settings.retrieval_top_k),
         )
+        if requested_versions is not None:
+            state["requested_versions"] = requested_versions
         # ainvoke returns the merged state dict; LangGraph types it as dict[str, Any].
         started = perf_counter()
-        final = cast(ResearchState, await self.graph.ainvoke(state))
+        if self.settings.agent_mode == "v2":
+            final = state
+            async with aclosing(v2_states(self.graph, state, self.settings.runs_dir)) as states:
+                async for merged in states:
+                    final = merged
+        else:
+            final = cast(
+                ResearchState, await self.graph.ainvoke(state, config={"recursion_limit": 100})
+            )
 
         return ResearchResult(
+            run_id=final.get("run_id"),
+            trace_path=final.get("trace_path"),
+            tool_calls=final.get("tool_calls", 0),
+            stop_reason=final.get("stop_reason"),
+            usage_known=final.get("usage_known", True),
             question=question,
             answer=final.get("final_answer") or "",
             status=final.get("status", "failed"),

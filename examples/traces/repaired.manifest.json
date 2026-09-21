@@ -1,0 +1,37 @@
+{
+  "run_id": "25981c120427410996dfa369b82c7cfd",
+  "pid": 59046,
+  "git_revision": "0c20140108790e6e2bba58f328d085566e9f30d2",
+  "worktree_dirty": true,
+  "mode": "v2",
+  "model": "scripted-offline-demo",
+  "simulated": true,
+  "usage_kind": "reported",
+  "prompt_version": "v2-planner-1",
+  "tool_version": "v2-tools-1",
+  "code_hash": "1b500bc1a5b2c3699a9d648932325b7cbecd9db779873aef4ead3241e1c2210b",
+  "corpus_hash": "ed569bc257ccd0924007849f46116b350a9391cfdfb1940ea5adee5a7d1f8ac4",
+  "index_hash": null,
+  "document_metadata_hash": "ae357e509e4957ffe7e8aac0b09eceda59ee4ee372cb9ed03640d0b645a4317c",
+  "retriever": "bm25",
+  "versions": {
+    "doc-900": "sha256:49548b35c82c3041ca9aa5bd233a0e3f03d51054f7ed0cef93552887ec1c10b0"
+  },
+  "budget": {
+    "max_searches": 3,
+    "max_research_iterations": 3,
+    "max_queries_per_iteration": 2,
+    "max_chunks_per_query": 5,
+    "max_evidence_chars": 24000,
+    "max_repair_attempts": 1,
+    "max_cross_reference_depth": 1,
+    "max_cross_reference_chunks": 4,
+    "max_tool_calls": 12,
+    "max_model_calls": 12,
+    "max_retries": 1,
+    "max_evidence_items": 20,
+    "deadline_seconds": 120.0
+  },
+  "config_hash": "aec52c07dc114d83d7c06f36145cc943e7aa7b0c03346ea62938a957e372055f",
+  "cache": "no tool-result cache"
+}

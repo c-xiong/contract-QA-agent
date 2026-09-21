@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterator
+from pathlib import Path
 
 import pytest
 from fastapi import FastAPI
@@ -66,6 +67,39 @@ class TestFraming:
 
 
 class TestStream:
+    def test_v2_selection_streams_tools_and_limits(
+        self, app: FastAPI, client: TestClient, tmp_path: Path
+    ) -> None:
+        app.state.agent.settings = app.state.agent.settings.model_copy(
+            update={"runs_dir": tmp_path}
+        )
+        events = collect(client, question="What is the governing law?", mode="v2")
+        start, done = events[0][1], events[-1][1]
+        assert events[0][0] == "start" and events[-1][0] == "done"
+        assert start["agent_mode"] == "v2" and start["live_model"] is False
+        assert app.state.agent.settings.agent_mode == "v1"
+        progress = [p for name, p in events if name == "progress"]
+        assert progress and not any(name in ("node", "error") for name, _ in events)
+        assert any(p["tool"] == "document_search" for p in progress)
+        assert any(p["tool_status"] == "ok" for p in progress)
+        assert all(p["limits"]["max_tool_calls"] == 12 for p in progress)
+        assert all("state" not in p and "arguments" not in p for p in progress)
+        assert {p["node"] for p in progress} <= set(start["nodes"])
+        assert done["total_ms"] >= 0 and done["steps"] == len(progress)
+        assert done["run_id"] and done["usage"]["tool_calls"] > 0
+        assert done["usage"]["max_model_calls"] == 12
+        expected_path = []
+        for event in progress:
+            if not expected_path or expected_path[-1] != event["node"]:
+                expected_path.append(event["node"])
+        assert done["execution_path"] == expected_path
+        assert expected_path[0] == "initialize" and expected_path[-1] == "terminal"
+        assert client.get("/health").json()["agent_mode"] == "v1"
+
+    def test_rejects_unknown_mode(self, client: TestClient) -> None:
+        response = client.get("/research/stream", params={"question": "law", "mode": "v3"})
+        assert response.status_code == 422
+
     def test_emits_start_then_nodes_then_done(self, client: TestClient) -> None:
         events = collect(client, question="What is the governing law?")
         names = [n for n, _ in events]
@@ -110,6 +144,7 @@ class TestStream:
         citation = done["citations"][0]
         assert citation["excerpt"]
         assert citation["source_chunk_id"]
+        assert citation["source_chunk_id"] in {item["source_chunk_id"] for item in done["evidence"]}
         assert citation["pulled_by"] in ("search", "cross_reference")
         assert citation["internal"].startswith("[doc-")
         assert "doc-" not in citation["display"], "display form uses the title"
@@ -206,6 +241,7 @@ class TestPage:
         response = client.get("/")
         assert response.status_code == 200
         assert "trace inspector" in response.text
+        assert response.headers["cache-control"] == "no-store"
 
     def test_page_is_self_contained(self, client: TestClient) -> None:
         """CLAUDE.md rule 4: no npm, no bundler, no framework. The only external

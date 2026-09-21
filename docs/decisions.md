@@ -74,3 +74,30 @@ Use the local trace inspector or `scripts/demo.py --trace`. Explain a clause ref
 the evidence budget, answerability and the citation gate. Open the retrieval comparison
 and a failed answerability case. Explain why valid citations can accompany unsupported
 claims, and what each controlled experiment actually permits you to claim.
+
+## V2: bounded tool selection and durable runs
+
+The API/CLI default stays V1 (`CRA_AGENT_MODE=v2` opts in), while the local inspector
+only displays V2 and passes an explicit per-request mode. V1 remains a backend comparison
+baseline; it has no inspector controls or diagram.
+The model proposes a typed action; code authorizes scope, reserves budgets, admits original
+source chunks and enforces final verification. Five tools share the existing retrieval and
+citation components. See [V2 design](v2_design.md) and [tool contracts](tool_contracts.md).
+
+We chose corpus option B before implementation: keep the current index and frozen hand
+suite. Generated new cases are explicitly provisional. Document content hashes identify
+indexed snapshots because ingestion has no trustworthy legal version labels; we do not
+invent version precedence. Character budgets apply even to the first evidence item, and
+V2 citations must match a joint admitted locator. This tightens structure, not entailment.
+
+Traces persist before SSE delivery in protected local files. Disconnects cancel with a
+terminal record; reconnects cannot silently restart. Dead-process runs are marked failed
+at the next startup. This does not provide crash resumption. Provider SDK retries are
+disabled to keep attempts accountable. The implementation and provisional fixtures were
+created with coding-agent assistance; semantic review is still separate and pending.
+
+The inspector tails the durable journal during execution, rather than waiting for a
+whole graph node to return, so model/tool start events remain visible during slow calls.
+Only whitelisted tool metadata, evidence locators and budget counters reach progress
+events. Mode/arm switches preserve the effective live/stub setting, including degraded
+startup. The existing single-file UI uses V2 progress events without new dependencies.

@@ -153,8 +153,9 @@ header .right{display:flex;align-items:center;gap:16px;margin-left:auto}
   font-size:9.5px;font-weight:700;display:none;align-items:center;justify-content:center}
 .node[data-n]:not([data-state="pending"]) .badge[data-count]{display:flex}
 
-.node[data-state="done"]{background:color-mix(in oklab,var(--teal) 9%,var(--panel));border-style:solid;
-  border-color:color-mix(in oklab,var(--teal) 34%,var(--panel2))}
+.node[data-state="done"]{background:color-mix(in oklab,var(--teal) 18%,var(--panel));border-style:solid;
+  border-color:var(--teal)}
+.node[data-state="done"] .sb{color:var(--sub)}
 .node[data-state="done"] .dot{background:var(--teal)}
 .node[data-state="done"] .lb{color:var(--text)}
 .node[data-state="xref"]{background:color-mix(in oklab,var(--violet) 9%,var(--panel));border-style:solid;
@@ -182,9 +183,9 @@ header .right{display:flex;align-items:center;gap:16px;margin-left:auto}
   0%,100%{box-shadow:0 0 0 3px color-mix(in oklab,var(--amber) 22%,transparent)}
   50%{box-shadow:0 0 0 7px color-mix(in oklab,var(--amber) 6%,transparent)}}
 .edge{stroke:var(--line2);stroke-width:1.4;fill:none;stroke-dasharray:4 3;transition:stroke .2s}
-.edge.on{stroke:var(--teal);stroke-dasharray:none;stroke-width:1.5}
-.edge.loop.on{stroke:var(--amber);stroke-dasharray:4 3}
-.edge.xr.on{stroke:var(--violet);stroke-dasharray:none}
+.edge.on{stroke:var(--teal);stroke-dasharray:none;stroke-width:2.6;marker-end:url(#path-arrow)}
+#route-history{margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:5px;
+  font-family:var(--mono);font-size:11px;line-height:1.7;color:var(--text-soft);overflow-wrap:anywhere}
 #loopnote{position:absolute;left:150px;top:150px;font-family:var(--mono);font-size:9.5px;
   color:var(--amber);display:none}
 
@@ -198,8 +199,8 @@ header .right{display:flex;align-items:center;gap:16px;margin-left:auto}
 #answer{padding:16px 19px;font-size:14.5px;line-height:1.72;min-height:74px;white-space:pre-wrap}
 #answer strong{font-weight:650;color:var(--text)}
 #answer em{font-style:italic}
-#answer code{padding:1px 5px;border:1px solid var(--border);border-radius:4px;
-  background:var(--surface2);font-family:var(--mono);font-size:.9em;color:var(--text)}
+#answer code{padding:1px 5px;border:1px solid var(--line);border-radius:4px;
+  background:var(--panel2);font-family:var(--mono);font-size:.9em;color:var(--text)}
 #answer .cursor{display:inline-block;width:8px;height:17px;margin-left:3px;
   background:var(--amber);vertical-align:-3px;animation:blink 1s step-end infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
@@ -244,6 +245,8 @@ header .right{display:flex;align-items:center;gap:16px;margin-left:auto}
   white-space:nowrap}
 .ev .m{font-family:var(--mono);font-size:9.5px;color:var(--idle);margin-top:2px}
 .ev.xr .m{color:var(--violet)}
+.ev.cited{background:color-mix(in oklab,var(--teal) 7%,var(--panel))}
+.check-note{font-size:11px;line-height:1.5;color:var(--dim);padding:5px 0 10px}
 
 .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 10px;
   font-family:var(--mono);font-size:10.5px}
@@ -277,17 +280,28 @@ header .right{display:flex;align-items:center;gap:16px;margin-left:auto}
   border-color:color-mix(in oklab,var(--violet) 38%,var(--panel));color:var(--violet-fg)}
 .pill.bad{background:color-mix(in oklab,var(--red) 12%,var(--panel));
   border-color:color-mix(in oklab,var(--red) 38%,var(--panel));color:var(--red-fg)}
+.runbar{display:flex;gap:14px;align-items:center;padding:10px 24px 0;color:var(--dim);font-size:12px;flex-wrap:wrap}
+.runbar button{background:var(--panel);border:1px solid var(--line2);border-radius:5px;padding:6px 10px;cursor:pointer;font-size:12px}
+#run-meta{font-family:var(--mono);font-size:10.5px;overflow-wrap:anywhere}
+.field select{max-width:250px}.field input:disabled,.field select:disabled{opacity:.6}
+.node[data-state="cancelled"]{border-style:solid;border-color:var(--amber)}
+.node[data-state="cancelled"] .lb{color:var(--amber-fg)}
+.logrow .s{width:125px;font-size:10px;overflow-wrap:anywhere}
+.logrow.error .s,.logrow.error .d{color:var(--red-fg)}
+.logrow.tool .s{color:var(--teal-fg)}
+@media (max-width:800px){header{height:auto;min-height:54px;flex-wrap:wrap;gap:10px;padding:12px 16px}header .sub,#corpus{display:none}header .right{margin-left:0;flex-wrap:wrap}header .stats{gap:8px}.query{padding:12px 16px}.strip-wrap{padding:16px 16px 0}.body{padding:14px 16px}.strip{transform:none!important}.strip-outer{height:192px!important}.field.grow{min-width:100%}.field select{max-width:190px}.runbar{padding-left:16px}}
 @media (max-width:1200px){.body{flex-direction:column}.col-side{width:100%}}
 </style>
 </head>
 <body>
 
 <header>
-  <!-- <div><span class="brand">contract-research</span><span class="sub">trace inspector — read only</span></div> -->
+  <div><span class="brand">contract-research</span><span class="sub">execution inspector</span></div>
   <div class="right">
     <div class="stats">
+      <span class="pill" id="agent-mode">V2</span><span class="pill" id="runtime">connecting</span>
       <span id="corpus">—</span><span class="sep">|</span>
-      <!-- <span id="arm-lbl">—</span><span class="sep">|</span> -->
+      <span id="arm-lbl">—</span><span class="sep">|</span>
       <span><i class="livedot" id="livedot"></i><span id="model">—</span></span>
     </div>
     <div class="theme">
@@ -303,34 +317,39 @@ header .right{display:flex;align-items:center;gap:16px;margin-left:auto}
 <form class="query" id="form">
   <div class="field grow">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-    <input id="q" autocomplete="off" placeholder="What limits liability, and does it always apply?">
+    <input id="q" aria-label="Contract question" autocomplete="off" placeholder="What limits liability, and does it always apply?">
   </div>
   <div class="field"><label for="docs">docs</label><select id="docs"></select></div>
-  <div class="field"><label for="arm">arm</label><select id="arm"></select></div>
-  <button id="ask" type="submit">Ask</button>
+  <div class="field"><label for="arm">retrieval</label><select id="arm"></select></div>
+  <button id="ask" type="submit" disabled>Ask</button>
 </form>
 
+<div class="runbar">
+  <button type="button" id="example">Try insurance example</button>
+  <span id="run-meta">Select a question and inspect the actual execution.</span>
+</div>
 <div id="note-wrap" style="padding:12px 24px 0;display:none">
   <div class="banner err" id="note"></div>
 </div>
 
 <div class="strip-wrap">
   <div class="strip-head">
-    <span class="hd">Graph</span>
+    <span class="hd" id="graph-title">V2 · Tool-using agent</span>
     <div class="legend">
       <span><i style="background:var(--teal)"></i>done</span>
       <span><i style="background:var(--amber)"></i>running</span>
-      <span><i style="background:var(--violet)"></i>cross-reference</span>
+      <span><i style="background:var(--violet)"></i><span id="violet-legend">abstained</span></span>
       <span><i style="background:var(--inert)"></i>not taken</span>
       <span class="sep" style="color:var(--line2)">|</span><span id="steps">idle</span>
     </div>
   </div>
   <div class="strip-outer"><div class="strip" id="strip"></div></div>
+  <div id="route-history">Actual route · waiting for a run</div>
 </div>
 
 <div class="body">
   <div class="col-main">
-    <div class="rowhd"><span class="hd">Answer</span><span class="pill" id="status">idle</span></div>
+    <div class="rowhd"><span class="hd">Answer</span><span class="pill" id="status" role="status" aria-live="polite">idle</span></div>
     <div class="card" id="answer"><span style="color:var(--dimmer)">Ask a question to start a run.</span></div>
 
     <div class="rowhd" style="margin-top:3px">
@@ -348,7 +367,7 @@ header .right{display:flex;align-items:center;gap:16px;margin-left:auto}
       <div class="grid2" id="budget" style="margin-top:7px"></div>
     </div>
 
-    <div class="rowhd"><span class="hd">Log</span></div>
+    <div class="rowhd"><span class="hd">Execution log</span><span class="meta">events · tool results</span></div>
     <div class="card log" id="log"></div>
   </div>
 </div>
@@ -360,51 +379,49 @@ header .right{display:flex;align-items:center;gap:16px;margin-left:auto}
    diagram library: mermaid re-renders whole diagrams and gives no handle on a single
    node, so live per-node highlighting would mean a full redraw per event. */
 const NODES = {
-  search:          [52, 52,118,44,"search","retrieve"],
-  assess:          [206,52,118,44,"assess","enough?"],
-  refine:          [206,126,118,38,"refine","widen query"],
-  resolve_refs:    [546,52,152,44,"resolve_refs","follow §refs"],
-  select_evidence: [546,126,152,38,"select_evidence","dedupe"],
-  answerability:   [774,126,142,38,"answerability","evidence sufficient?"],
-  write:           [798,52,118,44,"write","model call"],
-  verify:          [946,52,118,44,"verify","5 checks"],
-  finalize:        [1094,52,118,44,"finalize","completed"],
-  repair:          [946,126,118,38,"repair","once"],
-  abstain:         [1094,126,118,38,"abstain","abstained"],
-  fail:            [1242,126,118,38,"fail","failed"],
+  initialize: [52,52,120,44,"initialize","scope + limits"],
+  decide: [236,52,132,44,"decide","choose next action"],
+  authorize: [428,52,144,44,"authorize","scope + arguments"],
+  execute: [636,52,128,44,"execute","typed tool"],
+  write: [838,52,130,44,"write","draft from evidence"],
+  verify: [1028,52,132,44,"verify","mandatory gate"],
+  repair: [1028,126,132,38,"repair","bounded rewrite"],
+  terminal: [1230,89,130,50,"terminal","answer / stop"],
 };
 const GROUPS = [
-  [24,20,476,168,"RESEARCH","bounded loop"],
-  [516,20,200,168,"EVIDENCE","provenance"],
-  [766,20,618,168,"GENERATE","citation gate"],
+  [24,20,772,168,"TOOL LOOP","code-enforced limits"],
+  [814,20,380,168,"ANSWER","citation gate"],
+  [1210,20,174,168,"OUTCOME",""],
 ];
 const EDGES = [
-  ["e-entry","M24 74 L46 74",""],
-  ["e-sa","M170 74 L200 74",""],
-  ["e-ar","M265 96 L265 120","loop"],
-  ["e-rs","M206 145 L178 145 L178 118 L111 118 L111 98","loop"],
-  ["e-arr","M324 74 L540 74",""],
-  ["e-rrse","M622 96 L622 120","xr"],
-  ["e-sew","M698 145 L744 145 L744 74 L792 74",""],
-  ["e-sea","M698 145 L768 145",""],
-  ["e-aw","M845 126 L845 108 L857 108 L857 98",""],
-  ["e-aa","M845 164 L845 178 L1153 178 L1153 170","xr"],
-  ["e-wv","M916 74 L940 74",""],
-  ["e-vf","M1064 74 L1088 74",""],
-  ["e-vr","M1005 96 L1005 120","loop"],
-  ["e-rw","M946 145 L920 145 L920 108 L857 108 L857 98","loop"],
-  ["e-va","M1064 88 L1078 88 L1078 145 L1088 145","xr"],
-  ["e-xf","M1212 145 L1236 145",""],
+  ["v-init-decide","M172 74 L236 74",""],
+  ["v-decide-authorize","M368 74 L428 74",""],
+  ["v-authorize-execute","M572 74 L636 74",""],
+  ["v-authorize-decide","M460 96 L460 116 L270 116 L270 96","loop"],
+  ["v-execute-decide","M700 96 L700 142 L302 142 L302 96","loop"],
+  ["v-authorize-write","M500 52 L500 36 L903 36 L903 52",""],
+  ["v-write-verify","M968 74 L1028 74",""],
+  ["v-verify-repair","M1094 96 L1094 126","loop"],
+  ["v-repair-write","M1028 145 L903 145 L903 96","loop"],
+  ["v-verify-terminal","M1160 74 L1204 74 L1204 114 L1230 114",""],
+  ["v-stop","M302 96 L302 176 L1295 176 L1295 139","xr"],
 ];
-
 const $ = (id) => document.getElementById(id);
+function resetGraph() {
+  visitedPath.length = 0;
+  previous = null;
+  for (const key of Object.keys(counts)) delete counts[key];
+  buildStrip();
+  paintRoute();
+}
 
 /* Header stats are optional markup — any one of them can be commented out of the
    header without these writes throwing on a missing element. Both the /health boot
    and the per-run "start" event carry the same fields, so they share one painter. */
 function paintStats(h) {
   const set = (id, text) => { const el = $(id); if (el) el.textContent = text; };
-  set("corpus", `${h.documents} docs · ${h.chunks.toLocaleString()} chunks`);
+  set("corpus", `${h.documents ?? "—"} docs · ${(h.chunks ?? 0).toLocaleString()} chunks`);
+  set("runtime", h.live_model ? "Live" : "Stub · simulated");
   set("arm-lbl", h.retriever);
   set("model", h.live_model ? `model: ${h.model_id}` : "model: stub");
   const dot = $("livedot");
@@ -419,6 +436,8 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
    compact evidence inspector less stable and require a sanitizer dependency. */
 function renderInlineMarkdown(text) {
   return esc(text)
+    // Contract redactions are literal source text, never Markdown emphasis.
+    .replace(/\[\*+\]/g, value => value.replace(/\*/g, "&#42;"))
     .replace(/`([^`\n]+)`/g, "<code>$1</code>")
     .replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>")
     .replace(/__([^_\n]+)__/g, "<strong>$1</strong>")
@@ -437,7 +456,7 @@ function buildStrip() {
   let paths = "";
   for (const [id,d,cls] of EDGES) paths += `<path id="${id}" class="edge ${cls}" d="${d}"/>`;
   html += `<svg width="1392" height="188" viewBox="0 0 1392 188"
-    style="position:absolute;left:0;top:0;pointer-events:none">${paths}</svg>`;
+    style="position:absolute;left:0;top:0;pointer-events:none"><defs><marker id="path-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="var(--teal)"/></marker></defs>${paths}</svg>`;
   for (const [key,[x,y,w,h,label,sub]] of Object.entries(NODES)) {
     html += `<div class="node" id="n-${key}" data-n="${key}" data-state="pending"
       style="left:${x}px;top:${y}px;width:${w}px;height:${h}px">
@@ -450,13 +469,12 @@ function buildStrip() {
   fitStrip();
 }
 
-/* The strip is authored at a fixed 1392px. Scale it down on narrow viewports rather
-   than reflowing: a graph whose nodes move around between runs is unreadable. */
+/* Keep node positions stable; use horizontal scrolling on small screens. */
 function fitStrip() {
   const outer = document.querySelector(".strip-outer");
   const strip = $("strip");
   const avail = outer.clientWidth;
-  const scale = Math.min(1, avail / 1392);
+  const scale = avail < 800 ? 1 : Math.min(1, avail / 1392);
   strip.style.transform = `scale(${scale})`;
   outer.style.height = `${188 * scale + 4}px`;
 }
@@ -472,6 +490,22 @@ function resetStrip() {
 }
 
 const counts = {};
+const visitedPath = [];
+function paintRoute(status = "") {
+  $("route-history").textContent = `Actual route${status ? " · " + status : ""} · ${visitedPath.length ? visitedPath.join(" → ") : "waiting for execution events"}`;
+}
+function restoreRoute(d) {
+  // Completion carries the recorded route, so missed UI updates cannot erase it.
+  const path = (Array.isArray(d.execution_path) ? d.execution_path : visitedPath).filter(node => NODES[node]);
+  resetGraph(); resetStrip();
+  for (const node of path) advance(node, true);
+  if (path.length) {
+    markNode(path.at(-1), {completed:"terminal",abstained:"abstained",failed:"failed",cancelled:"cancelled"}[d.status] || "done");
+    if (d.verification_ok === false && path.includes("verify")) markNode("verify", "failed");
+  }
+  paintRoute(d.status);
+  if (!path.length) $("route-history").textContent = "Actual route unavailable · no execution path received";
+}
 function markNode(node, state) {
   const el = $(`n-${node}`);
   if (!el) return;
@@ -481,78 +515,120 @@ function markNode(node, state) {
     const b = $(`b-${node}`);
     b.textContent = counts[node]; b.setAttribute("data-count", counts[node]);
   }
-  if ((counts.search || 0) > 1) {
+  const loops = counts.decide || 0;
+  if (loops > 1) {
     $("loopnote").style.display = "block";
-    $("loopn").textContent = counts.search;
+    $("loopnote").style.left = "380px";
+    $("loopn").textContent = loops;
   }
 }
-const ON = {
-  search: ["e-entry"], assess: ["e-sa"], refine: ["e-ar","e-rs"],
-  resolve_refs: ["e-arr"], select_evidence: ["e-rrse"], answerability: ["e-sea"], write: ["e-sew"],
-  verify: ["e-wv"], repair: ["e-vr","e-rw"], finalize: ["e-vf"], abstain: ["e-va"],
-  fail: ["e-xf"],
-};
-
-let source = null;
+let source = null, previous = null, runId = null;
+const EXAMPLE = "What coverage must Aimmune keep in place while the product is being tested or sold?";
 function stop() {
   if (source) { source.close(); source = null; }
+  for (const id of ["q", "docs", "arm", "example"]) $(id).disabled = false;
   $("ask").disabled = false; $("ask").textContent = "Ask";
 }
-
+function cancelRun() {
+  stop();
+  if (previous) markNode(previous, "cancelled");
+  $("status").className = "pill run"; $("status").textContent = "cancelled";
+  $("answer").textContent = "Run cancelled. No final answer was delivered.";
+  $("run-meta").textContent = `${runId ? "Run " + runId + " · " : ""}cancelled by you`;
+  paintRoute("cancelled");
+}
+function advance(node, completed = false) {
+  if (!NODES[node]) return;
+  if (visitedPath.at(-1) !== node) visitedPath.push(node);
+  paintRoute();
+  if (previous && previous !== node && $(`n-${previous}`)?.dataset.state === "active") markNode(previous, "done");
+  const current = $(`n-${node}`)?.dataset.state;
+  if (current !== "active" && (!completed || previous !== node || current === "pending")) markNode(node, "active");
+  const edge = {"initialize:decide":"v-init-decide", "decide:authorize":"v-decide-authorize",
+    "authorize:execute":"v-authorize-execute", "authorize:decide":"v-authorize-decide", "execute:decide":"v-execute-decide",
+    "authorize:write":"v-authorize-write", "write:verify":"v-write-verify",
+    "verify:repair":"v-verify-repair", "repair:write":"v-repair-write",
+    "verify:terminal":"v-verify-terminal"}[`${previous}:${node}`];
+  if (edge) $(edge)?.classList.add("on");
+  else if (node === "terminal" && NODES[previous]) {
+    const [x,y,w,h] = NODES[previous];
+    $("v-stop")?.setAttribute("d", `M${x+w/2} ${y+h} L${x+w/2} 176 L1295 176 L1295 139`);
+    $("v-stop")?.classList.add("on");
+  }
+  if (completed && $(`n-${node}`)?.dataset.state !== "failed") markNode(node, "done");
+  previous = node;
+}
+function paintBudget(u, elapsed = null) {
+  const row = (key, value, warn = false) => `<div class="k">${esc(key)}</div><div class="v${warn ? " warn" : ""}">${esc(value)}</div>`;
+  const pair = (used, max) => `${used ?? 0} / ${max ?? "—"}`;
+  let html = row("searches", pair(u.searches_used, u.max_searches), u.searches_used >= u.max_searches);
+    html += row("tools incl. final check", pair(u.tool_calls, u.max_tool_calls), u.tool_calls >= u.max_tool_calls);
+    html += row("model calls", pair(u.model_calls, u.max_model_calls), u.model_calls >= u.max_model_calls);
+    html += row("evidence", pair(u.evidence_items, u.max_evidence_items));
+    html += row("retries", u.retries ?? 0);
+    html += row("elapsed / limit", `${elapsed == null ? "—" : (elapsed/1000).toFixed(1)} / ${u.deadline_seconds ?? "—"} s`);
+  html += row("repairs", pair(u.repair_attempts, u.max_repair_attempts), u.repair_attempts > 0);
+  html += row("tokens in / out", u.input_tokens == null || u.output_tokens == null ? "unknown" : `${u.input_tokens.toLocaleString()} / ${u.output_tokens.toLocaleString()}`);
+  $("budget").innerHTML = html;
+}
+function paintProgress(d) {
+  runId = d.run_id;
+  $("run-meta").textContent = `Run ${runId}${d.stop_reason ? " · " + d.stop_reason : ""}`;
+  $("steps").textContent = `${d.sequence} events · ${(d.total_ms/1000).toFixed(2)} s`;
+  paintBudget({...d, ...d.limits, evidence_items: d.evidence_ids.length}, d.total_ms);
+  $("ev-sum").textContent = `${d.evidence_ids.length} admitted`;
+  $("evidence").innerHTML = d.evidence_refs.map(e => `<div class="ev"><span class="mk">&#9679;</span><div><div class="c">${esc([e.doc_id,e.page ? "p."+e.page : null,e.section ? "§"+e.section : null].filter(Boolean).join(" "))}</div><div class="m">${esc(e.chunk_id)}</div></div></div>`).join("") || '<div class="empty"><div class="t">Waiting for evidence</div></div>';
+  const finished = ["node_completed", "verification_completed", "draft_created"].includes(d.event_type);
+  if (d.event_type === "run_started") advance("initialize");
+  else if (["model_started", "tool_started", "repair_started"].includes(d.event_type) || finished) advance(d.node, finished);
+  else if (d.event_type.startsWith("run_")) {
+    advance("terminal");
+    markNode("terminal", {completed:"terminal",abstained:"abstained",failed:"failed",cancelled:"cancelled"}[d.status] || "done");
+  }
+  if (d.tool && ["authorize", "execute"].includes(d.node)) {
+    const sub = $("n-execute")?.querySelector(".sb"); if (sub) sub.textContent = d.tool;
+  }
+  if (d.event_type === "model_started") $("answer").innerHTML = `<span style="color:var(--dimmer)">${d.node === "write" ? "Drafting from admitted evidence…" : "Choosing the next action…"}</span><span class="cursor"></span>`;
+  if (d.event_type === "verification_completed") markNode("verify", d.verification_ok ? "done" : "failed");
+  if (d.event_type === "evidence_added") return;
+  if (d.event_type === "node_completed" && d.node === "execute") return;
+  const detail = [d.event_type.replaceAll("_", " "), d.reason?.replaceAll("_", " "), d.tool_status,
+    d.error_code, d.verification_ok == null ? null : (d.verification_ok ? "citations passed" : "citations rejected"),
+    d.stop_reason].filter(Boolean).join(" · ");
+  addLog({node: d.tool || d.node, detail, elapsed_ms: d.elapsed_ms == null ? "—" : Math.round(d.elapsed_ms),
+    kind: d.event_type === "tool_failed" ? "error" : d.tool ? "tool" : ""});
+}
 function run(ev) {
   ev.preventDefault();
-  if (source) { stop(); return; }
-
+  if (source) { cancelRun(); return; }
   const q = $("q").value.trim() || $("q").placeholder;
-  const docs = $("docs").value;
-  const arm = $("arm").value;
-
-  resetStrip();
-  for (const k of Object.keys(counts)) delete counts[k];
-  $("answer").innerHTML = `<span style="color:var(--dimmer)">waiting for the first node…</span>`;
+  const docs = $("docs").value, arm = $("arm").value;
+  resetGraph(); resetStrip(); previous = null; runId = null;
+  $("answer").innerHTML = '<span style="color:var(--dimmer)">Preparing the selected retriever…</span>';
   $("cites").innerHTML = ""; $("cite-sum").textContent = "—";
   $("evidence").innerHTML = ""; $("ev-sum").textContent = "—";
   $("budget").innerHTML = ""; $("log").innerHTML = "";
+  $("run-meta").textContent = "Starting a new run…";
   $("status").className = "pill run"; $("status").textContent = "running";
   $("ask").textContent = "Stop";
-
-  const params = new URLSearchParams({ question: q, arm });
+  for (const id of ["q", "docs", "arm", "example"]) $(id).disabled = true;
+  const params = new URLSearchParams({question: q, arm, mode: "v2"});
   if (docs) params.set("document_ids", docs);
-  source = new EventSource(`/research/stream?${params}`);
-  let previous = null;
-
-  source.addEventListener("start", (e) => {
-    const d = JSON.parse(e.data);
-    paintStats(d);
+  const stream = new EventSource(`/research/stream?${params}`); source = stream;
+  const on = (type, handler) => stream.addEventListener(type, e => {if (source === stream) handler(e);});
+  on("start", e => {
+    const d = JSON.parse(e.data); paintStats(d);
+    $("run-meta").textContent = `${d.agent_mode.toUpperCase()} · ${d.retriever} · ${d.live_model ? "live model" : "simulated planner and answers"}`;
   });
-
-  source.addEventListener("node", (e) => {
-    const d = JSON.parse(e.data);
-    if (previous && $(`n-${previous}`)?.dataset.state === "active") {
-      markNode(previous, previous === "resolve_refs" ? "xref" : "done");
-    }
-    markNode(d.node, "active");
-    const incoming = previous === "answerability"
-      ? ({write: ["e-aw"], abstain: ["e-aa"]}[d.node] || ON[d.node])
-      : ON[d.node];
-    (incoming || []).forEach((id) => $(id)?.classList.add("on"));
-    previous = d.node;
-    $("steps").textContent = `step ${d.index} · ${(d.total_ms/1000).toFixed(2)} s`;
-    addLog(d);
-    if (d.node === "write") {
-      $("answer").innerHTML =
-        `<span style="color:var(--dimmer)">generating…</span><span class="cursor"></span>`;
-    }
-  });
-
-  source.addEventListener("done", (e) => { render(JSON.parse(e.data), previous); stop(); });
-
-  source.addEventListener("error", (e) => {
-    let detail = "stream closed unexpectedly";
-    try { detail = JSON.parse(e.data).detail; } catch (_) { /* transport-level */ }
+  on("progress", e => paintProgress(JSON.parse(e.data)));
+  on("done", e => {render(JSON.parse(e.data)); stop();});
+  on("error", e => {
+    let detail = "Connection interrupted. The run will not restart automatically.";
+    try {detail = JSON.parse(e.data).detail;} catch (_) { /* transport error */ }
+    if (previous) markNode(previous, "failed");
     $("status").className = "pill bad"; $("status").textContent = "error";
-    $("answer").innerHTML = `<div class="banner err">${esc(detail)}</div>`;
-    stop();
+    $("answer").innerHTML = `<div class="banner err">${esc(detail)}</div>`; stop();
+    paintRoute("interrupted");
   });
 }
 
@@ -562,7 +638,7 @@ function addLog(d) {
   if (m.query) extra.push(`q “${m.query}”`);
   if (m.error_codes?.length) extra.push(m.error_codes.join(", "));
   const row = document.createElement("div");
-  row.className = "logrow";
+  row.className = "logrow " + (d.kind || "");
   row.innerHTML =
     `<span class="t">${d.elapsed_ms} ms</span>` +
     `<span class="s">${esc(d.node)}</span>` +
@@ -571,14 +647,14 @@ function addLog(d) {
   $("log").scrollTop = $("log").scrollHeight;
 }
 
-function render(d, lastNode) {
-  const terminal = { completed: "terminal", abstained: "abstained", failed: "failed" }[d.status];
-  if (lastNode) markNode(lastNode, terminal || "done");
+function render(d) {
+  restoreRoute(d);
 
   $("status").className = "pill " +
     ({ completed: "ok", abstained: "abs", failed: "bad" }[d.status] || "");
   $("status").textContent = `${d.status} · ${(d.total_ms/1000).toFixed(2)} s`;
-  $("steps").textContent = `${d.steps} steps · ${(d.total_ms/1000).toFixed(2)} s`;
+  $("steps").textContent = `${d.steps} events · ${(d.total_ms/1000).toFixed(2)} s`;
+  $("run-meta").textContent = `${d.run_id ? "Run " + d.run_id + " · " : ""}${d.stop_reason || d.status}`;
 
   /* Answer, with each citation replaced by a numbered chip that scrolls to its card. */
   let answer = renderInlineMarkdown(d.answer);
@@ -591,20 +667,25 @@ function render(d, lastNode) {
     `<span style="color:var(--dimmer)">(no answer text)</span>`;
   if (d.status === "abstained") {
     $("answer").insertAdjacentHTML("afterbegin",
-      `<div class="banner abs" style="margin-bottom:12px">Abstained — the run stopped rather than assert something the evidence does not carry.</div>`);
+      `<div class="banner abs" style="margin-bottom:12px">Abstained — no verified final answer was delivered.</div>`);
   }
   $("answer").querySelectorAll("[data-go]").forEach((el) =>
     el.addEventListener("click", () =>
       $(el.dataset.go)?.scrollIntoView({ behavior: "smooth", block: "center" })));
 
+  if (/\[\*+\]/.test(d.answer)) {
+    $("answer").insertAdjacentHTML("afterbegin", '<div class="banner abs" style="margin-bottom:12px">Source redaction: [***] marks withheld information. The hidden amounts or text are unavailable.</div>');
+  }
+
   /* Citations */
   const bad = d.citation_errors.length;
   $("cite-sum").textContent =
-    `${d.citations.length + bad} emitted · ${d.citations.length} verified · ${bad} rejected`;
+    d.status === "completed" && !bad ? `${d.citations.length} citations · location checked` : `${d.citations.length} draft citations · ${bad} check errors`;
   const cites = $("cites");
   cites.innerHTML = "";
   d.citations.forEach((c) => {
     const xr = c.pulled_by === "cross_reference";
+    const valid = !d.citation_errors.some(e => e.raw === c.internal) && d.status === "completed";
     const el = document.createElement("div");
     el.className = "card cite" + (xr ? " xr" : "");
     el.id = `c${c.index}`;
@@ -613,11 +694,11 @@ function render(d, lastNode) {
       `<div class="top"><span class="num">${c.index}</span>` +
       `<span class="ref">${esc(c.internal)}</span><span style="color:var(--sub)">·</span>` +
       `<span class="ttl">${esc(c.document_title)}</span>` +
-      `<span class="ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>verified</span></div>` +
+      `<span class="${valid ? "ok" : "bad-lbl"}">${valid ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>` : ""}${valid ? "location checked" : "draft citation"}</span></div>` +
       (c.excerpt ? `<div class="ex">${esc(c.excerpt)}</div>` : "") +
       `<div class="pv">${c.source_chunk_id ? `<span>chunk ${esc(c.source_chunk_id)}</span>` : ""}` +
       (xr ? `<span class="xrk">pulled_by cross_reference</span>`
-          : `<span>pulled_by search</span>`) + `</div>`;
+          : `<span>admitted evidence</span>`) + `</div>`;
     cites.appendChild(el);
   });
   d.citation_errors.forEach((err, i) => {
@@ -636,23 +717,27 @@ function render(d, lastNode) {
       `<div class="s">an uncited answer does not pass the gate</div></div>`;
   }
 
+  if (d.citations.length) {
+    cites.insertAdjacentHTML("beforeend", '<div class="check-note">Location checked: the citation exists within admitted evidence. This does not verify that every answer claim is supported.</div>');
+  }
+
   /* Evidence */
-  const xrn = d.evidence.filter((e) => e.pulled_by === "cross_reference").length;
-  $("ev-sum").innerHTML =
-    `${d.evidence.length} · <span style="color:var(--violet)">${xrn} xref</span>`;
+  const citedChunks = new Set(d.citations.map(c => c.source_chunk_id).filter(Boolean));
+  const citedCount = d.evidence.filter(e => citedChunks.has(e.source_chunk_id)).length;
+  $("ev-sum").textContent = `${d.evidence.length} admitted · ${citedCount} cited`;
   const ev = $("evidence");
   ev.innerHTML = "";
   d.evidence.slice(0, 12).forEach((e) => {
-    const xr = e.pulled_by === "cross_reference";
+    const cited = citedChunks.has(e.source_chunk_id);
     const loc = [e.document_id, e.page_number ? `p.${e.page_number}` : null,
                  e.section_id ? `§${e.section_id}` : null].filter(Boolean).join(" ");
     const el = document.createElement("div");
-    el.className = "ev" + (xr ? " xr" : "");
+    el.className = "ev" + (cited ? " cited" : "");
     el.innerHTML =
-      `<span class="mk">${xr ? "&#8627;" : "&#9679;"}</span><div style="flex:1;min-width:0">` +
+      `<span class="mk">${cited ? "&#9679;" : "&#9675;"}</span><div style="flex:1;min-width:0">` +
       `<div class="c">${esc(loc)}</div>` +
       `<div class="d">${esc((e.excerpt || "").replace(/\s+/g, " ").slice(0, 64))}…</div>` +
-      `<div class="m">${xr ? "cross_reference" : "search"}</div></div>`;
+      `<div class="m">${cited ? "cited in answer" : "context · not cited"}</div></div>`;
     ev.appendChild(el);
   });
   if (d.evidence.length > 12) {
@@ -665,16 +750,7 @@ function render(d, lastNode) {
   }
 
   /* Budget */
-  const u = d.usage;
-  const row = (k, v, warn) =>
-    `<div class="k">${k}</div><div class="v${warn ? " warn" : ""}">${v}</div>`;
-  $("budget").innerHTML =
-    row("searches", `${u.searches_used} / ${u.max_searches}`, u.searches_used >= u.max_searches) +
-    row("iterations", `${u.iterations} / ${u.max_iterations}`, u.iterations >= u.max_iterations) +
-    row("repairs", `${u.repair_attempts} / ${u.max_repair_attempts}`, u.repair_attempts > 0) +
-    row("xref pulled", `${u.cross_reference_pulled} / ${u.max_cross_reference_chunks}`,
-        u.cross_reference_pulled >= u.max_cross_reference_chunks) +
-    row("tokens", (u.input_tokens + u.output_tokens).toLocaleString(), false);
+  paintBudget(d.usage, d.total_ms);
 
   if (d.status === "failed" && d.failure) {
     $("answer").insertAdjacentHTML("afterbegin",
@@ -706,6 +782,12 @@ applyTheme();
 /* ── boot ─────────────────────────────────────────────── */
 buildStrip();
 $("form").addEventListener("submit", run);
+$("example").addEventListener("click", () => {
+  $("q").value = EXAMPLE; $("docs").value = "";
+  if ([...$("arm").options].some(o => o.value === "rrf_hybrid_rerank")) $("arm").value = "rrf_hybrid_rerank";
+  if (!runId) $("run-meta").textContent = "Example ready · all documents · press Ask.";
+  $("q").focus();
+});
 
 Promise.all([
   fetch("/documents").then((r) => r.json()).catch(() => []),
@@ -713,7 +795,8 @@ Promise.all([
   fetch("/health").then((r) => r.json()).catch(() => null),
 ]).then(([docs, arms, health]) => {
   const sel = $("docs");
-  sel.innerHTML = `<option value="">all ${docs.length}</option>`;
+  docs = Array.isArray(docs) ? docs : []; arms = Array.isArray(arms) ? arms : [];
+  sel.innerHTML = `<option value="">All documents (${docs.length})</option>`;
   docs.forEach((d) => {
     const o = document.createElement("option");
     o.value = d.document_id;
@@ -727,8 +810,10 @@ Promise.all([
     armSel.appendChild(o);
   });
   if (health) {
+    $("ask").disabled = health.status === "no_corpus";
     armSel.value = arms.includes(health.retriever) ? health.retriever : arms[0] || "";
     paintStats(health);
+    if (!health.live_model) $("run-meta").textContent = "Stub mode · tools run locally; planner and answers are simulated.";
     if (health.note) {
       $("note").textContent = health.note;
       $("note-wrap").style.display = "block";

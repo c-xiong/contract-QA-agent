@@ -11,13 +11,15 @@ visible and nobody has to rediscover what was intended.
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
-from typing import Literal, TypedDict
+from typing import Any, Literal, TypedDict
 
 from app.agent.answerability import AnswerabilityDecision
 from app.schemas.evidence import Citation, CitationError, Evidence
 from app.schemas.retrieval import RetrievedChunk
 
-Status = Literal["planning", "researching", "writing", "completed", "abstained", "failed"]
+Status = Literal[
+    "planning", "researching", "writing", "completed", "abstained", "failed", "cancelled"
+]
 
 # SPEC 11.4's failure taxonomy. A closed set, so failures can be counted per category
 # across an eval run instead of arriving as unclassifiable free text.
@@ -61,6 +63,12 @@ class Budget:
     max_cross_reference_depth: int = 1
     max_cross_reference_chunks: int = 4
 
+    max_tool_calls: int = 12
+    max_model_calls: int = 12
+    max_retries: int = 1
+    max_evidence_items: int = 20
+    deadline_seconds: float = 120.0
+
     def with_searches(self, n: int) -> Budget:
         """Narrow the search budget, leaving every other limit intact."""
         return replace(
@@ -90,6 +98,24 @@ class ResearchState(TypedDict, total=False):
       validation happens at the boundary, in the schemas.
     """
 
+    # V2 extensions: immutable references and execution metadata stay in the graph.
+    run_id: str
+    trace_path: str
+    deadline_at: float
+    requested_versions: dict[str, str]
+    evidence_by_id: dict[str, Any]
+    tool_results_by_call_id: dict[str, Any]
+    next_action: dict[str, Any]
+    validated_arguments: dict[str, Any]
+    seen_action_fingerprints: dict[str, int]
+    tool_calls: int
+    retries: int
+    argument_corrections: int
+    last_event_sequence: int
+    verification_ok: bool
+    model_call_reserved: bool
+    usage_known: bool
+    calculations: list[dict[str, Any]]
     # --- Input ---
     question: str
     allowed_document_ids: list[str] | None

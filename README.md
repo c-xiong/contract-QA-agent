@@ -1,14 +1,18 @@
 # Eval-Driven Contract Research Agent
 
-A bounded contract QA workflow that retrieves clauses, follows explicit cross-references,
-optionally checks evidence answerability, and verifies citation locations
-in deterministic code. The corpus contains 40 CUAD agreements, 10 ContractNLI NDAs and
-6 labelled synthetic variants: **56 documents and 6,270 chunks**.
+A bounded contract QA system over public CUAD/ContractNLI data and labelled synthetic
+variants, with deterministic citation checks and an auditable evaluation workflow.
 
-The main engineering artifact is the evaluation: a frozen **41-question, author-reviewed
-suite**, versioned retrieval/answer graders, controlled ablations and checked-in per-task
-results. The system is a LangGraph workflow with explicit Python tools and working state;
-it does not claim autonomous tool selection, an LLM planner or persistent conversation memory.
+**V2 is available via `CRA_AGENT_MODE=v2`.** It adds model-selected typed tools,
+code-enforced document/snapshot scope, execution budgets, a mandatory citation gate,
+and persistent local traces. V1 remains the default baseline until live V2 evaluation
+and independent manual review are complete. The existing **41-question author-reviewed
+regression suite** is unchanged; **24 new provisional cases** exercise definitions,
+snapshot comparison, date calculations, and unsupported inputs.
+
+See [V2 implementation and limitations](docs/v2_design.md),
+[measured validation status](reports/v2_results.md), and
+[three synthetic trace demonstrations](examples/traces/README.md).
 
 ## Quickstart
 
@@ -46,6 +50,52 @@ CRA_LIVE_MODEL=0 uv run pytest -m corpus       # downloaded ContractNLI required
 On macOS, if the native FAISS/BLAS stack crashes or oversubscribes threads, run retrieval
 with `OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 TOKENIZERS_PARALLELISM=false`.
 The closeout retrieval experiment used these limits and reproduced the prior scores.
+
+## Run V2
+
+```bash
+# Offline fixture planner: tests wiring, not answer quality.
+CRA_LIVE_MODEL=0 CRA_AGENT_MODE=v2 uv run python -m scripts.demo --trace --docs doc-001 "What limits liability?"
+CRA_LIVE_MODEL=0 CRA_AGENT_MODE=v2 uv run uvicorn app.api.main:app
+CRA_LIVE_MODEL=0 uv run python -m scripts.v2_demo
+
+# Separate paired artifacts: never pool the old and provisional suites.
+CRA_LIVE_MODEL=0 uv run python -m experiments.v2_comparison --suite hand
+CRA_LIVE_MODEL=0 uv run python -m experiments.v2_comparison --suite v2
+```
+
+`GET /documents` exposes `version_id` content hashes; `POST /research` accepts an optional
+`requested_versions` mapping. These identify indexed snapshots, not legal version order.
+The local inspector displays only V2 and explicitly requests
+`GET /research/stream?mode=v2`, independently of the server's default mode. Changing
+retrieval preserves the server's live/stub setting. V2 SSE publishes `start`,
+redacted `progress` events with event IDs, then an authorized final `done` response.
+The diagram, execution log, evidence locations and budget counters follow these events;
+slow model calls publish their start before they finish. Stop closes the stream and
+cancels in-flight work. Reconnects carrying `Last-Event-ID` receive
+409 instead of silently starting another run. Private `runs/<id>/` files are gitignored.
+
+Click **Try insurance example**, then **Ask** to search all documents in V2 using
+`rrf_hybrid_rerank`: “What coverage must Aimmune keep in place while the product is being
+tested or sold?” Inspect `doc-011`, page 38, §11.5 for clinical-trial/product-liability
+insurance. Coverage amounts are redacted in the source and must not be invented. The
+header distinguishes live answers from simulated stub answers; this example is a manual
+demo, not an additional evaluation result.
+
+Evidence cards distinguish cited passages from uncited context. Citation checks validate
+locations and admission, not semantic support for every claim. Literal `[***]` source
+redactions are preserved in answer rendering. Preparing the example does not erase the
+previous run's graph; a new **Ask** resets the displayed run.
+The final SSE response includes `execution_path`, derived from persisted events. The UI
+rebuilds the completed route from it, retaining highlighted nodes, directional edges,
+visit counts and a text route even if intermediate UI updates were missed. Unvisited
+branches remain gray.
+
+For actual model-selected routing, explicitly enable `CRA_LIVE_MODEL=1`. This adds one
+planner call per decision (up to the shared 12-model-call ceiling, including writing and
+repair); calls and tokens are recorded. No paid V2 run was used for the checked-in offline
+report. The [evaluation protocol](docs/evaluation_protocol.md) explains human labels and
+why stub/provisional results cannot become resume claims.
 
 ## Current results
 

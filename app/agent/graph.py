@@ -30,6 +30,9 @@ otherwise catch.
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from langgraph.graph import END, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
@@ -118,6 +121,9 @@ def build_graph(
     store: ChunkStore | None = None,
     *,
     answerability_gate: bool = False,
+    agent_mode: str = "v1",
+    runs_dir: Path = Path("runs"),
+    index_fingerprint: str | None = None,
 ) -> ResearchGraph:
     """Compile the research workflow.
 
@@ -340,6 +346,11 @@ def build_graph(
                 build_writer_prompt(state["question"], evidence, state.get("answerability")),
             )
 
+        if state.get("calculations"):
+            user += (
+                "\nDerived calculations (cite their governing evidence, not the calculation as a source quote):\n"
+                + json.dumps(state["calculations"])
+            )
         try:
             response = await active.complete(system, user)
         except ModelError as exc:
@@ -347,7 +358,8 @@ def build_graph(
                 status="failed",
                 failure="model_timeout" if "exceeded" in str(exc) else "internal_error",
                 failure_detail=str(exc),
-                model_calls=state.get("model_calls", 0) + 1,
+                model_calls=state.get("model_calls", 0)
+                + (0 if state.get("model_call_reserved") else 1),
                 trace=_trace(state, "write", f"model error: {exc}"),
             )
 
@@ -355,7 +367,8 @@ def build_graph(
             draft_answer=response.text,
             input_tokens=state.get("input_tokens", 0) + response.input_tokens,
             output_tokens=state.get("output_tokens", 0) + response.output_tokens,
-            model_calls=state.get("model_calls", 0) + 1,
+            model_calls=state.get("model_calls", 0)
+            + (0 if state.get("model_call_reserved") else 1),
             # "rewrite", not "repair": the repair node already emits a "repair" event,
             # and two different steps sharing one trace label makes a trace unreadable
             # exactly when it is needed -- counting attempts during a failure.
@@ -447,6 +460,16 @@ def build_graph(
             ),
             trace=_trace(state, "fail", f"{kind}: {detail}"),
         )
+
+    if agent_mode == "v2":
+        from app.agent.tool_registry import ToolRegistry
+        from app.agent.v2 import V2Runtime
+
+        if store is None:
+            raise ValueError("V2 requires a source store")
+        return V2Runtime(
+            ToolRegistry(store, retriever, verifier), client, runs_dir, index_fingerprint
+        ).compile(write)
 
     # --- Routing ------------------------------------------------------------
 

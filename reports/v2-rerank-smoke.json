@@ -1,0 +1,1671 @@
+{
+  "provenance": {
+    "artifact_schema_version": "2",
+    "run_id": "1cf6e6d9-60fb-4141-b173-7e2b382c2c08",
+    "started_at": "2026-09-20T16:26:11+00:00",
+    "git_sha": "0c20140108790e6e2bba58f328d085566e9f30d2",
+    "git_worktree_dirty": true,
+    "source_sha256": "c713e25983c233ccf072a803a0ed22e9cbf35aee618589372dc062797f6ec552",
+    "dataset_name": "hand",
+    "dataset_version": "hand-v1",
+    "dataset_sha256": "a4e70da987e1e18a7afd01814e11848f065e43824a1eabfdd664b39d9388d4dc",
+    "document_count": 56,
+    "chunk_count": 6270,
+    "chunks_sha256": "af72cb27f5343b58beeba7fa6cdea0b241cfb38651e9151d40c7e215f7df1daf",
+    "retrieval_arm": "rrf_hybrid_rerank",
+    "top_k": 5,
+    "model_id": "stub",
+    "grader_versions": {
+      "diagnostics": "v2-diagnostics@1"
+    },
+    "budget": {
+      "max_searches": 3,
+      "max_research_iterations": 3,
+      "max_queries_per_iteration": 2,
+      "max_chunks_per_query": 5,
+      "max_evidence_chars": 24000,
+      "max_repair_attempts": 1,
+      "max_cross_reference_depth": 1,
+      "max_cross_reference_chunks": 4,
+      "max_tool_calls": 12,
+      "max_model_calls": 12,
+      "max_retries": 1,
+      "max_evidence_items": 20,
+      "deadline_seconds": 120.0
+    },
+    "document_metadata_hash": "928967255bb687204e7a866adc6822d26a589c323fc98ba98de51e6694e61a76",
+    "index_hash": "507e0fb3fb86bde1b6c8dce3c2bf930a7ed9e8444a04bac0d27b6ca8437d5672",
+    "trial_count": 1,
+    "task_count": 2,
+    "live_model": false,
+    "reporting_eligible": false,
+    "manual_review_complete": false,
+    "cache": "shared retriever/model cache; no response cache; V1 runs before V2 per case"
+  },
+  "summary": {
+    "groups": {
+      "v1": {
+        "all": {
+          "n": 2,
+          "statuses": {
+            "completed": 2
+          },
+          "answer_abstain_decision": {
+            "count": 2,
+            "denominator": 2,
+            "rate": 1.0
+          },
+          "false_abstention": {
+            "count": 0,
+            "denominator": 2,
+            "rate": 0.0
+          },
+          "structural_gate_pass": {
+            "count": 2,
+            "denominator": 2,
+            "rate": 1.0
+          },
+          "task_success": null,
+          "semantic_support": null,
+          "median_latency_seconds": 1.903425291995518,
+          "median_model_calls": 1.0,
+          "median_tool_calls": null,
+          "median_input_tokens": 846.5,
+          "median_output_tokens": 117.0
+        },
+        "answerable": {
+          "n": 2,
+          "statuses": {
+            "completed": 2
+          },
+          "answer_abstain_decision": {
+            "count": 2,
+            "denominator": 2,
+            "rate": 1.0
+          },
+          "false_abstention": {
+            "count": 0,
+            "denominator": 2,
+            "rate": 0.0
+          },
+          "structural_gate_pass": {
+            "count": 2,
+            "denominator": 2,
+            "rate": 1.0
+          },
+          "task_success": null,
+          "semantic_support": null,
+          "median_latency_seconds": 1.903425291995518,
+          "median_model_calls": 1.0,
+          "median_tool_calls": null,
+          "median_input_tokens": 846.5,
+          "median_output_tokens": 117.0
+        },
+        "unanswerable": {
+          "n": 0,
+          "statuses": {},
+          "answer_abstain_decision": {
+            "count": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "false_abstention": {
+            "count": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "structural_gate_pass": {
+            "count": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "task_success": null,
+          "semantic_support": null,
+          "median_latency_seconds": null,
+          "median_model_calls": null,
+          "median_tool_calls": null,
+          "median_input_tokens": null,
+          "median_output_tokens": null
+        },
+        "single_document_fact_lookup": {
+          "n": 2,
+          "statuses": {
+            "completed": 2
+          },
+          "answer_abstain_decision": {
+            "count": 2,
+            "denominator": 2,
+            "rate": 1.0
+          },
+          "false_abstention": {
+            "count": 0,
+            "denominator": 2,
+            "rate": 0.0
+          },
+          "structural_gate_pass": {
+            "count": 2,
+            "denominator": 2,
+            "rate": 1.0
+          },
+          "task_success": null,
+          "semantic_support": null,
+          "median_latency_seconds": 1.903425291995518,
+          "median_model_calls": 1.0,
+          "median_tool_calls": null,
+          "median_input_tokens": 846.5,
+          "median_output_tokens": 117.0
+        }
+      },
+      "v2": {
+        "all": {
+          "n": 2,
+          "statuses": {
+            "completed": 2
+          },
+          "answer_abstain_decision": {
+            "count": 2,
+            "denominator": 2,
+            "rate": 1.0
+          },
+          "false_abstention": {
+            "count": 0,
+            "denominator": 2,
+            "rate": 0.0
+          },
+          "structural_gate_pass": {
+            "count": 2,
+            "denominator": 2,
+            "rate": 1.0
+          },
+          "task_success": null,
+          "semantic_support": null,
+          "median_latency_seconds": 1.7835564578417689,
+          "median_model_calls": 1.0,
+          "median_tool_calls": 3.0,
+          "median_input_tokens": 1323.5,
+          "median_output_tokens": 117.0
+        },
+        "answerable": {
+          "n": 2,
+          "statuses": {
+            "completed": 2
+          },
+          "answer_abstain_decision": {
+            "count": 2,
+            "denominator": 2,
+            "rate": 1.0
+          },
+          "false_abstention": {
+            "count": 0,
+            "denominator": 2,
+            "rate": 0.0
+          },
+          "structural_gate_pass": {
+            "count": 2,
+            "denominator": 2,
+            "rate": 1.0
+          },
+          "task_success": null,
+          "semantic_support": null,
+          "median_latency_seconds": 1.7835564578417689,
+          "median_model_calls": 1.0,
+          "median_tool_calls": 3.0,
+          "median_input_tokens": 1323.5,
+          "median_output_tokens": 117.0
+        },
+        "unanswerable": {
+          "n": 0,
+          "statuses": {},
+          "answer_abstain_decision": {
+            "count": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "false_abstention": {
+            "count": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "structural_gate_pass": {
+            "count": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "task_success": null,
+          "semantic_support": null,
+          "median_latency_seconds": null,
+          "median_model_calls": null,
+          "median_tool_calls": null,
+          "median_input_tokens": null,
+          "median_output_tokens": null
+        },
+        "single_document_fact_lookup": {
+          "n": 2,
+          "statuses": {
+            "completed": 2
+          },
+          "answer_abstain_decision": {
+            "count": 2,
+            "denominator": 2,
+            "rate": 1.0
+          },
+          "false_abstention": {
+            "count": 0,
+            "denominator": 2,
+            "rate": 0.0
+          },
+          "structural_gate_pass": {
+            "count": 2,
+            "denominator": 2,
+            "rate": 1.0
+          },
+          "task_success": null,
+          "semantic_support": null,
+          "median_latency_seconds": 1.7835564578417689,
+          "median_model_calls": 1.0,
+          "median_tool_calls": 3.0,
+          "median_input_tokens": 1323.5,
+          "median_output_tokens": 117.0
+        }
+      }
+    },
+    "paired": {
+      "evidence_recall_at_5": {
+        "wins": 0,
+        "losses": 0,
+        "ties": 2,
+        "n": 2
+      },
+      "trajectory_evidence_recall": {
+        "wins": 0,
+        "losses": 0,
+        "ties": 2,
+        "n": 2
+      },
+      "answer_abstain_decision": {
+        "wins": 0,
+        "losses": 0,
+        "ties": 2,
+        "n": 2
+      }
+    }
+  },
+  "manual_metrics": "Pending independent human annotation; stub results are wiring checks only.",
+  "rows": [
+    {
+      "task_id": "lookup-001",
+      "mode": "v1",
+      "category": "single_document_fact_lookup",
+      "dataset_version": "hand-v1",
+      "diagnostics": {
+        "grader_version": "v2-diagnostics@1",
+        "answerable": true,
+        "status": "completed",
+        "answer_abstain_decision": true,
+        "false_abstention": false,
+        "citation_validity": {
+          "count": 1,
+          "denominator": 1,
+          "rate": 1.0
+        },
+        "structural_gate_pass": true,
+        "semantic_citation_support": null,
+        "task_success": null,
+        "evidence_recall_at_5": 1.0,
+        "trajectory_evidence_recall": 1.0,
+        "required_capability_coverage": null,
+        "capability_order_satisfied": null,
+        "tool_usefulness": null,
+        "derived_date_matches": null,
+        "retries": 0,
+        "tool_calls": null,
+        "unnecessary_calls": null,
+        "model_calls": 1,
+        "input_tokens": 775,
+        "output_tokens": 117,
+        "elapsed_seconds": 2.2887422498315573
+      },
+      "result": {
+        "question": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+        "answer": "Based on the retrieved evidence: 11. TERM AND TERMINATION 11.1 AUTOMATIC RENEWAL. This Agreement will automatically renew at the end of the Initial Term or a subsequent renewal term on a year to year basis (each, a \"Renewal Term\"), unless either Party notifies the other at least 30 days prior to the end of the Initial Term or then  [doc-033, p. 9, \u00a711.1]\n\n(This answer was produced by the deterministic stub, not a model. Set CRA_LIVE_MODEL=1 to use claude-sonnet-5.)",
+        "status": "completed",
+        "citations": [
+          {
+            "document_id": "doc-033",
+            "page_number": 9,
+            "section_id": "11.1",
+            "raw": "[doc-033, p. 9, \u00a711.1]"
+          }
+        ],
+        "citation_errors": [],
+        "retrieved": [
+          {
+            "chunk": {
+              "chunk_id": "doc-033-c0150",
+              "document_id": "doc-033",
+              "document_title": "Co-Branding Agreement",
+              "section_path": [
+                "11",
+                "11.1"
+              ],
+              "section_title": null,
+              "page_number": 9,
+              "text": "11. TERM AND TERMINATION\n11.1 AUTOMATIC RENEWAL. This Agreement will automatically renew at the\nend of the Initial Term or a subsequent renewal term on a year to year basis\n(each, a \"Renewal Term\"), unless either Party notifies the other at least 30\ndays prior to the end of the Initial Term or then current Renewal Term, as\napplicable, of its intention not to renew this Agreement (a \"Termination\nNotice\").\nSource: NEOFORMA INC, S-1/A, 12/2/1999",
+              "token_count": 112,
+              "outbound_references": []
+            },
+            "bm25_rank": 1,
+            "dense_rank": 2,
+            "fused_score": 0.03252247488101534,
+            "rerank_score": 4.325324058532715,
+            "retrieval_query": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-033-c0151",
+              "document_id": "doc-033",
+              "document_title": "Co-Branding Agreement",
+              "section_path": [
+                "11",
+                "11.2"
+              ],
+              "section_title": null,
+              "page_number": 10,
+              "text": "11.2 TERMINATION FOR CAUSE. Either Party may terminate this Agreement\nimmediately upon written notice to the other Party in the event any material\nbreach of a material term of this Agreement by such other Party that remains\nuncured 30 days in the case of a breach of a payment obligation, or 45 days for\nall other breaches, after notice of such breach was received by such other\nParty; provided, however that if such breach is not reasonably capable of cure\nwithin the applicable cure period, the breaching Party shall have an additional\n180 days to cure such breach so long as the cure is commenced within the\napplicable cure period and thereafter is diligently prosecuted to completion as\nsoon as possible.",
+              "token_count": 177,
+              "outbound_references": []
+            },
+            "bm25_rank": 2,
+            "dense_rank": 1,
+            "fused_score": 0.03252247488101534,
+            "rerank_score": 2.4083309173583984,
+            "retrieval_query": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-033-c0165",
+              "document_id": "doc-033",
+              "document_title": "Co-Branding Agreement",
+              "section_path": [
+                "13",
+                "13.3"
+              ],
+              "section_title": null,
+              "page_number": 11,
+              "text": "13.3 TERMINATION. Upon termination of this Agreement, all Confidential\nInformation shall be returned to the disclosing Party or destroyed unless\notherwise specified or permitted elsewhere under this Agreement. The\nconfidentiality obligations contained in this Article 13  [CONFIDENTIALITY] shall survive\ntermination of this Agreement for a period of three years.",
+              "token_count": 90,
+              "outbound_references": [
+                "13"
+              ]
+            },
+            "bm25_rank": 110,
+            "dense_rank": 3,
+            "fused_score": 0.021755368814192343,
+            "rerank_score": -0.6572656631469727,
+            "retrieval_query": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-033-c0146",
+              "document_id": "doc-033",
+              "document_title": "Co-Branding Agreement",
+              "section_path": [
+                "10",
+                "10.7"
+              ],
+              "section_title": null,
+              "page_number": 9,
+              "text": "10.7 PAYMENT TERMS. Except as otherwise provided in this Agreement, each\nParty shall provide the other Party with all amounts due under this Agreement\nfor the prior calendar quarter within 30 days after the end of each calendar\nquarter during the Term. Each payment shall be accompanied by a statement\ndetailing the amount of applicable gross revenue received, the calculation of\nthe amount due to the other Party and the amount of the payment accompanying\nsuch statement. All payments due to either Party hereunder shall be made in\nimmediately available U.S. funds, without set-off or counterclaim, less any\ntaxes, duties, charges, withholdings, restrictions or conditions of any nature\nimposed or levied by any governmental taxing or other authority.",
+              "token_count": 188,
+              "outbound_references": []
+            },
+            "bm25_rank": 14,
+            "dense_rank": 5,
+            "fused_score": 0.0288981288981289,
+            "rerank_score": -1.0189001560211182,
+            "retrieval_query": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-033-c0119",
+              "document_id": "doc-033",
+              "document_title": "Co-Branding Agreement",
+              "section_path": [
+                "8",
+                "8.3"
+              ],
+              "section_title": null,
+              "page_number": 7,
+              "text": "8.3 CROSS-PROMOTION. The Parties shall place Links to each other's Sites\nin mutually agreeable locations and sizes on their respective Sites as soon as\npracticable, and in no event more than 15 days after the Effective Date. The\nLinks shall remain on the Sites during the Term; provided, however, that such\nLinks may be removed or relocated if the Parties mutually agree thereto.",
+              "token_count": 95,
+              "outbound_references": []
+            },
+            "bm25_rank": 67,
+            "dense_rank": 37,
+            "fused_score": 0.018183294098546958,
+            "rerank_score": -1.6834286451339722,
+            "retrieval_query": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "pulled_by": "search"
+          }
+        ],
+        "evidence": [
+          {
+            "evidence_id": "e01",
+            "topic": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "document_id": "doc-033",
+            "document_title": "Co-Branding Agreement",
+            "section_path": [
+              "11",
+              "11.1"
+            ],
+            "section_title": null,
+            "page_number": 9,
+            "excerpt": "11. TERM AND TERMINATION\n11.1 AUTOMATIC RENEWAL. This Agreement will automatically renew at the\nend of the Initial Term or a subsequent renewal term on a year to year basis\n(each, a \"Renewal Term\"), unless either Party notifies the other at least 30\ndays prior to the end of the Initial Term or then current Renewal Term, as\napplicable, of its intention not to renew this Agreement (a \"Termination\nNotice\").\nSource: NEOFORMA INC, S-1/A, 12/2/1999",
+            "source_chunk_id": "doc-033-c0150",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e02",
+            "topic": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "document_id": "doc-033",
+            "document_title": "Co-Branding Agreement",
+            "section_path": [
+              "11",
+              "11.2"
+            ],
+            "section_title": null,
+            "page_number": 10,
+            "excerpt": "11.2 TERMINATION FOR CAUSE. Either Party may terminate this Agreement\nimmediately upon written notice to the other Party in the event any material\nbreach of a material term of this Agreement by such other Party that remains\nuncured 30 days in the case of a breach of a payment obligation, or 45 days for\nall other breaches, after notice of such breach was received by such other\nParty; provided, however that if such breach is not reasonably capable of cure\nwithin the applicable cure period, the breaching Party shall have an additional\n180 days to cure such breach so long as the cure is commenced within the\napplicable cure period and thereafter is diligently prosecuted to completion as\nsoon as possible.",
+            "source_chunk_id": "doc-033-c0151",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e03",
+            "topic": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "document_id": "doc-033",
+            "document_title": "Co-Branding Agreement",
+            "section_path": [
+              "13",
+              "13.3"
+            ],
+            "section_title": null,
+            "page_number": 11,
+            "excerpt": "13.3 TERMINATION. Upon termination of this Agreement, all Confidential\nInformation shall be returned to the disclosing Party or destroyed unless\notherwise specified or permitted elsewhere under this Agreement. The\nconfidentiality obligations contained in this Article 13  [CONFIDENTIALITY] shall survive\ntermination of this Agreement for a period of three years.",
+            "source_chunk_id": "doc-033-c0165",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e04",
+            "topic": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "document_id": "doc-033",
+            "document_title": "Co-Branding Agreement",
+            "section_path": [
+              "10",
+              "10.7"
+            ],
+            "section_title": null,
+            "page_number": 9,
+            "excerpt": "10.7 PAYMENT TERMS. Except as otherwise provided in this Agreement, each\nParty shall provide the other Party with all amounts due under this Agreement\nfor the prior calendar quarter within 30 days after the end of each calendar\nquarter during the Term. Each payment shall be accompanied by a statement\ndetailing the amount of applicable gross revenue received, the calculation of\nthe amount due to the other Party and the amount of the payment accompanying\nsuch statement. All payments due to either Party hereunder shall be made in\nimmediately available U.S. funds, without set-off or counterclaim, less any\ntaxes, duties, charges, withholdings, restrictions or conditions of any nature\nimposed or levied by any governmental taxing or other authority.",
+            "source_chunk_id": "doc-033-c0146",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e05",
+            "topic": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "document_id": "doc-033",
+            "document_title": "Co-Branding Agreement",
+            "section_path": [
+              "8",
+              "8.3"
+            ],
+            "section_title": null,
+            "page_number": 7,
+            "excerpt": "8.3 CROSS-PROMOTION. The Parties shall place Links to each other's Sites\nin mutually agreeable locations and sizes on their respective Sites as soon as\npracticable, and in no event more than 15 days after the Effective Date. The\nLinks shall remain on the Sites during the Term; provided, however, that such\nLinks may be removed or relocated if the Parties mutually agree thereto.",
+            "source_chunk_id": "doc-033-c0119",
+            "pulled_by": "search"
+          }
+        ],
+        "trace": [
+          {
+            "step": "search",
+            "detail": "5 chunks (5 total)",
+            "data": {
+              "query": "At least how long before the end of the term should they notice if they want to cancel the agreement?"
+            }
+          },
+          {
+            "step": "assess",
+            "detail": "stop: 5 locations, term coverage 67% (thresholds 2, 50%)",
+            "data": {}
+          },
+          {
+            "step": "resolve_refs",
+            "detail": "no outbound references to follow",
+            "data": {
+              "followed": [],
+              "unresolved": []
+            }
+          },
+          {
+            "step": "select_evidence",
+            "detail": "5 evidence items (0 via cross-reference)",
+            "data": {}
+          },
+          {
+            "step": "write",
+            "detail": "117 output tokens",
+            "data": {
+              "model": "stub"
+            }
+          },
+          {
+            "step": "verify",
+            "detail": "1 citation(s), all verified",
+            "data": {}
+          },
+          {
+            "step": "finalize",
+            "detail": "citations verified",
+            "data": {}
+          }
+        ],
+        "input_tokens": 775,
+        "output_tokens": 117,
+        "failure": null,
+        "failure_detail": null,
+        "answerability": null,
+        "model_calls": 1,
+        "elapsed_seconds": 2.2887422498315573,
+        "run_id": null,
+        "trace_path": null,
+        "tool_calls": 0,
+        "stop_reason": "sufficient_evidence",
+        "usage_known": true
+      }
+    },
+    {
+      "task_id": "lookup-001",
+      "mode": "v2",
+      "category": "single_document_fact_lookup",
+      "dataset_version": "hand-v1",
+      "diagnostics": {
+        "grader_version": "v2-diagnostics@1",
+        "answerable": true,
+        "status": "completed",
+        "answer_abstain_decision": true,
+        "false_abstention": false,
+        "citation_validity": {
+          "count": 1,
+          "denominator": 1,
+          "rate": 1.0
+        },
+        "structural_gate_pass": true,
+        "semantic_citation_support": null,
+        "task_success": null,
+        "evidence_recall_at_5": 1.0,
+        "trajectory_evidence_recall": 1.0,
+        "required_capability_coverage": {
+          "count": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "capability_order_satisfied": null,
+        "tool_usefulness": null,
+        "derived_date_matches": null,
+        "retries": 0,
+        "tool_calls": 3,
+        "unnecessary_calls": null,
+        "model_calls": 1,
+        "input_tokens": 1849,
+        "output_tokens": 117,
+        "elapsed_seconds": 2.085082749836147
+      },
+      "result": {
+        "question": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+        "answer": "Based on the retrieved evidence: 11. TERM AND TERMINATION 11.1 AUTOMATIC RENEWAL. This Agreement will automatically renew at the end of the Initial Term or a subsequent renewal term on a year to year basis (each, a \"Renewal Term\"), unless either Party notifies the other at least 30 days prior to the end of the Initial Term or then  [doc-033, p. 9, \u00a711.1]\n\n(This answer was produced by the deterministic stub, not a model. Set CRA_LIVE_MODEL=1 to use claude-sonnet-5.)",
+        "status": "completed",
+        "citations": [
+          {
+            "document_id": "doc-033",
+            "page_number": 9,
+            "section_id": "11.1",
+            "raw": "[doc-033, p. 9, \u00a711.1]"
+          }
+        ],
+        "citation_errors": [],
+        "retrieved": [
+          {
+            "chunk": {
+              "chunk_id": "doc-033-c0150",
+              "document_id": "doc-033",
+              "document_title": "Co-Branding Agreement",
+              "section_path": [
+                "11",
+                "11.1"
+              ],
+              "section_title": null,
+              "page_number": 9,
+              "text": "11. TERM AND TERMINATION\n11.1 AUTOMATIC RENEWAL. This Agreement will automatically renew at the\nend of the Initial Term or a subsequent renewal term on a year to year basis\n(each, a \"Renewal Term\"), unless either Party notifies the other at least 30\ndays prior to the end of the Initial Term or then current Renewal Term, as\napplicable, of its intention not to renew this Agreement (a \"Termination\nNotice\").\nSource: NEOFORMA INC, S-1/A, 12/2/1999",
+              "token_count": 112,
+              "outbound_references": []
+            },
+            "bm25_rank": 1,
+            "dense_rank": 2,
+            "fused_score": 0.03252247488101534,
+            "rerank_score": 4.325324058532715,
+            "retrieval_query": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-033-c0151",
+              "document_id": "doc-033",
+              "document_title": "Co-Branding Agreement",
+              "section_path": [
+                "11",
+                "11.2"
+              ],
+              "section_title": null,
+              "page_number": 10,
+              "text": "11.2 TERMINATION FOR CAUSE. Either Party may terminate this Agreement\nimmediately upon written notice to the other Party in the event any material\nbreach of a material term of this Agreement by such other Party that remains\nuncured 30 days in the case of a breach of a payment obligation, or 45 days for\nall other breaches, after notice of such breach was received by such other\nParty; provided, however that if such breach is not reasonably capable of cure\nwithin the applicable cure period, the breaching Party shall have an additional\n180 days to cure such breach so long as the cure is commenced within the\napplicable cure period and thereafter is diligently prosecuted to completion as\nsoon as possible.",
+              "token_count": 177,
+              "outbound_references": []
+            },
+            "bm25_rank": 2,
+            "dense_rank": 1,
+            "fused_score": 0.03252247488101534,
+            "rerank_score": 2.4083309173583984,
+            "retrieval_query": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-033-c0165",
+              "document_id": "doc-033",
+              "document_title": "Co-Branding Agreement",
+              "section_path": [
+                "13",
+                "13.3"
+              ],
+              "section_title": null,
+              "page_number": 11,
+              "text": "13.3 TERMINATION. Upon termination of this Agreement, all Confidential\nInformation shall be returned to the disclosing Party or destroyed unless\notherwise specified or permitted elsewhere under this Agreement. The\nconfidentiality obligations contained in this Article 13  [CONFIDENTIALITY] shall survive\ntermination of this Agreement for a period of three years.",
+              "token_count": 90,
+              "outbound_references": [
+                "13"
+              ]
+            },
+            "bm25_rank": 110,
+            "dense_rank": 3,
+            "fused_score": 0.021755368814192343,
+            "rerank_score": -0.6572656631469727,
+            "retrieval_query": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-033-c0146",
+              "document_id": "doc-033",
+              "document_title": "Co-Branding Agreement",
+              "section_path": [
+                "10",
+                "10.7"
+              ],
+              "section_title": null,
+              "page_number": 9,
+              "text": "10.7 PAYMENT TERMS. Except as otherwise provided in this Agreement, each\nParty shall provide the other Party with all amounts due under this Agreement\nfor the prior calendar quarter within 30 days after the end of each calendar\nquarter during the Term. Each payment shall be accompanied by a statement\ndetailing the amount of applicable gross revenue received, the calculation of\nthe amount due to the other Party and the amount of the payment accompanying\nsuch statement. All payments due to either Party hereunder shall be made in\nimmediately available U.S. funds, without set-off or counterclaim, less any\ntaxes, duties, charges, withholdings, restrictions or conditions of any nature\nimposed or levied by any governmental taxing or other authority.",
+              "token_count": 188,
+              "outbound_references": []
+            },
+            "bm25_rank": 14,
+            "dense_rank": 5,
+            "fused_score": 0.0288981288981289,
+            "rerank_score": -1.0189001560211182,
+            "retrieval_query": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-033-c0119",
+              "document_id": "doc-033",
+              "document_title": "Co-Branding Agreement",
+              "section_path": [
+                "8",
+                "8.3"
+              ],
+              "section_title": null,
+              "page_number": 7,
+              "text": "8.3 CROSS-PROMOTION. The Parties shall place Links to each other's Sites\nin mutually agreeable locations and sizes on their respective Sites as soon as\npracticable, and in no event more than 15 days after the Effective Date. The\nLinks shall remain on the Sites during the Term; provided, however, that such\nLinks may be removed or relocated if the Parties mutually agree thereto.",
+              "token_count": 95,
+              "outbound_references": []
+            },
+            "bm25_rank": 67,
+            "dense_rank": 37,
+            "fused_score": 0.018183294098546958,
+            "rerank_score": -1.6834286451339722,
+            "retrieval_query": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-033-c0163",
+              "document_id": "doc-033",
+              "document_title": "Co-Branding Agreement",
+              "section_path": [
+                "13",
+                "13.1"
+              ],
+              "section_title": null,
+              "page_number": 11,
+              "text": "13. CONFIDENTIALITY\n13.1 CONFIDENTIALITY OBLIGATIONS. Except as permitted elsewhere under\nthis Agreement, each Party agrees to take Reasonable Steps (as defined below)\n(a) to receive and maintain the Confidential Information of the other Party in\nconfidence, (b) not to disclose such Confidential Information to any third\nparties and (c) to promptly notify the disclosing Party upon learning of any\nlaw, rule, regulation or court order that purports to compel disclosure of any\nConfidential Information of the disclosing Party and to reasonably cooperate\nwith the disclosing Party in the exercise of the disclosing Party's right to\nprotect the confidentiality of such Confidential Information. Neither Party\nhereto shall use all or any part of the Confidential Information of the other\nParty for any purpose other than to perform its obligations under this\nAgreement. The Parties will take Reasonable Steps (as defined below) to ensure\nthat their employees, representatives and agents comply with this provision. As\nused herein, \"Reasonable Steps\" means at least the same degree of care that the\nreceiving Party uses to protect its own Confidential Information, and, in no\nevent, no less than reasonable care.",
+              "token_count": 302,
+              "outbound_references": []
+            },
+            "bm25_rank": null,
+            "dense_rank": null,
+            "fused_score": 0.0,
+            "rerank_score": null,
+            "retrieval_query": "13",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-033-c0164",
+              "document_id": "doc-033",
+              "document_title": "Co-Branding Agreement",
+              "section_path": [
+                "13",
+                "13.2"
+              ],
+              "section_title": null,
+              "page_number": 11,
+              "text": "13.2 EXCLUSIONS. Nothing contained herein shall prevent a Party from\ndisclosing Confidential Information pursuant to any applicable law, rule,\nregulation or court order; provided, however, that such Party complies with the\nnotice provisions of Section 13.1(c)  [CONFIDENTIALITY OBLIGATIONS] to the\n                                       19\n   20\nextent permissible under applicable laws, rules, regulations or court orders.\nSuch disclosure shall not alter the status of such information hereunder for all\nother purposes as Confidential Information.",
+              "token_count": 137,
+              "outbound_references": [
+                "13.1"
+              ]
+            },
+            "bm25_rank": null,
+            "dense_rank": null,
+            "fused_score": 0.0,
+            "rerank_score": null,
+            "retrieval_query": "13",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-033-c0166",
+              "document_id": "doc-033",
+              "document_title": "Co-Branding Agreement",
+              "section_path": [
+                "13",
+                "13.4"
+              ],
+              "section_title": null,
+              "page_number": 11,
+              "text": "13.4 INJUNCTION. Each Party acknowledges and agrees that the provisions\nof this Article 13  [CONFIDENTIALITY] are reasonable and necessary to protect the other Party's\ninterests in its Confidential Information, that any breach of the provisions of\nthis Article 13  [CONFIDENTIALITY] may result in irreparable harm to such other Party, and that the\nremedy at law for such breach may be inadequate. Accordingly, in the event of\nany breach or threatened breach of the provisions of this Article 13  [CONFIDENTIALITY] by a Party\nhereto, the other Party, in addition to any other relief available to it at law,\nin equity or otherwise, shall be entitled to seek temporary and permanent\ninjunctive relief restraining the breaching Party from engaging in and/or\ncontinuing any conduct that would constitute a breach of this Article 13  [CONFIDENTIALITY],\nwithout the necessity of proving actual damages or posting a bond or other\nsecurity.",
+              "token_count": 233,
+              "outbound_references": [
+                "13"
+              ]
+            },
+            "bm25_rank": null,
+            "dense_rank": null,
+            "fused_score": 0.0,
+            "rerank_score": null,
+            "retrieval_query": "13",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-033-c0167",
+              "document_id": "doc-033",
+              "document_title": "Co-Branding Agreement",
+              "section_path": [
+                "13",
+                "13.5"
+              ],
+              "section_title": null,
+              "page_number": 11,
+              "text": "13.5 PUBLICITY. Except as may be required by applicable laws, rules or\nregulations (including those arising under any securities laws), neither Party\nwill originate any publicity, news release or other public announcement, written\nor oral, whether to the public press or otherwise, concerning the relationship\nbetween the Parties or the transactions described in this Agreement without the\nprior written consent of the other Party, which consent shall not be\nunreasonably withheld or delayed. In the event disclosure is required by\napplicable law, rules or regulations, then the Party required to so disclose\nsuch information shall, to the extent possible, provide to the other Party for\nits approval (such approval not to be unreasonably withheld) a written copy of\nsuch public announcement at least five business days prior to disclosure.\nNotwithstanding the foregoing, either Party shall have the right to make a press\nrelease with respect to its entering into this Agreement; provided that such\nParty provides to the other Party a copy of the proposed press release no less\nthan five business days prior to its proposed release and that the contents of\nsuch press release shall be subject to the other Party's consent, which consent\nshall not be unreasonably delayed or withheld.\n14. REPRESENTATIONS AND WARRANTIES. Each Party hereby represents, covenants and\nwarrants to the other Party that:",
+              "token_count": 349,
+              "outbound_references": []
+            },
+            "bm25_rank": null,
+            "dense_rank": null,
+            "fused_score": 0.0,
+            "rerank_score": null,
+            "retrieval_query": "13",
+            "pulled_by": "search"
+          }
+        ],
+        "evidence": [
+          {
+            "evidence_id": "e-a7554d895442ee66391d",
+            "topic": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "document_id": "doc-033",
+            "document_title": "Co-Branding Agreement",
+            "section_path": [
+              "11",
+              "11.1"
+            ],
+            "section_title": null,
+            "page_number": 9,
+            "excerpt": "11. TERM AND TERMINATION\n11.1 AUTOMATIC RENEWAL. This Agreement will automatically renew at the\nend of the Initial Term or a subsequent renewal term on a year to year basis\n(each, a \"Renewal Term\"), unless either Party notifies the other at least 30\ndays prior to the end of the Initial Term or then current Renewal Term, as\napplicable, of its intention not to renew this Agreement (a \"Termination\nNotice\").\nSource: NEOFORMA INC, S-1/A, 12/2/1999",
+            "source_chunk_id": "doc-033-c0150",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e-f52e84b4f5ec6f8493f8",
+            "topic": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "document_id": "doc-033",
+            "document_title": "Co-Branding Agreement",
+            "section_path": [
+              "11",
+              "11.2"
+            ],
+            "section_title": null,
+            "page_number": 10,
+            "excerpt": "11.2 TERMINATION FOR CAUSE. Either Party may terminate this Agreement\nimmediately upon written notice to the other Party in the event any material\nbreach of a material term of this Agreement by such other Party that remains\nuncured 30 days in the case of a breach of a payment obligation, or 45 days for\nall other breaches, after notice of such breach was received by such other\nParty; provided, however that if such breach is not reasonably capable of cure\nwithin the applicable cure period, the breaching Party shall have an additional\n180 days to cure such breach so long as the cure is commenced within the\napplicable cure period and thereafter is diligently prosecuted to completion as\nsoon as possible.",
+            "source_chunk_id": "doc-033-c0151",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e-7f9fcebcca665ea9324d",
+            "topic": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "document_id": "doc-033",
+            "document_title": "Co-Branding Agreement",
+            "section_path": [
+              "13",
+              "13.3"
+            ],
+            "section_title": null,
+            "page_number": 11,
+            "excerpt": "13.3 TERMINATION. Upon termination of this Agreement, all Confidential\nInformation shall be returned to the disclosing Party or destroyed unless\notherwise specified or permitted elsewhere under this Agreement. The\nconfidentiality obligations contained in this Article 13  [CONFIDENTIALITY] shall survive\ntermination of this Agreement for a period of three years.",
+            "source_chunk_id": "doc-033-c0165",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e-77a4147e03c4f78754d4",
+            "topic": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "document_id": "doc-033",
+            "document_title": "Co-Branding Agreement",
+            "section_path": [
+              "10",
+              "10.7"
+            ],
+            "section_title": null,
+            "page_number": 9,
+            "excerpt": "10.7 PAYMENT TERMS. Except as otherwise provided in this Agreement, each\nParty shall provide the other Party with all amounts due under this Agreement\nfor the prior calendar quarter within 30 days after the end of each calendar\nquarter during the Term. Each payment shall be accompanied by a statement\ndetailing the amount of applicable gross revenue received, the calculation of\nthe amount due to the other Party and the amount of the payment accompanying\nsuch statement. All payments due to either Party hereunder shall be made in\nimmediately available U.S. funds, without set-off or counterclaim, less any\ntaxes, duties, charges, withholdings, restrictions or conditions of any nature\nimposed or levied by any governmental taxing or other authority.",
+            "source_chunk_id": "doc-033-c0146",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e-63336ad48832ef33565e",
+            "topic": "At least how long before the end of the term should they notice if they want to cancel the agreement?",
+            "document_id": "doc-033",
+            "document_title": "Co-Branding Agreement",
+            "section_path": [
+              "8",
+              "8.3"
+            ],
+            "section_title": null,
+            "page_number": 7,
+            "excerpt": "8.3 CROSS-PROMOTION. The Parties shall place Links to each other's Sites\nin mutually agreeable locations and sizes on their respective Sites as soon as\npracticable, and in no event more than 15 days after the Effective Date. The\nLinks shall remain on the Sites during the Term; provided, however, that such\nLinks may be removed or relocated if the Parties mutually agree thereto.",
+            "source_chunk_id": "doc-033-c0119",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e-8ada933d2730b7ef6f30",
+            "topic": "13",
+            "document_id": "doc-033",
+            "document_title": "Co-Branding Agreement",
+            "section_path": [
+              "13",
+              "13.1"
+            ],
+            "section_title": null,
+            "page_number": 11,
+            "excerpt": "13. CONFIDENTIALITY\n13.1 CONFIDENTIALITY OBLIGATIONS. Except as permitted elsewhere under\nthis Agreement, each Party agrees to take Reasonable Steps (as defined below)\n(a) to receive and maintain the Confidential Information of the other Party in\nconfidence, (b) not to disclose such Confidential Information to any third\nparties and (c) to promptly notify the disclosing Party upon learning of any\nlaw, rule, regulation or court order that purports to compel disclosure of any\nConfidential Information of the disclosing Party and to reasonably cooperate\nwith the disclosing Party in the exercise of the disclosing Party's right to\nprotect the confidentiality of such Confidential Information. Neither Party\nhereto shall use all or any part of the Confidential Information of the other\nParty for any purpose other than to perform its obligations under this\nAgreement. The Parties will take Reasonable Steps (as defined below) to ensure\nthat their employees, representatives and agents comply with this provision. As\nused herein, \"Reasonable Steps\" means at least the same degree of care that the\nreceiving Party uses to protect its own Confidential Information, and, in no\nevent, no less than reasonable care.",
+            "source_chunk_id": "doc-033-c0163",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e-4c65d62d5920fa00cefa",
+            "topic": "13",
+            "document_id": "doc-033",
+            "document_title": "Co-Branding Agreement",
+            "section_path": [
+              "13",
+              "13.2"
+            ],
+            "section_title": null,
+            "page_number": 11,
+            "excerpt": "13.2 EXCLUSIONS. Nothing contained herein shall prevent a Party from\ndisclosing Confidential Information pursuant to any applicable law, rule,\nregulation or court order; provided, however, that such Party complies with the\nnotice provisions of Section 13.1(c)  [CONFIDENTIALITY OBLIGATIONS] to the\n                                       19\n   20\nextent permissible under applicable laws, rules, regulations or court orders.\nSuch disclosure shall not alter the status of such information hereunder for all\nother purposes as Confidential Information.",
+            "source_chunk_id": "doc-033-c0164",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e-ceb002ca258912751c6e",
+            "topic": "13",
+            "document_id": "doc-033",
+            "document_title": "Co-Branding Agreement",
+            "section_path": [
+              "13",
+              "13.4"
+            ],
+            "section_title": null,
+            "page_number": 11,
+            "excerpt": "13.4 INJUNCTION. Each Party acknowledges and agrees that the provisions\nof this Article 13  [CONFIDENTIALITY] are reasonable and necessary to protect the other Party's\ninterests in its Confidential Information, that any breach of the provisions of\nthis Article 13  [CONFIDENTIALITY] may result in irreparable harm to such other Party, and that the\nremedy at law for such breach may be inadequate. Accordingly, in the event of\nany breach or threatened breach of the provisions of this Article 13  [CONFIDENTIALITY] by a Party\nhereto, the other Party, in addition to any other relief available to it at law,\nin equity or otherwise, shall be entitled to seek temporary and permanent\ninjunctive relief restraining the breaching Party from engaging in and/or\ncontinuing any conduct that would constitute a breach of this Article 13  [CONFIDENTIALITY],\nwithout the necessity of proving actual damages or posting a bond or other\nsecurity.",
+            "source_chunk_id": "doc-033-c0166",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e-1a4e701440a5d7fb78e6",
+            "topic": "13",
+            "document_id": "doc-033",
+            "document_title": "Co-Branding Agreement",
+            "section_path": [
+              "13",
+              "13.5"
+            ],
+            "section_title": null,
+            "page_number": 11,
+            "excerpt": "13.5 PUBLICITY. Except as may be required by applicable laws, rules or\nregulations (including those arising under any securities laws), neither Party\nwill originate any publicity, news release or other public announcement, written\nor oral, whether to the public press or otherwise, concerning the relationship\nbetween the Parties or the transactions described in this Agreement without the\nprior written consent of the other Party, which consent shall not be\nunreasonably withheld or delayed. In the event disclosure is required by\napplicable law, rules or regulations, then the Party required to so disclose\nsuch information shall, to the extent possible, provide to the other Party for\nits approval (such approval not to be unreasonably withheld) a written copy of\nsuch public announcement at least five business days prior to disclosure.\nNotwithstanding the foregoing, either Party shall have the right to make a press\nrelease with respect to its entering into this Agreement; provided that such\nParty provides to the other Party a copy of the proposed press release no less\nthan five business days prior to its proposed release and that the contents of\nsuch press release shall be subject to the other Party's consent, which consent\nshall not be unreasonably delayed or withheld.\n14. REPRESENTATIONS AND WARRANTIES. Each Party hereby represents, covenants and\nwarrants to the other Party that:",
+            "source_chunk_id": "doc-033-c0167",
+            "pulled_by": "search"
+          }
+        ],
+        "trace": [
+          {
+            "step": "decide",
+            "detail": "initial_search",
+            "data": {
+              "tool": "document_search"
+            }
+          },
+          {
+            "step": "decide",
+            "detail": "resolve_reference",
+            "data": {
+              "tool": "retrieve_clause"
+            }
+          },
+          {
+            "step": "decide",
+            "detail": "ready",
+            "data": {
+              "tool": "draft"
+            }
+          },
+          {
+            "step": "write",
+            "detail": "117 output tokens",
+            "data": {
+              "model": "stub"
+            }
+          }
+        ],
+        "input_tokens": 1849,
+        "output_tokens": 117,
+        "failure": null,
+        "failure_detail": null,
+        "answerability": null,
+        "model_calls": 1,
+        "elapsed_seconds": 2.085082749836147,
+        "run_id": "60e30c615b854fc1a2c5e8caa1d0cc83",
+        "trace_path": "runs/60e30c615b854fc1a2c5e8caa1d0cc83/events.jsonl",
+        "tool_calls": 3,
+        "stop_reason": "verified",
+        "usage_known": true
+      }
+    },
+    {
+      "task_id": "lookup-002",
+      "mode": "v1",
+      "category": "single_document_fact_lookup",
+      "dataset_version": "hand-v1",
+      "diagnostics": {
+        "grader_version": "v2-diagnostics@1",
+        "answerable": true,
+        "status": "completed",
+        "answer_abstain_decision": true,
+        "false_abstention": false,
+        "citation_validity": {
+          "count": 1,
+          "denominator": 1,
+          "rate": 1.0
+        },
+        "structural_gate_pass": true,
+        "semantic_citation_support": null,
+        "task_success": null,
+        "evidence_recall_at_5": 1.0,
+        "trajectory_evidence_recall": 1.0,
+        "required_capability_coverage": null,
+        "capability_order_satisfied": null,
+        "tool_usefulness": null,
+        "derived_date_matches": null,
+        "retries": 0,
+        "tool_calls": null,
+        "unnecessary_calls": null,
+        "model_calls": 1,
+        "input_tokens": 918,
+        "output_tokens": 117,
+        "elapsed_seconds": 1.5181083341594785
+      },
+      "result": {
+        "question": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+        "answer": "Based on the retrieved evidence: Section 4.3. Termination for Breach. If either party materially breaches one or more of its obligations hereunder, the other party may terminate this Agreement, effective upon written notice, if the breaching party does not cure such breach within 15 days after written notice thereof (or any mutuall [doc-010, p. 2, \u00a74.3]\n\n(This answer was produced by the deterministic stub, not a model. Set CRA_LIVE_MODEL=1 to use claude-sonnet-5.)",
+        "status": "completed",
+        "citations": [
+          {
+            "document_id": "doc-010",
+            "page_number": 2,
+            "section_id": "4.3",
+            "raw": "[doc-010, p. 2, \u00a74.3]"
+          }
+        ],
+        "citation_errors": [],
+        "retrieved": [
+          {
+            "chunk": {
+              "chunk_id": "doc-010-c0010",
+              "document_id": "doc-010",
+              "document_title": "Trademark License Agreement",
+              "section_path": [
+                "4",
+                "4.3"
+              ],
+              "section_title": null,
+              "page_number": 2,
+              "text": "Section 4.3. Termination for Breach. If either party materially breaches one or more of its obligations hereunder, the other party may\nterminate this Agreement, effective upon written notice, if the breaching party does not cure such breach within 15 days after written notice thereof\n(or any mutually agreed extension). Licensor may terminate this Agreement immediately, effective upon written notice, if (i) Licensee attempts to\nviolate Section 8 or (ii) a sublicensee materially breaches its sublicense in a manner that harms the Brand, and (a) such sublicensee does not cure\nthe same within 15 days after notice from Licensor or Licensee or (b) Licensee does not terminate such sublicense within 15 days after notice from\nLicensor.",
+              "token_count": 184,
+              "outbound_references": [
+                "4.3",
+                "8"
+              ]
+            },
+            "bm25_rank": 7,
+            "dense_rank": 2,
+            "fused_score": 0.031054405392392875,
+            "rerank_score": 4.630242347717285,
+            "retrieval_query": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-010-c0009",
+              "document_id": "doc-010",
+              "document_title": "Trademark License Agreement",
+              "section_path": [
+                "4",
+                "4.2"
+              ],
+              "section_title": null,
+              "page_number": 2,
+              "text": "Section 4.2. Termination for Convenience. Licensor reserves the right to terminate this Agreement immediately upon written notice for any\nreason, including if the usage of the Brand is not in compliance with the standards and policies.",
+              "token_count": 59,
+              "outbound_references": [
+                "4.2"
+              ]
+            },
+            "bm25_rank": 4,
+            "dense_rank": 1,
+            "fused_score": 0.032018442622950824,
+            "rerank_score": 4.144787311553955,
+            "retrieval_query": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-010-c0011",
+              "document_id": "doc-010",
+              "document_title": "Trademark License Agreement",
+              "section_path": [
+                "4",
+                "4.4"
+              ],
+              "section_title": null,
+              "page_number": 2,
+              "text": "Section 4.4. Termination of Advisory Agreement. This Agreement shall terminate automatically without notice and immediately (a) if MS\nCapital Partners Adviser Inc. or another affiliate of Licensor is no longer acting as the investment adviser (any such entity, the \"Advisor\") to\nLicensee under the Investment Advisory Agreement, dated as of [\u00b7], 201[9] (as the same may\n2\nSource: MORGAN STANLEY DIRECT LENDING FUND, 10-12G/A, 11/19/2019",
+              "token_count": 109,
+              "outbound_references": [
+                "4.4"
+              ]
+            },
+            "bm25_rank": 10,
+            "dense_rank": 11,
+            "fused_score": 0.028370221327967807,
+            "rerank_score": 3.035404920578003,
+            "retrieval_query": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-010-c0012",
+              "document_id": "doc-010",
+              "document_title": "Trademark License Agreement",
+              "section_path": [
+                "4",
+                "4.4"
+              ],
+              "section_title": null,
+              "page_number": 3,
+              "text": "be amended, modified or otherwise restated, the \"Investment Advisory Agreement\"), or a similar agreement, or (b) the Advisor is no longer an\naffiliate of Licensor. Further, Licensor may terminate this Agreement, effective upon written notice, at any time after 30 days from the date that\nLicensee notifies Licensor that the Investment Advisory Agreement has terminated or is not being renewed. The term \"affiliate\" as used herein\nshall have the meaning given to such term in the Investment Advisory Agreement.",
+              "token_count": 127,
+              "outbound_references": []
+            },
+            "bm25_rank": 3,
+            "dense_rank": 12,
+            "fused_score": 0.02976190476190476,
+            "rerank_score": 3.009268045425415,
+            "retrieval_query": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-010-c0013",
+              "document_id": "doc-010",
+              "document_title": "Trademark License Agreement",
+              "section_path": [
+                "4",
+                "4.5"
+              ],
+              "section_title": null,
+              "page_number": 3,
+              "text": "Section 4.5. Effect of Termination; Survival. Upon termination of this Agreement for any reason, (a) Licensee shall immediately, except as\nrequired by applicable Law, (i) cease all use of the Permitted Activity; and (b) the parties shall cooperate so as to best preserve the value of the\nBrand. Section 2, this Section 4.5, and Sections 6.2, 6.3, 7 and 9 shall survive termination of this Agreement.\n5. Infringement. Licensee shall notify Licensor promptly after it becomes aware of any actual or threatened infringement, imitation,\ndilution, misappropriation or other unauthorized use or conduct in derogation (\"Infringement\") of the Brand. Licensor shall have the sole right to\nbring any Action to remedy the foregoing, and Licensee shall cooperate with Licensor in same, at Licensor's expense.",
+              "token_count": 199,
+              "outbound_references": [
+                "4.5",
+                "2",
+                "6.2"
+              ]
+            },
+            "bm25_rank": 5,
+            "dense_rank": 4,
+            "fused_score": 0.031009615384615385,
+            "rerank_score": 0.8170450329780579,
+            "retrieval_query": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-010-c0015",
+              "document_id": "doc-010",
+              "document_title": "Trademark License Agreement",
+              "section_path": [
+                "6",
+                "6.2"
+              ],
+              "section_title": null,
+              "page_number": 3,
+              "text": "Section 6.2. EXCEPT AS EXPRESSLY SET FORTH IN SECTION 6.1, LICENSOR MAKES NO REPRESENTATIONS OR WARRANTIES,\nEXPRESS OR IMPLIED, WITH RESPECT TO THIS AGREEMENT AND THE BRAND, AND EXPRESSLY DISCLAIMS ALL SUCH\nREPRESENTATIONS AND WARRANTIES, INCLUDING ANY WITH RESPECT TO TITLE, NON-INFRINGEMENT, MERCHANTABILITY, VALUE,\nRELIABILITY OR FITNESS FOR USE. LICENSEE'S USE OF THE PERMITTED ACTIVITY IS SOLELY ON AN \"AS-IS\" BASIS.",
+              "token_count": 105,
+              "outbound_references": [
+                "6.2",
+                "6.1"
+              ]
+            },
+            "bm25_rank": null,
+            "dense_rank": null,
+            "fused_score": 0.0,
+            "rerank_score": null,
+            "retrieval_query": "cross-reference from doc-010-c0013 -> \u00a76.2",
+            "pulled_by": "cross_reference"
+          }
+        ],
+        "evidence": [
+          {
+            "evidence_id": "e01",
+            "topic": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "document_id": "doc-010",
+            "document_title": "Trademark License Agreement",
+            "section_path": [
+              "4",
+              "4.3"
+            ],
+            "section_title": null,
+            "page_number": 2,
+            "excerpt": "Section 4.3. Termination for Breach. If either party materially breaches one or more of its obligations hereunder, the other party may\nterminate this Agreement, effective upon written notice, if the breaching party does not cure such breach within 15 days after written notice thereof\n(or any mutually agreed extension). Licensor may terminate this Agreement immediately, effective upon written notice, if (i) Licensee attempts to\nviolate Section 8 or (ii) a sublicensee materially breaches its sublicense in a manner that harms the Brand, and (a) such sublicensee does not cure\nthe same within 15 days after notice from Licensor or Licensee or (b) Licensee does not terminate such sublicense within 15 days after notice from\nLicensor.",
+            "source_chunk_id": "doc-010-c0010",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e02",
+            "topic": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "document_id": "doc-010",
+            "document_title": "Trademark License Agreement",
+            "section_path": [
+              "4",
+              "4.2"
+            ],
+            "section_title": null,
+            "page_number": 2,
+            "excerpt": "Section 4.2. Termination for Convenience. Licensor reserves the right to terminate this Agreement immediately upon written notice for any\nreason, including if the usage of the Brand is not in compliance with the standards and policies.",
+            "source_chunk_id": "doc-010-c0009",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e03",
+            "topic": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "document_id": "doc-010",
+            "document_title": "Trademark License Agreement",
+            "section_path": [
+              "4",
+              "4.4"
+            ],
+            "section_title": null,
+            "page_number": 2,
+            "excerpt": "Section 4.4. Termination of Advisory Agreement. This Agreement shall terminate automatically without notice and immediately (a) if MS\nCapital Partners Adviser Inc. or another affiliate of Licensor is no longer acting as the investment adviser (any such entity, the \"Advisor\") to\nLicensee under the Investment Advisory Agreement, dated as of [\u00b7], 201[9] (as the same may\n2\nSource: MORGAN STANLEY DIRECT LENDING FUND, 10-12G/A, 11/19/2019",
+            "source_chunk_id": "doc-010-c0011",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e04",
+            "topic": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "document_id": "doc-010",
+            "document_title": "Trademark License Agreement",
+            "section_path": [
+              "4",
+              "4.4"
+            ],
+            "section_title": null,
+            "page_number": 3,
+            "excerpt": "be amended, modified or otherwise restated, the \"Investment Advisory Agreement\"), or a similar agreement, or (b) the Advisor is no longer an\naffiliate of Licensor. Further, Licensor may terminate this Agreement, effective upon written notice, at any time after 30 days from the date that\nLicensee notifies Licensor that the Investment Advisory Agreement has terminated or is not being renewed. The term \"affiliate\" as used herein\nshall have the meaning given to such term in the Investment Advisory Agreement.",
+            "source_chunk_id": "doc-010-c0012",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e05",
+            "topic": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "document_id": "doc-010",
+            "document_title": "Trademark License Agreement",
+            "section_path": [
+              "4",
+              "4.5"
+            ],
+            "section_title": null,
+            "page_number": 3,
+            "excerpt": "Section 4.5. Effect of Termination; Survival. Upon termination of this Agreement for any reason, (a) Licensee shall immediately, except as\nrequired by applicable Law, (i) cease all use of the Permitted Activity; and (b) the parties shall cooperate so as to best preserve the value of the\nBrand. Section 2, this Section 4.5, and Sections 6.2, 6.3, 7 and 9 shall survive termination of this Agreement.\n5. Infringement. Licensee shall notify Licensor promptly after it becomes aware of any actual or threatened infringement, imitation,\ndilution, misappropriation or other unauthorized use or conduct in derogation (\"Infringement\") of the Brand. Licensor shall have the sole right to\nbring any Action to remedy the foregoing, and Licensee shall cooperate with Licensor in same, at Licensor's expense.",
+            "source_chunk_id": "doc-010-c0013",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e06",
+            "topic": "cross-reference from doc-010-c0013 -> \u00a76.2",
+            "document_id": "doc-010",
+            "document_title": "Trademark License Agreement",
+            "section_path": [
+              "6",
+              "6.2"
+            ],
+            "section_title": null,
+            "page_number": 3,
+            "excerpt": "Section 6.2. EXCEPT AS EXPRESSLY SET FORTH IN SECTION 6.1, LICENSOR MAKES NO REPRESENTATIONS OR WARRANTIES,\nEXPRESS OR IMPLIED, WITH RESPECT TO THIS AGREEMENT AND THE BRAND, AND EXPRESSLY DISCLAIMS ALL SUCH\nREPRESENTATIONS AND WARRANTIES, INCLUDING ANY WITH RESPECT TO TITLE, NON-INFRINGEMENT, MERCHANTABILITY, VALUE,\nRELIABILITY OR FITNESS FOR USE. LICENSEE'S USE OF THE PERMITTED ACTIVITY IS SOLELY ON AN \"AS-IS\" BASIS.",
+            "source_chunk_id": "doc-010-c0015",
+            "pulled_by": "cross_reference"
+          }
+        ],
+        "trace": [
+          {
+            "step": "search",
+            "detail": "5 chunks (5 total)",
+            "data": {
+              "query": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?"
+            }
+          },
+          {
+            "step": "assess",
+            "detail": "stop: 5 locations, term coverage 70% (thresholds 2, 50%)",
+            "data": {}
+          },
+          {
+            "step": "resolve_refs",
+            "detail": "pulled 1 chunk(s) from 1 reference(s); 2 reference(s) unresolved",
+            "data": {
+              "followed": [
+                "doc-010-c0013 -> \u00a76.2"
+              ],
+              "unresolved": [
+                "doc-010 \u00a78",
+                "doc-010 \u00a72"
+              ]
+            }
+          },
+          {
+            "step": "select_evidence",
+            "detail": "6 evidence items (1 via cross-reference)",
+            "data": {}
+          },
+          {
+            "step": "write",
+            "detail": "117 output tokens",
+            "data": {
+              "model": "stub"
+            }
+          },
+          {
+            "step": "verify",
+            "detail": "1 citation(s), all verified",
+            "data": {}
+          },
+          {
+            "step": "finalize",
+            "detail": "citations verified",
+            "data": {}
+          }
+        ],
+        "input_tokens": 918,
+        "output_tokens": 117,
+        "failure": null,
+        "failure_detail": null,
+        "answerability": null,
+        "model_calls": 1,
+        "elapsed_seconds": 1.5181083341594785,
+        "run_id": null,
+        "trace_path": null,
+        "tool_calls": 0,
+        "stop_reason": "sufficient_evidence",
+        "usage_known": true
+      }
+    },
+    {
+      "task_id": "lookup-002",
+      "mode": "v2",
+      "category": "single_document_fact_lookup",
+      "dataset_version": "hand-v1",
+      "diagnostics": {
+        "grader_version": "v2-diagnostics@1",
+        "answerable": true,
+        "status": "completed",
+        "answer_abstain_decision": true,
+        "false_abstention": false,
+        "citation_validity": {
+          "count": 1,
+          "denominator": 1,
+          "rate": 1.0
+        },
+        "structural_gate_pass": true,
+        "semantic_citation_support": null,
+        "task_success": null,
+        "evidence_recall_at_5": 1.0,
+        "trajectory_evidence_recall": 1.0,
+        "required_capability_coverage": {
+          "count": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "capability_order_satisfied": null,
+        "tool_usefulness": null,
+        "derived_date_matches": null,
+        "retries": 0,
+        "tool_calls": 3,
+        "unnecessary_calls": null,
+        "model_calls": 1,
+        "input_tokens": 798,
+        "output_tokens": 117,
+        "elapsed_seconds": 1.482030165847391
+      },
+      "result": {
+        "question": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+        "answer": "Based on the retrieved evidence: Section 4.3. Termination for Breach. If either party materially breaches one or more of its obligations hereunder, the other party may terminate this Agreement, effective upon written notice, if the breaching party does not cure such breach within 15 days after written notice thereof (or any mutuall [doc-010, p. 2, \u00a74.3]\n\n(This answer was produced by the deterministic stub, not a model. Set CRA_LIVE_MODEL=1 to use claude-sonnet-5.)",
+        "status": "completed",
+        "citations": [
+          {
+            "document_id": "doc-010",
+            "page_number": 2,
+            "section_id": "4.3",
+            "raw": "[doc-010, p. 2, \u00a74.3]"
+          }
+        ],
+        "citation_errors": [],
+        "retrieved": [
+          {
+            "chunk": {
+              "chunk_id": "doc-010-c0010",
+              "document_id": "doc-010",
+              "document_title": "Trademark License Agreement",
+              "section_path": [
+                "4",
+                "4.3"
+              ],
+              "section_title": null,
+              "page_number": 2,
+              "text": "Section 4.3. Termination for Breach. If either party materially breaches one or more of its obligations hereunder, the other party may\nterminate this Agreement, effective upon written notice, if the breaching party does not cure such breach within 15 days after written notice thereof\n(or any mutually agreed extension). Licensor may terminate this Agreement immediately, effective upon written notice, if (i) Licensee attempts to\nviolate Section 8 or (ii) a sublicensee materially breaches its sublicense in a manner that harms the Brand, and (a) such sublicensee does not cure\nthe same within 15 days after notice from Licensor or Licensee or (b) Licensee does not terminate such sublicense within 15 days after notice from\nLicensor.",
+              "token_count": 184,
+              "outbound_references": [
+                "4.3",
+                "8"
+              ]
+            },
+            "bm25_rank": 7,
+            "dense_rank": 2,
+            "fused_score": 0.031054405392392875,
+            "rerank_score": 4.630242347717285,
+            "retrieval_query": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-010-c0009",
+              "document_id": "doc-010",
+              "document_title": "Trademark License Agreement",
+              "section_path": [
+                "4",
+                "4.2"
+              ],
+              "section_title": null,
+              "page_number": 2,
+              "text": "Section 4.2. Termination for Convenience. Licensor reserves the right to terminate this Agreement immediately upon written notice for any\nreason, including if the usage of the Brand is not in compliance with the standards and policies.",
+              "token_count": 59,
+              "outbound_references": [
+                "4.2"
+              ]
+            },
+            "bm25_rank": 4,
+            "dense_rank": 1,
+            "fused_score": 0.032018442622950824,
+            "rerank_score": 4.144787311553955,
+            "retrieval_query": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-010-c0011",
+              "document_id": "doc-010",
+              "document_title": "Trademark License Agreement",
+              "section_path": [
+                "4",
+                "4.4"
+              ],
+              "section_title": null,
+              "page_number": 2,
+              "text": "Section 4.4. Termination of Advisory Agreement. This Agreement shall terminate automatically without notice and immediately (a) if MS\nCapital Partners Adviser Inc. or another affiliate of Licensor is no longer acting as the investment adviser (any such entity, the \"Advisor\") to\nLicensee under the Investment Advisory Agreement, dated as of [\u00b7], 201[9] (as the same may\n2\nSource: MORGAN STANLEY DIRECT LENDING FUND, 10-12G/A, 11/19/2019",
+              "token_count": 109,
+              "outbound_references": [
+                "4.4"
+              ]
+            },
+            "bm25_rank": 10,
+            "dense_rank": 11,
+            "fused_score": 0.028370221327967807,
+            "rerank_score": 3.035404920578003,
+            "retrieval_query": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-010-c0012",
+              "document_id": "doc-010",
+              "document_title": "Trademark License Agreement",
+              "section_path": [
+                "4",
+                "4.4"
+              ],
+              "section_title": null,
+              "page_number": 3,
+              "text": "be amended, modified or otherwise restated, the \"Investment Advisory Agreement\"), or a similar agreement, or (b) the Advisor is no longer an\naffiliate of Licensor. Further, Licensor may terminate this Agreement, effective upon written notice, at any time after 30 days from the date that\nLicensee notifies Licensor that the Investment Advisory Agreement has terminated or is not being renewed. The term \"affiliate\" as used herein\nshall have the meaning given to such term in the Investment Advisory Agreement.",
+              "token_count": 127,
+              "outbound_references": []
+            },
+            "bm25_rank": 3,
+            "dense_rank": 12,
+            "fused_score": 0.02976190476190476,
+            "rerank_score": 3.009268045425415,
+            "retrieval_query": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "pulled_by": "search"
+          },
+          {
+            "chunk": {
+              "chunk_id": "doc-010-c0013",
+              "document_id": "doc-010",
+              "document_title": "Trademark License Agreement",
+              "section_path": [
+                "4",
+                "4.5"
+              ],
+              "section_title": null,
+              "page_number": 3,
+              "text": "Section 4.5. Effect of Termination; Survival. Upon termination of this Agreement for any reason, (a) Licensee shall immediately, except as\nrequired by applicable Law, (i) cease all use of the Permitted Activity; and (b) the parties shall cooperate so as to best preserve the value of the\nBrand. Section 2, this Section 4.5, and Sections 6.2, 6.3, 7 and 9 shall survive termination of this Agreement.\n5. Infringement. Licensee shall notify Licensor promptly after it becomes aware of any actual or threatened infringement, imitation,\ndilution, misappropriation or other unauthorized use or conduct in derogation (\"Infringement\") of the Brand. Licensor shall have the sole right to\nbring any Action to remedy the foregoing, and Licensee shall cooperate with Licensor in same, at Licensor's expense.",
+              "token_count": 199,
+              "outbound_references": [
+                "4.5",
+                "2",
+                "6.2"
+              ]
+            },
+            "bm25_rank": 5,
+            "dense_rank": 4,
+            "fused_score": 0.031009615384615385,
+            "rerank_score": 0.8170450329780579,
+            "retrieval_query": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "pulled_by": "search"
+          }
+        ],
+        "evidence": [
+          {
+            "evidence_id": "e-0aee3ec582dd4c4533ab",
+            "topic": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "document_id": "doc-010",
+            "document_title": "Trademark License Agreement",
+            "section_path": [
+              "4",
+              "4.3"
+            ],
+            "section_title": null,
+            "page_number": 2,
+            "excerpt": "Section 4.3. Termination for Breach. If either party materially breaches one or more of its obligations hereunder, the other party may\nterminate this Agreement, effective upon written notice, if the breaching party does not cure such breach within 15 days after written notice thereof\n(or any mutually agreed extension). Licensor may terminate this Agreement immediately, effective upon written notice, if (i) Licensee attempts to\nviolate Section 8 or (ii) a sublicensee materially breaches its sublicense in a manner that harms the Brand, and (a) such sublicensee does not cure\nthe same within 15 days after notice from Licensor or Licensee or (b) Licensee does not terminate such sublicense within 15 days after notice from\nLicensor.",
+            "source_chunk_id": "doc-010-c0010",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e-eeedb0b9f0e002ae237c",
+            "topic": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "document_id": "doc-010",
+            "document_title": "Trademark License Agreement",
+            "section_path": [
+              "4",
+              "4.2"
+            ],
+            "section_title": null,
+            "page_number": 2,
+            "excerpt": "Section 4.2. Termination for Convenience. Licensor reserves the right to terminate this Agreement immediately upon written notice for any\nreason, including if the usage of the Brand is not in compliance with the standards and policies.",
+            "source_chunk_id": "doc-010-c0009",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e-481f90924c831afbc3f1",
+            "topic": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "document_id": "doc-010",
+            "document_title": "Trademark License Agreement",
+            "section_path": [
+              "4",
+              "4.4"
+            ],
+            "section_title": null,
+            "page_number": 2,
+            "excerpt": "Section 4.4. Termination of Advisory Agreement. This Agreement shall terminate automatically without notice and immediately (a) if MS\nCapital Partners Adviser Inc. or another affiliate of Licensor is no longer acting as the investment adviser (any such entity, the \"Advisor\") to\nLicensee under the Investment Advisory Agreement, dated as of [\u00b7], 201[9] (as the same may\n2\nSource: MORGAN STANLEY DIRECT LENDING FUND, 10-12G/A, 11/19/2019",
+            "source_chunk_id": "doc-010-c0011",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e-909d2abcb567137f3768",
+            "topic": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "document_id": "doc-010",
+            "document_title": "Trademark License Agreement",
+            "section_path": [
+              "4",
+              "4.4"
+            ],
+            "section_title": null,
+            "page_number": 3,
+            "excerpt": "be amended, modified or otherwise restated, the \"Investment Advisory Agreement\"), or a similar agreement, or (b) the Advisor is no longer an\naffiliate of Licensor. Further, Licensor may terminate this Agreement, effective upon written notice, at any time after 30 days from the date that\nLicensee notifies Licensor that the Investment Advisory Agreement has terminated or is not being renewed. The term \"affiliate\" as used herein\nshall have the meaning given to such term in the Investment Advisory Agreement.",
+            "source_chunk_id": "doc-010-c0012",
+            "pulled_by": "search"
+          },
+          {
+            "evidence_id": "e-fde53b60d51b2c939aa9",
+            "topic": "Can the Licensor end the agreement even when the other side is not at fault, and what notice must it give?",
+            "document_id": "doc-010",
+            "document_title": "Trademark License Agreement",
+            "section_path": [
+              "4",
+              "4.5"
+            ],
+            "section_title": null,
+            "page_number": 3,
+            "excerpt": "Section 4.5. Effect of Termination; Survival. Upon termination of this Agreement for any reason, (a) Licensee shall immediately, except as\nrequired by applicable Law, (i) cease all use of the Permitted Activity; and (b) the parties shall cooperate so as to best preserve the value of the\nBrand. Section 2, this Section 4.5, and Sections 6.2, 6.3, 7 and 9 shall survive termination of this Agreement.\n5. Infringement. Licensee shall notify Licensor promptly after it becomes aware of any actual or threatened infringement, imitation,\ndilution, misappropriation or other unauthorized use or conduct in derogation (\"Infringement\") of the Brand. Licensor shall have the sole right to\nbring any Action to remedy the foregoing, and Licensee shall cooperate with Licensor in same, at Licensor's expense.",
+            "source_chunk_id": "doc-010-c0013",
+            "pulled_by": "search"
+          }
+        ],
+        "trace": [
+          {
+            "step": "decide",
+            "detail": "initial_search",
+            "data": {
+              "tool": "document_search"
+            }
+          },
+          {
+            "step": "decide",
+            "detail": "resolve_reference",
+            "data": {
+              "tool": "retrieve_clause"
+            }
+          },
+          {
+            "step": "decide",
+            "detail": "ready",
+            "data": {
+              "tool": "draft"
+            }
+          },
+          {
+            "step": "write",
+            "detail": "117 output tokens",
+            "data": {
+              "model": "stub"
+            }
+          }
+        ],
+        "input_tokens": 798,
+        "output_tokens": 117,
+        "failure": null,
+        "failure_detail": null,
+        "answerability": null,
+        "model_calls": 1,
+        "elapsed_seconds": 1.482030165847391,
+        "run_id": "668f958e473741d7b95f73fc3ce6553f",
+        "trace_path": "runs/668f958e473741d7b95f73fc3ce6553f/events.jsonl",
+        "tool_calls": 3,
+        "stop_reason": "verified",
+        "usage_known": true
+      }
+    }
+  ]
+}

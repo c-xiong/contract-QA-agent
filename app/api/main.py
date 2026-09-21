@@ -14,6 +14,7 @@ import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, StreamingResponse
@@ -21,6 +22,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.agent.llm import ModelError
 from app.agent.runner import ResearchAgent
+from app.agent.tool_registry import digest
 from app.api.schemas import (
     DocumentSummary,
     HealthResponse,
@@ -122,7 +124,7 @@ def agent_for_arm(app: FastAPI, arm: str) -> ResearchAgent:
 
     cache: dict[str, ResearchAgent] = app.state.arm_cache
     if arm not in cache:
-        settings: Settings = app.state.settings
+        settings = base.settings
         try:
             retriever = build_retriever(arm, base.store, settings.index_dir)
         except (UnknownArmError, RuntimeError) as exc:
@@ -133,6 +135,18 @@ def agent_for_arm(app: FastAPI, arm: str) -> ResearchAgent:
             return base
         cache[arm] = ResearchAgent(base.store, settings, retriever=retriever)
     return cache[arm]
+
+
+def agent_for_mode(app: FastAPI, agent: ResearchAgent, mode: str | None) -> ResearchAgent:
+    """Switch orchestration only; retain the actual retriever and live/stub setting."""
+    if mode is None or mode == agent.settings.agent_mode:
+        return agent
+    cache: dict[tuple[int, str], ResearchAgent] = app.state.mode_cache
+    key = (id(agent), mode)
+    if key not in cache:
+        settings = agent.settings.model_copy(update={"agent_mode": mode})
+        cache[key] = ResearchAgent(agent.store, settings, retriever=agent.retriever)
+    return cache[key]
 
 
 def create_app(retrieval_arm: str = "rrf_hybrid", *, settings: Settings | None = None) -> FastAPI:
@@ -148,6 +162,7 @@ def create_app(retrieval_arm: str = "rrf_hybrid", *, settings: Settings | None =
     app.state.retrieval_arm = retrieval_arm
     app.state.settings = settings
     app.state.arm_cache = {}
+    app.state.mode_cache = {}
     app.state.degraded = None
 
     if STATIC_DIR.exists():
@@ -156,7 +171,7 @@ def create_app(retrieval_arm: str = "rrf_hybrid", *, settings: Settings | None =
         @app.get("/", include_in_schema=False)
         async def index() -> FileResponse:
             """The trace inspector. Read-only; see CLAUDE.md rule 4."""
-            return FileResponse(STATIC_DIR / "index.html")
+            return FileResponse(STATIC_DIR / "index.html", headers={"Cache-Control": "no-store"})
 
     def require_agent(request: Request) -> ResearchAgent:
         agent: ResearchAgent | None = getattr(request.app.state, "agent", None)
@@ -180,6 +195,7 @@ def create_app(retrieval_arm: str = "rrf_hybrid", *, settings: Settings | None =
                 retriever="none",
                 model_id=settings.model_id,
                 live_model=False,
+                agent_mode=settings.agent_mode,
                 note=degraded,
             )
         return HealthResponse(
@@ -191,6 +207,7 @@ def create_app(retrieval_arm: str = "rrf_hybrid", *, settings: Settings | None =
             # The agent's own settings, not the process settings: they differ exactly
             # when the live model was requested and could not be built.
             live_model=agent.settings.live_model,
+            agent_mode=agent.settings.agent_mode,
             note=degraded,
         )
 
@@ -199,6 +216,10 @@ def create_app(retrieval_arm: str = "rrf_hybrid", *, settings: Settings | None =
         agent = require_agent(request)
         return [
             DocumentSummary(
+                version_id="sha256:"
+                + digest(
+                    [c.model_dump(mode="json") for c in agent.store.chunks_for(d.document_id)]
+                ),
                 document_id=d.document_id,
                 title=d.title,
                 agreement_type=d.agreement_type,
@@ -217,6 +238,10 @@ def create_app(retrieval_arm: str = "rrf_hybrid", *, settings: Settings | None =
         if found is None:
             raise HTTPException(status_code=404, detail=f"No such document: {document_id}")
         return DocumentSummary(
+            version_id="sha256:"
+            + digest(
+                [c.model_dump(mode="json") for c in agent.store.chunks_for(found.document_id)]
+            ),
             document_id=found.document_id,
             title=found.title,
             agreement_type=found.agreement_type,
@@ -238,10 +263,17 @@ def create_app(retrieval_arm: str = "rrf_hybrid", *, settings: Settings | None =
             if unknown:
                 raise HTTPException(status_code=400, detail=f"Unknown document_ids: {unknown}")
 
-        result = await agent.research(payload.question, allowed_document_ids=payload.document_ids)
+        result = await agent.research(
+            payload.question,
+            allowed_document_ids=payload.document_ids,
+            requested_versions=payload.requested_versions,
+        )
         titles = {d.document_id: d.title for d in agent.store.documents}
 
         return ResearchResponse(
+            run_id=result.run_id,
+            stop_reason=result.stop_reason,
+            usage_known=result.usage_known,
             question=result.question,
             answer=result.answer,
             status=result.status,
@@ -270,12 +302,19 @@ def create_app(retrieval_arm: str = "rrf_hybrid", *, settings: Settings | None =
         question: str = Query(min_length=1, max_length=2000),
         document_ids: str | None = Query(default=None),
         arm: str | None = Query(default=None),
+        mode: Literal["v1", "v2"] | None = Query(default=None),
     ) -> StreamingResponse:
         """Stream one research run as server-sent events.
 
         Read-only, and the only endpoint the inspector calls.
         """
+        if request.headers.get("last-event-id"):
+            raise HTTPException(
+                status_code=409,
+                detail="This stream does not restart runs on reconnect. Start a new request explicitly.",
+            )
         agent = agent_for_arm(request.app, arm or request.app.state.retrieval_arm)
+        agent = agent_for_mode(request.app, agent, mode)
 
         allowed = (
             [d.strip() for d in document_ids.split(",") if d.strip()] if document_ids else None

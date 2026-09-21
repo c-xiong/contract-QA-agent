@@ -1,11 +1,8 @@
 """Server-sent events for the trace inspector. See CLAUDE.md rule 4 (carve-out).
 
-The page's node highlighting is driven from `graph.astream(stream_mode=["updates",
-"values"])`, so a node lights when the backend actually enters it. A front-end timer
-would make the diagram decorative instead of diagnostic, which is the whole reason the
-inspector is allowed to exist.
-
-Read-only: this endpoint runs a question and reports what happened. It mutates nothing.
+V1 reports completed graph updates. V2 tails persisted events during execution, including
+model/tool starts before slow calls return. Highlighting follows these events rather than
+a front-end animation timer. Contract data remains read-only; V2 writes local run traces.
 """
 
 from __future__ import annotations
@@ -13,7 +10,8 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator, AsyncIterator
+from contextlib import aclosing, suppress
 from dataclasses import dataclass
 from typing import Any
 
@@ -192,6 +190,14 @@ def build_done_payload(final: dict[str, Any], agent: ResearchAgent) -> dict[str,
                 1 for c in (final.get("retrieved_chunks") or []) if c.pulled_by == "cross_reference"
             ),
             "max_cross_reference_chunks": budget.max_cross_reference_chunks,
+            "tool_calls": final.get("tool_calls", 0),
+            "max_tool_calls": budget.max_tool_calls,
+            "model_calls": final.get("model_calls", 0),
+            "max_model_calls": budget.max_model_calls,
+            "retries": final.get("retries", 0),
+            "deadline_seconds": budget.deadline_seconds,
+            "evidence_items": len(final.get("evidence_by_id", {})),
+            "max_evidence_items": budget.max_evidence_items,
             "input_tokens": final.get("input_tokens", 0),
             "output_tokens": final.get("output_tokens", 0),
         },
@@ -206,6 +212,13 @@ async def research_events(
     allowed_document_ids: list[str] | None,
 ) -> AsyncIterator[str]:
     """Stream one research run as SSE frames."""
+    if agent.settings.agent_mode == "v2":
+        async with aclosing(
+            v2_research_events(agent, question, allowed_document_ids=allowed_document_ids)
+        ) as events:
+            async for frame in events:
+                yield frame
+        return
     loop = asyncio.get_running_loop()
     started = loop.time()
 
@@ -217,6 +230,7 @@ async def research_events(
             "retriever": agent.retriever.name,
             "model_id": agent.client.model_id,
             "live_model": agent.settings.live_model,
+            "agent_mode": agent.settings.agent_mode,
             "documents": len(agent.store.documents),
             "chunks": len(agent.store),
             "nodes": list(GRAPH_NODES),
@@ -282,3 +296,113 @@ async def research_events(
         # failure as an event so the UI can show it, and log the traceback server-side.
         logger.exception("research stream failed")
         yield sse("error", {"detail": f"{type(exc).__name__}: {exc}"})
+
+
+async def v2_research_events(
+    agent: ResearchAgent,
+    question: str,
+    *,
+    allowed_document_ids: list[str] | None,
+) -> AsyncGenerator[str, None]:
+    """Persist first, then publish only safe events. Disconnects cancel, never restart."""
+    from pathlib import Path
+
+    from app.agent.execution import v2_states
+    from app.agent.state import ResearchState
+    from app.observability.events import public
+
+    state = initial_state(
+        question,
+        allowed_document_ids=allowed_document_ids,
+        budget=Budget(max_chunks_per_query=agent.settings.retrieval_top_k),
+    )
+    final: ResearchState = state
+    delivered = 0
+    execution_path: list[str] = []
+    loop = asyncio.get_running_loop()
+    started = loop.time()
+    yield sse(
+        "start",
+        {
+            "question": question,
+            "allowed_document_ids": allowed_document_ids,
+            "retriever": agent.retriever.name,
+            "model_id": agent.client.model_id,
+            "live_model": agent.settings.live_model,
+            "agent_mode": "v2",
+            "documents": len(agent.store.documents),
+            "chunks": len(agent.store),
+            "nodes": [
+                "initialize",
+                "decide",
+                "authorize",
+                "execute",
+                "write",
+                "verify",
+                "repair",
+                "terminal",
+            ],
+        },
+    )
+
+    async def execute() -> None:
+        nonlocal final
+        async with aclosing(v2_states(agent.graph, state, agent.settings.runs_dir)) as states:
+            async for merged in states:
+                final = merged
+
+    # Tail the durable journal while a node is running. Awaiting only graph values
+    # batches model_started/tool_started behind slow calls and makes progress misleading.
+    task = asyncio.create_task(execute())
+    try:
+        while True:
+            finished = task.done()
+            trace_path = final.get("trace_path") or state.get("trace_path")
+            if trace_path:
+                try:
+                    lines = (await asyncio.to_thread(Path(trace_path).read_text)).splitlines()
+                except FileNotFoundError:
+                    lines = []
+                for line in lines[delivered:]:
+                    try:
+                        event = json.loads(line)
+                    except json.JSONDecodeError:
+                        break  # A concurrently appended final line may be incomplete.
+                    delivered += 1
+                    payload = public(event)
+                    node = event["node"]
+                    if not execution_path or execution_path[-1] != node:
+                        execution_path.append(node)
+                    payload["total_ms"] = round((loop.time() - started) * 1000)
+                    yield f"id: {event['event_id']}\n" + sse("progress", payload)
+            if finished:
+                await task  # propagate a sanitized transport error if execution failed
+                break
+            await asyncio.wait({task}, timeout=0.05)
+        payload = build_done_payload(dict(final), agent)
+        payload.update(
+            run_id=final.get("run_id"),
+            stop_reason=final.get("stop_reason"),
+            agent_mode="v2",
+            total_ms=round((loop.time() - started) * 1000),
+            steps=delivered,
+            verification_ok=final.get("verification_ok", False),
+            execution_path=execution_path,
+        )
+        if not final.get("usage_known", True):
+            payload["usage"]["input_tokens"] = None
+            payload["usage"]["output_tokens"] = None
+        yield sse("done", payload)
+    except asyncio.CancelledError:
+        raise
+    except Exception:
+        logger.exception("V2 research stream failed")
+        yield sse(
+            "error", {"detail": "The run failed. Inspect its local trace for the terminal reason."}
+        )
+    finally:
+        if not task.done():
+            task.cancel()
+        # The execution boundary has already persisted the terminal outcome.
+        with suppress(asyncio.CancelledError, Exception):
+            await task

@@ -17,6 +17,7 @@ class ResearchRequest(BaseModel):
         description="Restrict the search to these documents. Enforced in the retriever "
         "and re-checked by the citation verifier.",
     )
+    requested_versions: dict[str, str] | None = None
     include_trace: bool = False
 
 
@@ -43,6 +44,7 @@ class EvidenceItem(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     evidence_id: str
+    source_chunk_id: str | None = None
     document_id: str
     document_title: str
     page_number: int | None = None
@@ -73,6 +75,9 @@ class ResearchResponse(BaseModel):
     output_tokens: int = 0
     model_id: str = "stub"
     trace: list[TraceItem] | None = None
+    run_id: str | None = None
+    stop_reason: str | None = None
+    usage_known: bool = True
 
 
 class DocumentSummary(BaseModel):
@@ -85,6 +90,7 @@ class DocumentSummary(BaseModel):
     corpus_source: str
     is_synthetic: bool
     chunk_count: int
+    version_id: str | None = None
 
 
 class HealthResponse(BaseModel):
@@ -96,6 +102,7 @@ class HealthResponse(BaseModel):
     retriever: str
     model_id: str
     live_model: bool
+    agent_mode: str = "v1"
     note: str | None = Field(
         default=None,
         description="Set when the service started in a degraded state -- a missing index, "
@@ -129,6 +136,7 @@ def render_evidence(evidence: list[Evidence]) -> list[EvidenceItem]:
     return [
         EvidenceItem(
             evidence_id=e.evidence_id,
+            source_chunk_id=e.source_chunk_id,
             document_id=e.document_id,
             document_title=e.document_title,
             page_number=e.page_number,

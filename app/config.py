@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import AliasChoices, Field, SecretStr, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -64,6 +65,9 @@ class Settings(BaseSettings):
         description="Opt-in pre-write evidence gate. Disabled after the closeout ablation "
         "showed increased over-abstention; see results/experiment-d-answerability.json.",
     )
+
+    agent_mode: Literal["v1", "v2"] = "v1"
+    runs_dir: Path = Path("runs")
 
     # --- Retrieval --------------------------------------------------------
     retrieval_top_k: int = Field(

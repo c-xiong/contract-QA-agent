@@ -131,7 +131,9 @@ class AnthropicClient:
 
         self.model_id = settings.model_id
         self._timeout = settings.model_timeout_s
-        self._client = AsyncAnthropic(api_key=settings.anthropic_api_key.get_secret_value())
+        self._client = AsyncAnthropic(
+            api_key=settings.anthropic_api_key.get_secret_value(), max_retries=0
+        )
 
     async def complete(self, system: str, user: str) -> ModelResponse:
         from anthropic import APIError

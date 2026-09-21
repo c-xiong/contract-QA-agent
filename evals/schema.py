@@ -70,6 +70,14 @@ class EvalTask(BaseModel):
     touches_synthetic: bool = False
     dataset_version: str = Field(min_length=1)
 
+    # V2 additions are optional so hand-v1 remains byte-for-byte frozen.
+    requested_versions: dict[str, str] | None = None
+    required_capabilities: list[str] = Field(default_factory=list)
+    capability_order: list[tuple[str, str]] = Field(default_factory=list)
+    expected_date: str | None = None
+    rubric_version: str = "legacy-hand-v1"
+    review_status: Literal["author-reviewed", "provisional"] = "author-reviewed"
+
     # Provenance of the QUESTION, recorded per task rather than in a footnote.
     #
     # An author who is not a native English speaker can write the question in their own

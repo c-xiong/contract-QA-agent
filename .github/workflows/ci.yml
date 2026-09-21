@@ -51,6 +51,9 @@ jobs:
         # collection or child processes, before pytest's socket guard can run.
         run: sudo --preserve-env=CRA_LIVE_MODEL,HF_HOME,HF_HUB_OFFLINE,TRANSFORMERS_OFFLINE unshare --net .venv/bin/python -m pytest
 
+      - name: V2 synthetic trace demos
+        run: uv run python -m scripts.v2_demo --output "${{ runner.temp }}/v2-traces" --runs "${{ runner.temp }}/v2-runs"
+
       # Everything above runs against the deterministic stub and synthetic fixtures.
       # No network, no API key, no cost -- CI exercises the whole system for free.
 
@@ -114,6 +117,7 @@ jobs:
         run: |
           uv run python scripts/build_eval_tasks.py --out evals/datasets/ci
           uv run python scripts/run_eval.py --suite ci
+          CRA_AGENT_MODE=v2 uv run python scripts/run_eval.py --suite ci
 
       - name: Experiment A
         run: uv run python experiments/retrieval_comparison.py --suite ci
@@ -126,4 +130,5 @@ jobs:
           path: |
             evals/runs/
             experiments/runs/
+            runs/
           if-no-files-found: warn
