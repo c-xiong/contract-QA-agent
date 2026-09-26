@@ -21,6 +21,8 @@ import asyncio
 from sentence_transformers import CrossEncoder
 
 from app.retrieval.base import Retriever
+from app.retrieval.coverage import comparison_documents, select_with_coverage
+from app.retrieval.query_expansion import expand_contract_query
 from app.schemas.retrieval import RetrievalFilters, RetrievedChunk
 
 # DECISION: ms-marco-MiniLM-L-6-v2 as the cross-encoder.
@@ -53,12 +55,18 @@ class CrossEncoderReranker:
         *,
         model_id: str = DEFAULT_RERANK_MODEL,
         depth: int = DEFAULT_RERANK_DEPTH,
+        balance_documents: bool = False,
+        expand_query: bool = False,
     ) -> None:
         self._base = base
         self._depth = depth
+        self._balance_documents = balance_documents
+        self._expand_query = expand_query
         self.model_id = model_id
         self._model = CrossEncoder(model_id)
         self.name = f"{base.name}+rerank"
+        if balance_documents:
+            self.name += "+coverage"
 
     def _pair_text(self, item: RetrievedChunk) -> str:
         """What the cross-encoder reads as the document side of the pair.
@@ -78,11 +86,52 @@ class CrossEncoderReranker:
         top_k: int,
         filters: RetrievalFilters | None = None,
     ) -> list[RetrievedChunk]:
-        candidates = await self._base.search(query, top_k=self._depth, filters=filters)
+        candidates = await self.retrieve_candidates(query, filters)
+        return await self.rerank_candidates(query, candidates, top_k, filters)
+
+    async def retrieve_candidates(
+        self, query: str, filters: RetrievalFilters | None = None
+    ) -> list[RetrievedChunk]:
+        """Expose the actual candidate pool for recall diagnostics without reranking twice."""
+        documents = comparison_documents(query, filters) if self._balance_documents else []
+        if documents:
+            # Keep the same total reranker budget. Round-robin the per-document
+            # candidate lists so one long contract cannot occupy the entire pool.
+            pools = await asyncio.gather(
+                *(
+                    self._base.search(
+                        query,
+                        top_k=self._depth,
+                        filters=RetrievalFilters(
+                            document_ids=[doc_id],
+                            exclude_synthetic=bool(filters and filters.exclude_synthetic),
+                        ),
+                    )
+                    for doc_id in documents
+                )
+            )
+            candidates: list[RetrievedChunk] = []
+            for index in range(self._depth):
+                for pool in pools:
+                    if index < len(pool) and len(candidates) < self._depth:
+                        candidates.append(pool[index])
+        else:
+            candidates = await self._base.search(query, top_k=self._depth, filters=filters)
+        return candidates
+
+    async def rerank_candidates(
+        self,
+        query: str,
+        candidates: list[RetrievedChunk],
+        top_k: int,
+        filters: RetrievalFilters | None = None,
+    ) -> list[RetrievedChunk]:
+        documents = comparison_documents(query, filters) if self._balance_documents else []
         if not candidates:
             return []
 
-        pairs = [(query, self._pair_text(item)) for item in candidates]
+        ranking_query = expand_contract_query(query) if self._expand_query else query
+        pairs = [(ranking_query, self._pair_text(item)) for item in candidates]
 
         # CrossEncoder.predict is synchronous and CPU-bound. Off-loading it keeps the
         # event loop free, which matters once the API layer serves concurrent requests.
@@ -98,4 +147,6 @@ class CrossEncoderReranker:
             for item, score in zip(candidates, scores, strict=True)
         ]
         rescored.sort(key=lambda i: (-(i.rerank_score or 0.0), i.chunk.chunk_id))
+        if documents:
+            return select_with_coverage(rescored, documents, top_k)
         return rescored[:top_k]

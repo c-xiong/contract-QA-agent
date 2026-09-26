@@ -1,0 +1,8 @@
+{
+  "chunks": 6270,
+  "model": "sentence-transformers/all-MiniLM-L6-v2",
+  "model_max_seq_length": 256,
+  "body_only_over_254_wordpieces": 1358,
+  "max_body_wordpieces": 1290,
+  "note": "Body-only counts; headings and special tokens also consume model input. Confirms risk, not causality; window-index ablation is reported separately."
+}

@@ -23,6 +23,7 @@ DECISION: embeddings run locally rather than through a provider API.
 from __future__ import annotations
 
 from functools import lru_cache
+from typing import cast
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
@@ -72,6 +73,30 @@ class Embedder:
     def encode_one(self, text: str) -> np.ndarray:
         vector: np.ndarray = self.encode([text])[0]
         return vector
+
+    def window_texts(self, text: str, *, heading: str = "", overlap: int = 32) -> list[str]:
+        """Token-bounded search representations; citations still use the original chunk.
+
+        DECISION: repeat a bounded heading in each window and keep 32 wordpieces of
+        overlap. This covers the body without silently dropping its tail; it does
+        not expand the number or size of chunks returned to the answer writer.
+        """
+        tokenizer = self._model.tokenizer
+        special = int(tokenizer.num_special_tokens_to_add(pair=False))
+        maximum = int(self._model.max_seq_length or MODEL_MAX_TOKENS) - special
+        heading_ids = cast(list[int], tokenizer.encode(heading, add_special_tokens=False))
+        heading_ids = heading_ids[: min(48, maximum // 4)]
+        body_ids = cast(list[int], tokenizer.encode(text, add_special_tokens=False))
+        budget = maximum - len(heading_ids)
+        if overlap < 0 or overlap >= budget:
+            raise ValueError("Window overlap must be nonnegative and smaller than its budget")
+        windows: list[str] = []
+        for start in range(0, max(1, len(body_ids)), budget - overlap):
+            ids = heading_ids + body_ids[start : start + budget]
+            windows.append(str(tokenizer.decode(ids, skip_special_tokens=True)))
+            if start + budget >= len(body_ids):
+                break
+        return windows
 
 
 @lru_cache(maxsize=2)

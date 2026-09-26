@@ -221,7 +221,7 @@ class TestMetrics:
 class TestArms:
     def test_arms_endpoint_lists_every_experiment_arm(self, client: TestClient) -> None:
         assert client.get("/arms").json() == list(
-            ["bm25", "dense", "rrf_hybrid", "rrf_hybrid_rerank"]
+            ["bm25", "dense", "rrf_hybrid", "rrf_hybrid_rerank", "legal_query_coverage_rerank"]
         )
 
     def test_unknown_arm_falls_back_rather_than_failing(self, client: TestClient) -> None:

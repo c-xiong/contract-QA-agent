@@ -1,0 +1,23 @@
+{
+  "selected_at": "2026-09-26T12:37:28.476696+00:00",
+  "selected_arm": "legal_query_coverage_rerank",
+  "selection_suite": "hand-v1",
+  "selection_task_count": 36,
+  "source_sha256": "9cf0f91b93aff6e2d2f6ed8fca24ae42ab4e358620e853b64f4a105654dedb7e",
+  "validation_tasks_sha256": "d10e41a955003f7729ecc9220862ff5d87db60a5c4b8ea7af12b4f7a987fd4e2",
+  "development_metrics": {
+    "document_recall": 1.0,
+    "evidence_span_recall": 0.7268518518518517,
+    "reciprocal_rank": 1.0,
+    "document_aware_evidence_recall": 0.7268518518518517,
+    "evidence_fragment_recall": 0.7060185185185185,
+    "evidence_complete_span_recall": 0.6851851851851851
+  },
+  "selection_reason": "Highest document-aware probe and complete-span recall among tested development variants; coverage reaches all requested documents. Final budget five unchanged original chunks and 40 reranker candidates. No validation results examined.",
+  "validation_arms": [
+    "bm25",
+    "rrf_hybrid_rerank",
+    "legal_query_coverage_rerank"
+  ],
+  "commitment": "Report validation without retuning on it; preserve all ablations and failures."
+}

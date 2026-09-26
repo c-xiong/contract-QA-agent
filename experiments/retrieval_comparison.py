@@ -27,7 +27,7 @@ from pathlib import Path
 
 from app.config import get_settings
 from app.ingestion.store import ChunkStore, StoreError
-from app.retrieval.factory import ARM_NAMES, build_retriever
+from app.retrieval.factory import LEGACY_ARM_NAMES, build_retriever
 from app.schemas.retrieval import RetrievalFilters
 from evals.graders.retrieval import grade_retrieval
 from evals.loader import DatasetError, load_suite
@@ -308,7 +308,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--suite", default="full")
     parser.add_argument("--k", type=int, default=5)
-    parser.add_argument("--arms", nargs="+", default=list(ARM_NAMES))
+    parser.add_argument("--arms", nargs="+", default=list(LEGACY_ARM_NAMES))
     parser.add_argument(
         "--no-allowlist",
         action="store_true",

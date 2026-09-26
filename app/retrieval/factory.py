@@ -14,10 +14,21 @@ from app.retrieval.base import Retriever
 from app.retrieval.bm25 import Bm25Retriever
 from app.retrieval.dense import DenseRetriever
 from app.retrieval.fusion import DEFAULT_RRF_K, RrfHybridRetriever
+from app.retrieval.query_expansion import QueryExpandedRetriever
 from app.retrieval.rerank import CrossEncoderReranker
+from app.retrieval.windowed import WindowedDenseRetriever
 
 # The arms compared in Experiment A, in the order they are reported.
-ARM_NAMES = ("bm25", "dense", "rrf_hybrid", "rrf_hybrid_rerank")
+LEGACY_ARM_NAMES = ("bm25", "dense", "rrf_hybrid", "rrf_hybrid_rerank")
+# The selected improvement is available explicitly; validation showed modest gains
+# with regressions, so it does not silently replace existing runtime defaults.
+ARM_NAMES = (*LEGACY_ARM_NAMES, "legal_query_coverage_rerank")
+EXPERIMENTAL_ARM_NAMES = (
+    "coverage_rerank",
+    "windowed_rerank",
+    "windowed_coverage_rerank",
+    "legal_query_rerank",
+)
 
 
 class UnknownArmError(ValueError):
@@ -54,4 +65,23 @@ def build_retriever(
         )
         return CrossEncoderReranker(base)
 
-    raise UnknownArmError(f"Unknown retrieval arm {name!r}. Known arms: {', '.join(ARM_NAMES)}")
+    if name in {"coverage_rerank", "windowed_rerank", "windowed_coverage_rerank"}:
+        dense = (
+            WindowedDenseRetriever.load(store, index_dir / "windows")
+            if name.startswith("windowed")
+            else DenseRetriever.load(store, index_dir)
+        )
+        base = RrfHybridRetriever([Bm25Retriever(store), dense], k=rrf_k)
+        return CrossEncoderReranker(base, balance_documents="coverage" in name)
+
+    if name in {"legal_query_rerank", "legal_query_coverage_rerank"}:
+        hybrid = RrfHybridRetriever(
+            [Bm25Retriever(store), DenseRetriever.load(store, index_dir)], k=rrf_k
+        )
+        return CrossEncoderReranker(
+            QueryExpandedRetriever(hybrid), balance_documents="coverage" in name, expand_query=True
+        )
+
+    raise UnknownArmError(
+        f"Unknown retrieval arm {name!r}. Known arms: {', '.join((*ARM_NAMES, *EXPERIMENTAL_ARM_NAMES))}"
+    )

@@ -48,3 +48,12 @@ CRA_LIVE_MODEL=0 uv run python scripts/summarize_results.py
 `evals/runs/` and `experiments/runs/` remain ignored scratch directories. The generated
 20-task ContractNLI diagnostic is a supplementary stub check, not a résumé metric.
 Promote only artifacts that back a reviewed claim; preserve their original provenance.
+
+## Retrieval follow-up, 2026-09-26
+
+The new artifacts live in `reports/` and preserve all historical comparisons above.
+[The follow-up report](../docs/retrieval-improvement-results.md) links the reproduced
+baseline, every development ablation, frozen selection, and 119-question independent
+CUAD validation. It reports both document-aware evidence probes and complete-span
+coverage, including regressions and uncertainty. [Résumé wording](../docs/resume-bullets.md)
+distinguishes development gains from the smaller independent-validation gain.

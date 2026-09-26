@@ -1,0 +1,1671 @@
+{
+  "dataset_version": "cuad-source-questions-v1",
+  "source_path": "data/raw/CUAD_v1/CUAD_v1.json",
+  "source_sha256": "ed0b77d85bdf4014d7495800e8e4a70565b48ee6f8a2e5dca9cf8655dbf10eae",
+  "tasks_sha256": "d10e41a955003f7729ecc9220862ff5d87db60a5c4b8ea7af12b4f7a987fd4e2",
+  "task_count": 119,
+  "document_ids": [
+    "doc-008",
+    "doc-012",
+    "doc-014",
+    "doc-015",
+    "doc-016",
+    "doc-017",
+    "doc-018",
+    "doc-019",
+    "doc-020",
+    "doc-021",
+    "doc-022",
+    "doc-025",
+    "doc-026",
+    "doc-027",
+    "doc-029",
+    "doc-030",
+    "doc-032",
+    "doc-034",
+    "doc-035",
+    "doc-037",
+    "doc-038",
+    "doc-039",
+    "doc-040"
+  ],
+  "category_counts": {
+    "Cap On Liability": 23,
+    "Change Of Control": 10,
+    "Governing Law": 23,
+    "Insurance": 7,
+    "Non-Compete": 16,
+    "Notice Period To Terminate Renewal": 13,
+    "Termination For Convenience": 11,
+    "Uncapped Liability": 16
+  },
+  "excluded_document_ids": [
+    "doc-001",
+    "doc-002",
+    "doc-003",
+    "doc-004",
+    "doc-005",
+    "doc-006",
+    "doc-007",
+    "doc-009",
+    "doc-010",
+    "doc-011",
+    "doc-013",
+    "doc-023",
+    "doc-024",
+    "doc-028",
+    "doc-031",
+    "doc-033",
+    "doc-036",
+    "doc-041",
+    "doc-042",
+    "doc-043",
+    "doc-044",
+    "doc-045",
+    "doc-046",
+    "doc-047",
+    "doc-048",
+    "doc-049",
+    "doc-050",
+    "doc-051",
+    "doc-052",
+    "doc-053",
+    "doc-054",
+    "doc-055",
+    "doc-056"
+  ],
+  "development_suite_hashes": {
+    "evals/datasets/hand/tasks.jsonl": "a4e70da987e1e18a7afd01814e11848f065e43824a1eabfdd664b39d9388d4dc",
+    "evals/datasets/full/tasks.jsonl": "30e65c02e71a8853818cffeeec40fe52fa9f0fa000a4d8b12f8fee306e3f6189",
+    "evals/datasets/answerability/tasks.jsonl": "72f9085feec75886d943ab14b60e9c2130f5bd7e522b69789d90a8d3137e30e7",
+    "evals/datasets/v2/tasks.jsonl": "d4229c48cbe6072273760954d25db588d62289e38423632c735060bc652123eb"
+  },
+  "selection": "All answerable original CUAD questions in existing eight categories, on active documents absent from development suites; no filtering by retrieval outcomes or chunk matchability.",
+  "question_authorship": "Verbatim original CUAD source questions; no model-generated questions, answers, or rubrics.",
+  "limitations": [
+    "Templated single-document clause extraction, not conversational or cross-document QA.",
+    "Corpus previously selected for category coverage; not a random sample of contracts.",
+    "Public model training contamination cannot be excluded.",
+    "Not newly reviewed by the project author; source annotation provenance is retained."
+  ],
+  "source_annotations": {
+    "cuad-native-doc-008-04": {
+      "source_qa_id": "TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding Agreement__Notice Period To Terminate Renewal",
+      "title": "TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding Agreement",
+      "answer_offsets": [
+        {
+          "start": 63973,
+          "end": 64323
+        }
+      ]
+    },
+    "cuad-native-doc-008-00": {
+      "source_qa_id": "TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding Agreement__Governing Law",
+      "title": "TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding Agreement",
+      "answer_offsets": [
+        {
+          "start": 98605,
+          "end": 98750
+        }
+      ]
+    },
+    "cuad-native-doc-008-05": {
+      "source_qa_id": "TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding Agreement__Non-Compete",
+      "title": "TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding Agreement",
+      "answer_offsets": [
+        {
+          "start": 71593,
+          "end": 72923
+        },
+        {
+          "start": 76612,
+          "end": 76907
+        },
+        {
+          "start": 72931,
+          "end": 74187
+        }
+      ]
+    },
+    "cuad-native-doc-008-06": {
+      "source_qa_id": "TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding Agreement__Change Of Control",
+      "title": "TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding Agreement",
+      "answer_offsets": [
+        {
+          "start": 102769,
+          "end": 103196
+        }
+      ]
+    },
+    "cuad-native-doc-008-02": {
+      "source_qa_id": "TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding Agreement__Uncapped Liability",
+      "title": "TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding Agreement",
+      "answer_offsets": [
+        {
+          "start": 91322,
+          "end": 91549
+        },
+        {
+          "start": 90347,
+          "end": 91321
+        }
+      ]
+    },
+    "cuad-native-doc-008-01": {
+      "source_qa_id": "TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding Agreement__Cap On Liability",
+      "title": "TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding Agreement",
+      "answer_offsets": [
+        {
+          "start": 97579,
+          "end": 97795
+        },
+        {
+          "start": 90347,
+          "end": 91321
+        }
+      ]
+    },
+    "cuad-native-doc-012-04": {
+      "source_qa_id": "ENTERTAINMENTGAMINGASIAINC_02_15_2005-EX-10.5-DISTRIBUTOR AGREEMENT__Notice Period To Terminate Renewal",
+      "title": "ENTERTAINMENTGAMINGASIAINC_02_15_2005-EX-10.5-DISTRIBUTOR AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 1762,
+          "end": 1949
+        }
+      ]
+    },
+    "cuad-native-doc-012-00": {
+      "source_qa_id": "ENTERTAINMENTGAMINGASIAINC_02_15_2005-EX-10.5-DISTRIBUTOR AGREEMENT__Governing Law",
+      "title": "ENTERTAINMENTGAMINGASIAINC_02_15_2005-EX-10.5-DISTRIBUTOR AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 42517,
+          "end": 42611
+        }
+      ]
+    },
+    "cuad-native-doc-012-05": {
+      "source_qa_id": "ENTERTAINMENTGAMINGASIAINC_02_15_2005-EX-10.5-DISTRIBUTOR AGREEMENT__Non-Compete",
+      "title": "ENTERTAINMENTGAMINGASIAINC_02_15_2005-EX-10.5-DISTRIBUTOR AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 13479,
+          "end": 13760
+        },
+        {
+          "start": 12773,
+          "end": 12875
+        }
+      ]
+    },
+    "cuad-native-doc-012-03": {
+      "source_qa_id": "ENTERTAINMENTGAMINGASIAINC_02_15_2005-EX-10.5-DISTRIBUTOR AGREEMENT__Termination For Convenience",
+      "title": "ENTERTAINMENTGAMINGASIAINC_02_15_2005-EX-10.5-DISTRIBUTOR AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 1685,
+          "end": 1949
+        }
+      ]
+    },
+    "cuad-native-doc-012-06": {
+      "source_qa_id": "ENTERTAINMENTGAMINGASIAINC_02_15_2005-EX-10.5-DISTRIBUTOR AGREEMENT__Change Of Control",
+      "title": "ENTERTAINMENTGAMINGASIAINC_02_15_2005-EX-10.5-DISTRIBUTOR AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 2617,
+          "end": 2989
+        },
+        {
+          "start": 1685,
+          "end": 1751
+        }
+      ]
+    },
+    "cuad-native-doc-012-01": {
+      "source_qa_id": "ENTERTAINMENTGAMINGASIAINC_02_15_2005-EX-10.5-DISTRIBUTOR AGREEMENT__Cap On Liability",
+      "title": "ENTERTAINMENTGAMINGASIAINC_02_15_2005-EX-10.5-DISTRIBUTOR AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 37976,
+          "end": 38257
+        },
+        {
+          "start": 19218,
+          "end": 19392
+        }
+      ]
+    },
+    "cuad-native-doc-014-04": {
+      "source_qa_id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement__Notice Period To Terminate Renewal",
+      "title": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
+      "answer_offsets": [
+        {
+          "start": 5859,
+          "end": 6254
+        }
+      ]
+    },
+    "cuad-native-doc-014-00": {
+      "source_qa_id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement__Governing Law",
+      "title": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
+      "answer_offsets": [
+        {
+          "start": 29857,
+          "end": 29990
+        }
+      ]
+    },
+    "cuad-native-doc-014-03": {
+      "source_qa_id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement__Termination For Convenience",
+      "title": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
+      "answer_offsets": [
+        {
+          "start": 7027,
+          "end": 7559
+        },
+        {
+          "start": 28599,
+          "end": 28906
+        }
+      ]
+    },
+    "cuad-native-doc-014-02": {
+      "source_qa_id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement__Uncapped Liability",
+      "title": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
+      "answer_offsets": [
+        {
+          "start": 22758,
+          "end": 23241
+        }
+      ]
+    },
+    "cuad-native-doc-014-01": {
+      "source_qa_id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement__Cap On Liability",
+      "title": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
+      "answer_offsets": [
+        {
+          "start": 22758,
+          "end": 23241
+        },
+        {
+          "start": 32588,
+          "end": 32708
+        },
+        {
+          "start": 20201,
+          "end": 20851
+        },
+        {
+          "start": 20938,
+          "end": 21054
+        },
+        {
+          "start": 21598,
+          "end": 22233
+        },
+        {
+          "start": 22300,
+          "end": 22396
+        },
+        {
+          "start": 17797,
+          "end": 17888
+        }
+      ]
+    },
+    "cuad-native-doc-015-00": {
+      "source_qa_id": "PlayboyEnterprisesInc_20090220_10-QA_EX-10.2_4091580_EX-10.2_Content License Agreement_ Marketing Agreement_ Sales-Purchase Agreement1__Governing Law",
+      "title": "PlayboyEnterprisesInc_20090220_10-QA_EX-10.2_4091580_EX-10.2_Content License Agreement_ Marketing Agreement_ Sales-Purchase Agreement1",
+      "answer_offsets": [
+        {
+          "start": 101547,
+          "end": 101699
+        }
+      ]
+    },
+    "cuad-native-doc-015-05": {
+      "source_qa_id": "PlayboyEnterprisesInc_20090220_10-QA_EX-10.2_4091580_EX-10.2_Content License Agreement_ Marketing Agreement_ Sales-Purchase Agreement1__Non-Compete",
+      "title": "PlayboyEnterprisesInc_20090220_10-QA_EX-10.2_4091580_EX-10.2_Content License Agreement_ Marketing Agreement_ Sales-Purchase Agreement1",
+      "answer_offsets": [
+        {
+          "start": 48191,
+          "end": 48395
+        }
+      ]
+    },
+    "cuad-native-doc-015-02": {
+      "source_qa_id": "PlayboyEnterprisesInc_20090220_10-QA_EX-10.2_4091580_EX-10.2_Content License Agreement_ Marketing Agreement_ Sales-Purchase Agreement1__Uncapped Liability",
+      "title": "PlayboyEnterprisesInc_20090220_10-QA_EX-10.2_4091580_EX-10.2_Content License Agreement_ Marketing Agreement_ Sales-Purchase Agreement1",
+      "answer_offsets": [
+        {
+          "start": 94041,
+          "end": 94527
+        }
+      ]
+    },
+    "cuad-native-doc-015-01": {
+      "source_qa_id": "PlayboyEnterprisesInc_20090220_10-QA_EX-10.2_4091580_EX-10.2_Content License Agreement_ Marketing Agreement_ Sales-Purchase Agreement1__Cap On Liability",
+      "title": "PlayboyEnterprisesInc_20090220_10-QA_EX-10.2_4091580_EX-10.2_Content License Agreement_ Marketing Agreement_ Sales-Purchase Agreement1",
+      "answer_offsets": [
+        {
+          "start": 94041,
+          "end": 94527
+        }
+      ]
+    },
+    "cuad-native-doc-015-07": {
+      "source_qa_id": "PlayboyEnterprisesInc_20090220_10-QA_EX-10.2_4091580_EX-10.2_Content License Agreement_ Marketing Agreement_ Sales-Purchase Agreement1__Insurance",
+      "title": "PlayboyEnterprisesInc_20090220_10-QA_EX-10.2_4091580_EX-10.2_Content License Agreement_ Marketing Agreement_ Sales-Purchase Agreement1",
+      "answer_offsets": [
+        {
+          "start": 21583,
+          "end": 21861
+        },
+        {
+          "start": 21440,
+          "end": 21582
+        },
+        {
+          "start": 20125,
+          "end": 21061
+        },
+        {
+          "start": 21292,
+          "end": 21311
+        },
+        {
+          "start": 21071,
+          "end": 21228
+        },
+        {
+          "start": 21312,
+          "end": 21439
+        }
+      ]
+    },
+    "cuad-native-doc-016-04": {
+      "source_qa_id": "LegacyEducationAllianceInc_20200330_10-K_EX-10.18_12090678_EX-10.18_Development Agreement__Notice Period To Terminate Renewal",
+      "title": "LegacyEducationAllianceInc_20200330_10-K_EX-10.18_12090678_EX-10.18_Development Agreement",
+      "answer_offsets": [
+        {
+          "start": 27523,
+          "end": 27724
+        }
+      ]
+    },
+    "cuad-native-doc-016-00": {
+      "source_qa_id": "LegacyEducationAllianceInc_20200330_10-K_EX-10.18_12090678_EX-10.18_Development Agreement__Governing Law",
+      "title": "LegacyEducationAllianceInc_20200330_10-K_EX-10.18_12090678_EX-10.18_Development Agreement",
+      "answer_offsets": [
+        {
+          "start": 38546,
+          "end": 38838
+        }
+      ]
+    },
+    "cuad-native-doc-016-05": {
+      "source_qa_id": "LegacyEducationAllianceInc_20200330_10-K_EX-10.18_12090678_EX-10.18_Development Agreement__Non-Compete",
+      "title": "LegacyEducationAllianceInc_20200330_10-K_EX-10.18_12090678_EX-10.18_Development Agreement",
+      "answer_offsets": [
+        {
+          "start": 10611,
+          "end": 10839
+        },
+        {
+          "start": 11089,
+          "end": 11437
+        }
+      ]
+    },
+    "cuad-native-doc-016-02": {
+      "source_qa_id": "LegacyEducationAllianceInc_20200330_10-K_EX-10.18_12090678_EX-10.18_Development Agreement__Uncapped Liability",
+      "title": "LegacyEducationAllianceInc_20200330_10-K_EX-10.18_12090678_EX-10.18_Development Agreement",
+      "answer_offsets": [
+        {
+          "start": 32049,
+          "end": 32520
+        }
+      ]
+    },
+    "cuad-native-doc-016-01": {
+      "source_qa_id": "LegacyEducationAllianceInc_20200330_10-K_EX-10.18_12090678_EX-10.18_Development Agreement__Cap On Liability",
+      "title": "LegacyEducationAllianceInc_20200330_10-K_EX-10.18_12090678_EX-10.18_Development Agreement",
+      "answer_offsets": [
+        {
+          "start": 32049,
+          "end": 32520
+        }
+      ]
+    },
+    "cuad-native-doc-016-07": {
+      "source_qa_id": "LegacyEducationAllianceInc_20200330_10-K_EX-10.18_12090678_EX-10.18_Development Agreement__Insurance",
+      "title": "LegacyEducationAllianceInc_20200330_10-K_EX-10.18_12090678_EX-10.18_Development Agreement",
+      "answer_offsets": [
+        {
+          "start": 31674,
+          "end": 31809
+        },
+        {
+          "start": 31172,
+          "end": 31673
+        }
+      ]
+    },
+    "cuad-native-doc-017-00": {
+      "source_qa_id": "StaarSurgicalCompany_20180801_10-Q_EX-10.37_11289449_EX-10.37_Distributor Agreement__Governing Law",
+      "title": "StaarSurgicalCompany_20180801_10-Q_EX-10.37_11289449_EX-10.37_Distributor Agreement",
+      "answer_offsets": [
+        {
+          "start": 45546,
+          "end": 45732
+        }
+      ]
+    },
+    "cuad-native-doc-017-05": {
+      "source_qa_id": "StaarSurgicalCompany_20180801_10-Q_EX-10.37_11289449_EX-10.37_Distributor Agreement__Non-Compete",
+      "title": "StaarSurgicalCompany_20180801_10-Q_EX-10.37_11289449_EX-10.37_Distributor Agreement",
+      "answer_offsets": [
+        {
+          "start": 11390,
+          "end": 11600
+        },
+        {
+          "start": 1963,
+          "end": 2231
+        }
+      ]
+    },
+    "cuad-native-doc-017-03": {
+      "source_qa_id": "StaarSurgicalCompany_20180801_10-Q_EX-10.37_11289449_EX-10.37_Distributor Agreement__Termination For Convenience",
+      "title": "StaarSurgicalCompany_20180801_10-Q_EX-10.37_11289449_EX-10.37_Distributor Agreement",
+      "answer_offsets": [
+        {
+          "start": 32697,
+          "end": 32902
+        }
+      ]
+    },
+    "cuad-native-doc-017-02": {
+      "source_qa_id": "StaarSurgicalCompany_20180801_10-Q_EX-10.37_11289449_EX-10.37_Distributor Agreement__Uncapped Liability",
+      "title": "StaarSurgicalCompany_20180801_10-Q_EX-10.37_11289449_EX-10.37_Distributor Agreement",
+      "answer_offsets": [
+        {
+          "start": 30981,
+          "end": 31519
+        }
+      ]
+    },
+    "cuad-native-doc-017-01": {
+      "source_qa_id": "StaarSurgicalCompany_20180801_10-Q_EX-10.37_11289449_EX-10.37_Distributor Agreement__Cap On Liability",
+      "title": "StaarSurgicalCompany_20180801_10-Q_EX-10.37_11289449_EX-10.37_Distributor Agreement",
+      "answer_offsets": [
+        {
+          "start": 17338,
+          "end": 17653
+        },
+        {
+          "start": 34598,
+          "end": 34973
+        },
+        {
+          "start": 30981,
+          "end": 31519
+        },
+        {
+          "start": 16057,
+          "end": 16392
+        }
+      ]
+    },
+    "cuad-native-doc-017-07": {
+      "source_qa_id": "StaarSurgicalCompany_20180801_10-Q_EX-10.37_11289449_EX-10.37_Distributor Agreement__Insurance",
+      "title": "StaarSurgicalCompany_20180801_10-Q_EX-10.37_11289449_EX-10.37_Distributor Agreement",
+      "answer_offsets": [
+        {
+          "start": 30262,
+          "end": 30450
+        },
+        {
+          "start": 30451,
+          "end": 30538
+        },
+        {
+          "start": 30699,
+          "end": 30871
+        },
+        {
+          "start": 30539,
+          "end": 30697
+        },
+        {
+          "start": 30872,
+          "end": 30975
+        }
+      ]
+    },
+    "cuad-native-doc-018-04": {
+      "source_qa_id": "EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding Agreement__Notice Period To Terminate Renewal",
+      "title": "EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding Agreement",
+      "answer_offsets": [
+        {
+          "start": 24987,
+          "end": 25249
+        }
+      ]
+    },
+    "cuad-native-doc-018-00": {
+      "source_qa_id": "EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding Agreement__Governing Law",
+      "title": "EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding Agreement",
+      "answer_offsets": [
+        {
+          "start": 44612,
+          "end": 45013
+        }
+      ]
+    },
+    "cuad-native-doc-018-05": {
+      "source_qa_id": "EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding Agreement__Non-Compete",
+      "title": "EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding Agreement",
+      "answer_offsets": [
+        {
+          "start": 11699,
+          "end": 11915
+        },
+        {
+          "start": 11330,
+          "end": 11650
+        },
+        {
+          "start": 10906,
+          "end": 11175
+        }
+      ]
+    },
+    "cuad-native-doc-018-06": {
+      "source_qa_id": "EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding Agreement__Change Of Control",
+      "title": "EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding Agreement",
+      "answer_offsets": [
+        {
+          "start": 43739,
+          "end": 44244
+        }
+      ]
+    },
+    "cuad-native-doc-018-02": {
+      "source_qa_id": "EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding Agreement__Uncapped Liability",
+      "title": "EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding Agreement",
+      "answer_offsets": [
+        {
+          "start": 42426,
+          "end": 42621
+        },
+        {
+          "start": 41949,
+          "end": 42425
+        }
+      ]
+    },
+    "cuad-native-doc-018-01": {
+      "source_qa_id": "EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding Agreement__Cap On Liability",
+      "title": "EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding Agreement",
+      "answer_offsets": [
+        {
+          "start": 41949,
+          "end": 42425
+        },
+        {
+          "start": 36715,
+          "end": 36887
+        }
+      ]
+    },
+    "cuad-native-doc-019-04": {
+      "source_qa_id": "CHANGEPOINTCORP_03_08_2000-EX-10.6-LICENSE AND HOSTING AGREEMENT__Notice Period To Terminate Renewal",
+      "title": "CHANGEPOINTCORP_03_08_2000-EX-10.6-LICENSE AND HOSTING AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 58331,
+          "end": 58692
+        }
+      ]
+    },
+    "cuad-native-doc-019-00": {
+      "source_qa_id": "CHANGEPOINTCORP_03_08_2000-EX-10.6-LICENSE AND HOSTING AGREEMENT__Governing Law",
+      "title": "CHANGEPOINTCORP_03_08_2000-EX-10.6-LICENSE AND HOSTING AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 151209,
+          "end": 151449
+        },
+        {
+          "start": 71307,
+          "end": 71548
+        }
+      ]
+    },
+    "cuad-native-doc-019-05": {
+      "source_qa_id": "CHANGEPOINTCORP_03_08_2000-EX-10.6-LICENSE AND HOSTING AGREEMENT__Non-Compete",
+      "title": "CHANGEPOINTCORP_03_08_2000-EX-10.6-LICENSE AND HOSTING AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 23401,
+          "end": 23969
+        }
+      ]
+    },
+    "cuad-native-doc-019-02": {
+      "source_qa_id": "CHANGEPOINTCORP_03_08_2000-EX-10.6-LICENSE AND HOSTING AGREEMENT__Uncapped Liability",
+      "title": "CHANGEPOINTCORP_03_08_2000-EX-10.6-LICENSE AND HOSTING AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 54968,
+          "end": 55396
+        },
+        {
+          "start": 55450,
+          "end": 55700
+        },
+        {
+          "start": 55701,
+          "end": 56182
+        }
+      ]
+    },
+    "cuad-native-doc-019-01": {
+      "source_qa_id": "CHANGEPOINTCORP_03_08_2000-EX-10.6-LICENSE AND HOSTING AGREEMENT__Cap On Liability",
+      "title": "CHANGEPOINTCORP_03_08_2000-EX-10.6-LICENSE AND HOSTING AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 134356,
+          "end": 135486
+        },
+        {
+          "start": 137972,
+          "end": 138973
+        },
+        {
+          "start": 54968,
+          "end": 55396
+        },
+        {
+          "start": 131531,
+          "end": 131825
+        },
+        {
+          "start": 139654,
+          "end": 139782
+        },
+        {
+          "start": 85985,
+          "end": 86522
+        },
+        {
+          "start": 136511,
+          "end": 136787
+        },
+        {
+          "start": 55701,
+          "end": 56182
+        },
+        {
+          "start": 132424,
+          "end": 133222
+        },
+        {
+          "start": 48387,
+          "end": 48954
+        },
+        {
+          "start": 157327,
+          "end": 157485
+        },
+        {
+          "start": 46957,
+          "end": 47101
+        },
+        {
+          "start": 86668,
+          "end": 86952
+        },
+        {
+          "start": 46600,
+          "end": 46903
+        },
+        {
+          "start": 55450,
+          "end": 55700
+        },
+        {
+          "start": 26085,
+          "end": 26422
+        }
+      ]
+    },
+    "cuad-native-doc-020-00": {
+      "source_qa_id": "VirtuosoSurgicalInc_20191227_1-A_EX1A-6 MAT CTRCT_11933379_EX1A-6 MAT CTRCT_License Agreement__Governing Law",
+      "title": "VirtuosoSurgicalInc_20191227_1-A_EX1A-6 MAT CTRCT_11933379_EX1A-6 MAT CTRCT_License Agreement",
+      "answer_offsets": [
+        {
+          "start": 22414,
+          "end": 22727
+        }
+      ]
+    },
+    "cuad-native-doc-020-03": {
+      "source_qa_id": "VirtuosoSurgicalInc_20191227_1-A_EX1A-6 MAT CTRCT_11933379_EX1A-6 MAT CTRCT_License Agreement__Termination For Convenience",
+      "title": "VirtuosoSurgicalInc_20191227_1-A_EX1A-6 MAT CTRCT_11933379_EX1A-6 MAT CTRCT_License Agreement",
+      "answer_offsets": [
+        {
+          "start": 11942,
+          "end": 12094
+        }
+      ]
+    },
+    "cuad-native-doc-020-06": {
+      "source_qa_id": "VirtuosoSurgicalInc_20191227_1-A_EX1A-6 MAT CTRCT_11933379_EX1A-6 MAT CTRCT_License Agreement__Change Of Control",
+      "title": "VirtuosoSurgicalInc_20191227_1-A_EX1A-6 MAT CTRCT_11933379_EX1A-6 MAT CTRCT_License Agreement",
+      "answer_offsets": [
+        {
+          "start": 28495,
+          "end": 28699
+        },
+        {
+          "start": 29142,
+          "end": 29509
+        },
+        {
+          "start": 29510,
+          "end": 29817
+        },
+        {
+          "start": 28701,
+          "end": 29137
+        }
+      ]
+    },
+    "cuad-native-doc-020-01": {
+      "source_qa_id": "VirtuosoSurgicalInc_20191227_1-A_EX1A-6 MAT CTRCT_11933379_EX1A-6 MAT CTRCT_License Agreement__Cap On Liability",
+      "title": "VirtuosoSurgicalInc_20191227_1-A_EX1A-6 MAT CTRCT_11933379_EX1A-6 MAT CTRCT_License Agreement",
+      "answer_offsets": [
+        {
+          "start": 17352,
+          "end": 17861
+        }
+      ]
+    },
+    "cuad-native-doc-020-07": {
+      "source_qa_id": "VirtuosoSurgicalInc_20191227_1-A_EX1A-6 MAT CTRCT_11933379_EX1A-6 MAT CTRCT_License Agreement__Insurance",
+      "title": "VirtuosoSurgicalInc_20191227_1-A_EX1A-6 MAT CTRCT_11933379_EX1A-6 MAT CTRCT_License Agreement",
+      "answer_offsets": [
+        {
+          "start": 20698,
+          "end": 20827
+        },
+        {
+          "start": 20211,
+          "end": 20696
+        },
+        {
+          "start": 20828,
+          "end": 20909
+        }
+      ]
+    },
+    "cuad-native-doc-021-00": {
+      "source_qa_id": "FuelcellEnergyInc_20191106_8-K_EX-10.1_11868007_EX-10.1_Development Agreement__Governing Law",
+      "title": "FuelcellEnergyInc_20191106_8-K_EX-10.1_11868007_EX-10.1_Development Agreement",
+      "answer_offsets": [
+        {
+          "start": 62105,
+          "end": 62301
+        }
+      ]
+    },
+    "cuad-native-doc-021-05": {
+      "source_qa_id": "FuelcellEnergyInc_20191106_8-K_EX-10.1_11868007_EX-10.1_Development Agreement__Non-Compete",
+      "title": "FuelcellEnergyInc_20191106_8-K_EX-10.1_11868007_EX-10.1_Development Agreement",
+      "answer_offsets": [
+        {
+          "start": 3887,
+          "end": 4163
+        }
+      ]
+    },
+    "cuad-native-doc-021-03": {
+      "source_qa_id": "FuelcellEnergyInc_20191106_8-K_EX-10.1_11868007_EX-10.1_Development Agreement__Termination For Convenience",
+      "title": "FuelcellEnergyInc_20191106_8-K_EX-10.1_11868007_EX-10.1_Development Agreement",
+      "answer_offsets": [
+        {
+          "start": 52909,
+          "end": 53085
+        }
+      ]
+    },
+    "cuad-native-doc-021-06": {
+      "source_qa_id": "FuelcellEnergyInc_20191106_8-K_EX-10.1_11868007_EX-10.1_Development Agreement__Change Of Control",
+      "title": "FuelcellEnergyInc_20191106_8-K_EX-10.1_11868007_EX-10.1_Development Agreement",
+      "answer_offsets": [
+        {
+          "start": 55108,
+          "end": 55302
+        },
+        {
+          "start": 55303,
+          "end": 55722
+        },
+        {
+          "start": 55723,
+          "end": 56015
+        }
+      ]
+    },
+    "cuad-native-doc-021-02": {
+      "source_qa_id": "FuelcellEnergyInc_20191106_8-K_EX-10.1_11868007_EX-10.1_Development Agreement__Uncapped Liability",
+      "title": "FuelcellEnergyInc_20191106_8-K_EX-10.1_11868007_EX-10.1_Development Agreement",
+      "answer_offsets": [
+        {
+          "start": 51979,
+          "end": 52543
+        }
+      ]
+    },
+    "cuad-native-doc-021-01": {
+      "source_qa_id": "FuelcellEnergyInc_20191106_8-K_EX-10.1_11868007_EX-10.1_Development Agreement__Cap On Liability",
+      "title": "FuelcellEnergyInc_20191106_8-K_EX-10.1_11868007_EX-10.1_Development Agreement",
+      "answer_offsets": [
+        {
+          "start": 51177,
+          "end": 51931
+        }
+      ]
+    },
+    "cuad-native-doc-022-04": {
+      "source_qa_id": "NANOPHASETECHNOLOGIESCORP_11_01_2005-EX-99.1-DISTRIBUTOR AGREEMENT__Notice Period To Terminate Renewal",
+      "title": "NANOPHASETECHNOLOGIESCORP_11_01_2005-EX-99.1-DISTRIBUTOR AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 23663,
+          "end": 24039
+        }
+      ]
+    },
+    "cuad-native-doc-022-00": {
+      "source_qa_id": "NANOPHASETECHNOLOGIESCORP_11_01_2005-EX-99.1-DISTRIBUTOR AGREEMENT__Governing Law",
+      "title": "NANOPHASETECHNOLOGIESCORP_11_01_2005-EX-99.1-DISTRIBUTOR AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 32252,
+          "end": 32417
+        },
+        {
+          "start": 47839,
+          "end": 48007
+        }
+      ]
+    },
+    "cuad-native-doc-022-03": {
+      "source_qa_id": "NANOPHASETECHNOLOGIESCORP_11_01_2005-EX-99.1-DISTRIBUTOR AGREEMENT__Termination For Convenience",
+      "title": "NANOPHASETECHNOLOGIESCORP_11_01_2005-EX-99.1-DISTRIBUTOR AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 24771,
+          "end": 24895
+        },
+        {
+          "start": 23663,
+          "end": 24039
+        }
+      ]
+    },
+    "cuad-native-doc-022-02": {
+      "source_qa_id": "NANOPHASETECHNOLOGIESCORP_11_01_2005-EX-99.1-DISTRIBUTOR AGREEMENT__Uncapped Liability",
+      "title": "NANOPHASETECHNOLOGIESCORP_11_01_2005-EX-99.1-DISTRIBUTOR AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 46795,
+          "end": 47255
+        }
+      ]
+    },
+    "cuad-native-doc-022-01": {
+      "source_qa_id": "NANOPHASETECHNOLOGIESCORP_11_01_2005-EX-99.1-DISTRIBUTOR AGREEMENT__Cap On Liability",
+      "title": "NANOPHASETECHNOLOGIESCORP_11_01_2005-EX-99.1-DISTRIBUTOR AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 18753,
+          "end": 19041
+        },
+        {
+          "start": 40657,
+          "end": 41412
+        },
+        {
+          "start": 41631,
+          "end": 42363
+        },
+        {
+          "start": 41443,
+          "end": 41630
+        }
+      ]
+    },
+    "cuad-native-doc-022-07": {
+      "source_qa_id": "NANOPHASETECHNOLOGIESCORP_11_01_2005-EX-99.1-DISTRIBUTOR AGREEMENT__Insurance",
+      "title": "NANOPHASETECHNOLOGIESCORP_11_01_2005-EX-99.1-DISTRIBUTOR AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 47492,
+          "end": 47797
+        },
+        {
+          "start": 25629,
+          "end": 25806
+        }
+      ]
+    },
+    "cuad-native-doc-025-00": {
+      "source_qa_id": "AlliedEsportsEntertainmentInc_20190815_8-K_EX-10.19_11788293_EX-10.19_Content License Agreement__Governing Law",
+      "title": "AlliedEsportsEntertainmentInc_20190815_8-K_EX-10.19_11788293_EX-10.19_Content License Agreement",
+      "answer_offsets": [
+        {
+          "start": 32541,
+          "end": 32783
+        }
+      ]
+    },
+    "cuad-native-doc-025-05": {
+      "source_qa_id": "AlliedEsportsEntertainmentInc_20190815_8-K_EX-10.19_11788293_EX-10.19_Content License Agreement__Non-Compete",
+      "title": "AlliedEsportsEntertainmentInc_20190815_8-K_EX-10.19_11788293_EX-10.19_Content License Agreement",
+      "answer_offsets": [
+        {
+          "start": 13926,
+          "end": 14137
+        }
+      ]
+    },
+    "cuad-native-doc-025-02": {
+      "source_qa_id": "AlliedEsportsEntertainmentInc_20190815_8-K_EX-10.19_11788293_EX-10.19_Content License Agreement__Uncapped Liability",
+      "title": "AlliedEsportsEntertainmentInc_20190815_8-K_EX-10.19_11788293_EX-10.19_Content License Agreement",
+      "answer_offsets": [
+        {
+          "start": 21930,
+          "end": 22490
+        }
+      ]
+    },
+    "cuad-native-doc-025-01": {
+      "source_qa_id": "AlliedEsportsEntertainmentInc_20190815_8-K_EX-10.19_11788293_EX-10.19_Content License Agreement__Cap On Liability",
+      "title": "AlliedEsportsEntertainmentInc_20190815_8-K_EX-10.19_11788293_EX-10.19_Content License Agreement",
+      "answer_offsets": [
+        {
+          "start": 21930,
+          "end": 22490
+        }
+      ]
+    },
+    "cuad-native-doc-025-07": {
+      "source_qa_id": "AlliedEsportsEntertainmentInc_20190815_8-K_EX-10.19_11788293_EX-10.19_Content License Agreement__Insurance",
+      "title": "AlliedEsportsEntertainmentInc_20190815_8-K_EX-10.19_11788293_EX-10.19_Content License Agreement",
+      "answer_offsets": [
+        {
+          "start": 29869,
+          "end": 29973
+        }
+      ]
+    },
+    "cuad-native-doc-026-00": {
+      "source_qa_id": "CoherusBiosciencesInc_20200227_10-K_EX-10.29_12021376_EX-10.29_Development Agreement__Governing Law",
+      "title": "CoherusBiosciencesInc_20200227_10-K_EX-10.29_12021376_EX-10.29_Development Agreement",
+      "answer_offsets": [
+        {
+          "start": 135845,
+          "end": 136002
+        }
+      ]
+    },
+    "cuad-native-doc-026-05": {
+      "source_qa_id": "CoherusBiosciencesInc_20200227_10-K_EX-10.29_12021376_EX-10.29_Development Agreement__Non-Compete",
+      "title": "CoherusBiosciencesInc_20200227_10-K_EX-10.29_12021376_EX-10.29_Development Agreement",
+      "answer_offsets": [
+        {
+          "start": 125976,
+          "end": 126258
+        },
+        {
+          "start": 118097,
+          "end": 118414
+        },
+        {
+          "start": 34221,
+          "end": 34523
+        }
+      ]
+    },
+    "cuad-native-doc-026-03": {
+      "source_qa_id": "CoherusBiosciencesInc_20200227_10-K_EX-10.29_12021376_EX-10.29_Development Agreement__Termination For Convenience",
+      "title": "CoherusBiosciencesInc_20200227_10-K_EX-10.29_12021376_EX-10.29_Development Agreement",
+      "answer_offsets": [
+        {
+          "start": 119239,
+          "end": 119531
+        }
+      ]
+    },
+    "cuad-native-doc-026-06": {
+      "source_qa_id": "CoherusBiosciencesInc_20200227_10-K_EX-10.29_12021376_EX-10.29_Development Agreement__Change Of Control",
+      "title": "CoherusBiosciencesInc_20200227_10-K_EX-10.29_12021376_EX-10.29_Development Agreement",
+      "answer_offsets": [
+        {
+          "start": 125441,
+          "end": 125611
+        },
+        {
+          "start": 118097,
+          "end": 118738
+        },
+        {
+          "start": 125976,
+          "end": 126258
+        }
+      ]
+    },
+    "cuad-native-doc-026-02": {
+      "source_qa_id": "CoherusBiosciencesInc_20200227_10-K_EX-10.29_12021376_EX-10.29_Development Agreement__Uncapped Liability",
+      "title": "CoherusBiosciencesInc_20200227_10-K_EX-10.29_12021376_EX-10.29_Development Agreement",
+      "answer_offsets": [
+        {
+          "start": 105129,
+          "end": 105914
+        }
+      ]
+    },
+    "cuad-native-doc-026-01": {
+      "source_qa_id": "CoherusBiosciencesInc_20200227_10-K_EX-10.29_12021376_EX-10.29_Development Agreement__Cap On Liability",
+      "title": "CoherusBiosciencesInc_20200227_10-K_EX-10.29_12021376_EX-10.29_Development Agreement",
+      "answer_offsets": [
+        {
+          "start": 105129,
+          "end": 105914
+        }
+      ]
+    },
+    "cuad-native-doc-027-04": {
+      "source_qa_id": "NEONSYSTEMSINC_03_01_1999-EX-10.5-DISTRIBUTOR AGREEMENT_New__Notice Period To Terminate Renewal",
+      "title": "NEONSYSTEMSINC_03_01_1999-EX-10.5-DISTRIBUTOR AGREEMENT_New",
+      "answer_offsets": [
+        {
+          "start": 47728,
+          "end": 48433
+        }
+      ]
+    },
+    "cuad-native-doc-027-00": {
+      "source_qa_id": "NEONSYSTEMSINC_03_01_1999-EX-10.5-DISTRIBUTOR AGREEMENT_New__Governing Law",
+      "title": "NEONSYSTEMSINC_03_01_1999-EX-10.5-DISTRIBUTOR AGREEMENT_New",
+      "answer_offsets": [
+        {
+          "start": 58250,
+          "end": 58350
+        }
+      ]
+    },
+    "cuad-native-doc-027-05": {
+      "source_qa_id": "NEONSYSTEMSINC_03_01_1999-EX-10.5-DISTRIBUTOR AGREEMENT_New__Non-Compete",
+      "title": "NEONSYSTEMSINC_03_01_1999-EX-10.5-DISTRIBUTOR AGREEMENT_New",
+      "answer_offsets": [
+        {
+          "start": 37533,
+          "end": 38067
+        }
+      ]
+    },
+    "cuad-native-doc-027-06": {
+      "source_qa_id": "NEONSYSTEMSINC_03_01_1999-EX-10.5-DISTRIBUTOR AGREEMENT_New__Change Of Control",
+      "title": "NEONSYSTEMSINC_03_01_1999-EX-10.5-DISTRIBUTOR AGREEMENT_New",
+      "answer_offsets": [
+        {
+          "start": 49543,
+          "end": 49581
+        },
+        {
+          "start": 50665,
+          "end": 51018
+        }
+      ]
+    },
+    "cuad-native-doc-027-01": {
+      "source_qa_id": "NEONSYSTEMSINC_03_01_1999-EX-10.5-DISTRIBUTOR AGREEMENT_New__Cap On Liability",
+      "title": "NEONSYSTEMSINC_03_01_1999-EX-10.5-DISTRIBUTOR AGREEMENT_New",
+      "answer_offsets": [
+        {
+          "start": 45006,
+          "end": 45091
+        },
+        {
+          "start": 46572,
+          "end": 46772
+        },
+        {
+          "start": 45134,
+          "end": 45648
+        },
+        {
+          "start": 47042,
+          "end": 47555
+        },
+        {
+          "start": 45909,
+          "end": 46023
+        }
+      ]
+    },
+    "cuad-native-doc-029-04": {
+      "source_qa_id": "AMERICASSHOPPINGMALLINC_12_10_1999-EX-10.2-SITE DEVELOPMENT AND HOSTING AGREEMENT__Notice Period To Terminate Renewal",
+      "title": "AMERICASSHOPPINGMALLINC_12_10_1999-EX-10.2-SITE DEVELOPMENT AND HOSTING AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 5327,
+          "end": 5541
+        }
+      ]
+    },
+    "cuad-native-doc-029-00": {
+      "source_qa_id": "AMERICASSHOPPINGMALLINC_12_10_1999-EX-10.2-SITE DEVELOPMENT AND HOSTING AGREEMENT__Governing Law",
+      "title": "AMERICASSHOPPINGMALLINC_12_10_1999-EX-10.2-SITE DEVELOPMENT AND HOSTING AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 17293,
+          "end": 17541
+        }
+      ]
+    },
+    "cuad-native-doc-029-05": {
+      "source_qa_id": "AMERICASSHOPPINGMALLINC_12_10_1999-EX-10.2-SITE DEVELOPMENT AND HOSTING AGREEMENT__Non-Compete",
+      "title": "AMERICASSHOPPINGMALLINC_12_10_1999-EX-10.2-SITE DEVELOPMENT AND HOSTING AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 8206,
+          "end": 8598
+        },
+        {
+          "start": 9452,
+          "end": 9904
+        }
+      ]
+    },
+    "cuad-native-doc-029-01": {
+      "source_qa_id": "AMERICASSHOPPINGMALLINC_12_10_1999-EX-10.2-SITE DEVELOPMENT AND HOSTING AGREEMENT__Cap On Liability",
+      "title": "AMERICASSHOPPINGMALLINC_12_10_1999-EX-10.2-SITE DEVELOPMENT AND HOSTING AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 5714,
+          "end": 6036
+        }
+      ]
+    },
+    "cuad-native-doc-030-04": {
+      "source_qa_id": "EuromediaHoldingsCorp_20070215_10SB12G_EX-10.B(01)_525118_EX-10.B(01)_Content License Agreement__Notice Period To Terminate Renewal",
+      "title": "EuromediaHoldingsCorp_20070215_10SB12G_EX-10.B(01)_525118_EX-10.B(01)_Content License Agreement",
+      "answer_offsets": [
+        {
+          "start": 7300,
+          "end": 7967
+        }
+      ]
+    },
+    "cuad-native-doc-030-00": {
+      "source_qa_id": "EuromediaHoldingsCorp_20070215_10SB12G_EX-10.B(01)_525118_EX-10.B(01)_Content License Agreement__Governing Law",
+      "title": "EuromediaHoldingsCorp_20070215_10SB12G_EX-10.B(01)_525118_EX-10.B(01)_Content License Agreement",
+      "answer_offsets": [
+        {
+          "start": 26865,
+          "end": 27208
+        },
+        {
+          "start": 23438,
+          "end": 23556
+        }
+      ]
+    },
+    "cuad-native-doc-030-03": {
+      "source_qa_id": "EuromediaHoldingsCorp_20070215_10SB12G_EX-10.B(01)_525118_EX-10.B(01)_Content License Agreement__Termination For Convenience",
+      "title": "EuromediaHoldingsCorp_20070215_10SB12G_EX-10.B(01)_525118_EX-10.B(01)_Content License Agreement",
+      "answer_offsets": [
+        {
+          "start": 16706,
+          "end": 16866
+        }
+      ]
+    },
+    "cuad-native-doc-030-02": {
+      "source_qa_id": "EuromediaHoldingsCorp_20070215_10SB12G_EX-10.B(01)_525118_EX-10.B(01)_Content License Agreement__Uncapped Liability",
+      "title": "EuromediaHoldingsCorp_20070215_10SB12G_EX-10.B(01)_525118_EX-10.B(01)_Content License Agreement",
+      "answer_offsets": [
+        {
+          "start": 15954,
+          "end": 16203
+        }
+      ]
+    },
+    "cuad-native-doc-030-01": {
+      "source_qa_id": "EuromediaHoldingsCorp_20070215_10SB12G_EX-10.B(01)_525118_EX-10.B(01)_Content License Agreement__Cap On Liability",
+      "title": "EuromediaHoldingsCorp_20070215_10SB12G_EX-10.B(01)_525118_EX-10.B(01)_Content License Agreement",
+      "answer_offsets": [
+        {
+          "start": 15954,
+          "end": 16202
+        }
+      ]
+    },
+    "cuad-native-doc-032-04": {
+      "source_qa_id": "ETELOS,INC_03_09_2004-EX-10.8-DISTRIBUTOR AGREEMENT__Notice Period To Terminate Renewal",
+      "title": "ETELOS,INC_03_09_2004-EX-10.8-DISTRIBUTOR AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 18444,
+          "end": 18796
+        }
+      ]
+    },
+    "cuad-native-doc-032-00": {
+      "source_qa_id": "ETELOS,INC_03_09_2004-EX-10.8-DISTRIBUTOR AGREEMENT__Governing Law",
+      "title": "ETELOS,INC_03_09_2004-EX-10.8-DISTRIBUTOR AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 24625,
+          "end": 24723
+        }
+      ]
+    },
+    "cuad-native-doc-032-05": {
+      "source_qa_id": "ETELOS,INC_03_09_2004-EX-10.8-DISTRIBUTOR AGREEMENT__Non-Compete",
+      "title": "ETELOS,INC_03_09_2004-EX-10.8-DISTRIBUTOR AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 3435,
+          "end": 3546
+        }
+      ]
+    },
+    "cuad-native-doc-032-03": {
+      "source_qa_id": "ETELOS,INC_03_09_2004-EX-10.8-DISTRIBUTOR AGREEMENT__Termination For Convenience",
+      "title": "ETELOS,INC_03_09_2004-EX-10.8-DISTRIBUTOR AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 18915,
+          "end": 19014
+        }
+      ]
+    },
+    "cuad-native-doc-032-01": {
+      "source_qa_id": "ETELOS,INC_03_09_2004-EX-10.8-DISTRIBUTOR AGREEMENT__Cap On Liability",
+      "title": "ETELOS,INC_03_09_2004-EX-10.8-DISTRIBUTOR AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 23080,
+          "end": 23326
+        },
+        {
+          "start": 23362,
+          "end": 23444
+        },
+        {
+          "start": 23480,
+          "end": 23718
+        }
+      ]
+    },
+    "cuad-native-doc-034-00": {
+      "source_qa_id": "HEALTHGATEDATACORP_11_24_1999-EX-10.1-HOSTING AND MANAGEMENT AGREEMENT (1)__Governing Law",
+      "title": "HEALTHGATEDATACORP_11_24_1999-EX-10.1-HOSTING AND MANAGEMENT AGREEMENT (1)",
+      "answer_offsets": [
+        {
+          "start": 65254,
+          "end": 65361
+        }
+      ]
+    },
+    "cuad-native-doc-034-05": {
+      "source_qa_id": "HEALTHGATEDATACORP_11_24_1999-EX-10.1-HOSTING AND MANAGEMENT AGREEMENT (1)__Non-Compete",
+      "title": "HEALTHGATEDATACORP_11_24_1999-EX-10.1-HOSTING AND MANAGEMENT AGREEMENT (1)",
+      "answer_offsets": [
+        {
+          "start": 17196,
+          "end": 17378
+        }
+      ]
+    },
+    "cuad-native-doc-034-06": {
+      "source_qa_id": "HEALTHGATEDATACORP_11_24_1999-EX-10.1-HOSTING AND MANAGEMENT AGREEMENT (1)__Change Of Control",
+      "title": "HEALTHGATEDATACORP_11_24_1999-EX-10.1-HOSTING AND MANAGEMENT AGREEMENT (1)",
+      "answer_offsets": [
+        {
+          "start": 57351,
+          "end": 57841
+        }
+      ]
+    },
+    "cuad-native-doc-034-01": {
+      "source_qa_id": "HEALTHGATEDATACORP_11_24_1999-EX-10.1-HOSTING AND MANAGEMENT AGREEMENT (1)__Cap On Liability",
+      "title": "HEALTHGATEDATACORP_11_24_1999-EX-10.1-HOSTING AND MANAGEMENT AGREEMENT (1)",
+      "answer_offsets": [
+        {
+          "start": 51584,
+          "end": 52194
+        }
+      ]
+    },
+    "cuad-native-doc-035-04": {
+      "source_qa_id": "GopageCorp_20140221_10-K_EX-10.1_8432966_EX-10.1_Content License Agreement__Notice Period To Terminate Renewal",
+      "title": "GopageCorp_20140221_10-K_EX-10.1_8432966_EX-10.1_Content License Agreement",
+      "answer_offsets": [
+        {
+          "start": 17623,
+          "end": 17946
+        }
+      ]
+    },
+    "cuad-native-doc-035-00": {
+      "source_qa_id": "GopageCorp_20140221_10-K_EX-10.1_8432966_EX-10.1_Content License Agreement__Governing Law",
+      "title": "GopageCorp_20140221_10-K_EX-10.1_8432966_EX-10.1_Content License Agreement",
+      "answer_offsets": [
+        {
+          "start": 36761,
+          "end": 36944
+        }
+      ]
+    },
+    "cuad-native-doc-035-06": {
+      "source_qa_id": "GopageCorp_20140221_10-K_EX-10.1_8432966_EX-10.1_Content License Agreement__Change Of Control",
+      "title": "GopageCorp_20140221_10-K_EX-10.1_8432966_EX-10.1_Content License Agreement",
+      "answer_offsets": [
+        {
+          "start": 33871,
+          "end": 34228
+        }
+      ]
+    },
+    "cuad-native-doc-035-02": {
+      "source_qa_id": "GopageCorp_20140221_10-K_EX-10.1_8432966_EX-10.1_Content License Agreement__Uncapped Liability",
+      "title": "GopageCorp_20140221_10-K_EX-10.1_8432966_EX-10.1_Content License Agreement",
+      "answer_offsets": [
+        {
+          "start": 25255,
+          "end": 25454
+        }
+      ]
+    },
+    "cuad-native-doc-035-01": {
+      "source_qa_id": "GopageCorp_20140221_10-K_EX-10.1_8432966_EX-10.1_Content License Agreement__Cap On Liability",
+      "title": "GopageCorp_20140221_10-K_EX-10.1_8432966_EX-10.1_Content License Agreement",
+      "answer_offsets": [
+        {
+          "start": 25018,
+          "end": 25236
+        },
+        {
+          "start": 24564,
+          "end": 24938
+        }
+      ]
+    },
+    "cuad-native-doc-037-00": {
+      "source_qa_id": "ScansourceInc_20190822_10-K_EX-10.38_11793958_EX-10.38_Distributor Agreement1__Governing Law",
+      "title": "ScansourceInc_20190822_10-K_EX-10.38_11793958_EX-10.38_Distributor Agreement1",
+      "answer_offsets": [
+        {
+          "start": 52322,
+          "end": 52710
+        }
+      ]
+    },
+    "cuad-native-doc-037-03": {
+      "source_qa_id": "ScansourceInc_20190822_10-K_EX-10.38_11793958_EX-10.38_Distributor Agreement1__Termination For Convenience",
+      "title": "ScansourceInc_20190822_10-K_EX-10.38_11793958_EX-10.38_Distributor Agreement1",
+      "answer_offsets": [
+        {
+          "start": 36685,
+          "end": 36803
+        }
+      ]
+    },
+    "cuad-native-doc-037-02": {
+      "source_qa_id": "ScansourceInc_20190822_10-K_EX-10.38_11793958_EX-10.38_Distributor Agreement1__Uncapped Liability",
+      "title": "ScansourceInc_20190822_10-K_EX-10.38_11793958_EX-10.38_Distributor Agreement1",
+      "answer_offsets": [
+        {
+          "start": 47814,
+          "end": 48663
+        },
+        {
+          "start": 48865,
+          "end": 49193
+        },
+        {
+          "start": 49257,
+          "end": 49484
+        }
+      ]
+    },
+    "cuad-native-doc-037-01": {
+      "source_qa_id": "ScansourceInc_20190822_10-K_EX-10.38_11793958_EX-10.38_Distributor Agreement1__Cap On Liability",
+      "title": "ScansourceInc_20190822_10-K_EX-10.38_11793958_EX-10.38_Distributor Agreement1",
+      "answer_offsets": [
+        {
+          "start": 32709,
+          "end": 32933
+        },
+        {
+          "start": 47814,
+          "end": 48663
+        },
+        {
+          "start": 48865,
+          "end": 49193
+        },
+        {
+          "start": 41335,
+          "end": 41696
+        },
+        {
+          "start": 24653,
+          "end": 24864
+        },
+        {
+          "start": 49257,
+          "end": 49484
+        },
+        {
+          "start": 23292,
+          "end": 23510
+        }
+      ]
+    },
+    "cuad-native-doc-037-07": {
+      "source_qa_id": "ScansourceInc_20190822_10-K_EX-10.38_11793958_EX-10.38_Distributor Agreement1__Insurance",
+      "title": "ScansourceInc_20190822_10-K_EX-10.38_11793958_EX-10.38_Distributor Agreement1",
+      "answer_offsets": [
+        {
+          "start": 51470,
+          "end": 51613
+        },
+        {
+          "start": 51619,
+          "end": 51780
+        }
+      ]
+    },
+    "cuad-native-doc-038-04": {
+      "source_qa_id": "PaperexchangeComInc_20000322_S-1A_EX-10.4_5202103_EX-10.4_Co-Branding Agreement__Notice Period To Terminate Renewal",
+      "title": "PaperexchangeComInc_20000322_S-1A_EX-10.4_5202103_EX-10.4_Co-Branding Agreement",
+      "answer_offsets": [
+        {
+          "start": 43231,
+          "end": 43564
+        }
+      ]
+    },
+    "cuad-native-doc-038-00": {
+      "source_qa_id": "PaperexchangeComInc_20000322_S-1A_EX-10.4_5202103_EX-10.4_Co-Branding Agreement__Governing Law",
+      "title": "PaperexchangeComInc_20000322_S-1A_EX-10.4_5202103_EX-10.4_Co-Branding Agreement",
+      "answer_offsets": [
+        {
+          "start": 63195,
+          "end": 63348
+        }
+      ]
+    },
+    "cuad-native-doc-038-05": {
+      "source_qa_id": "PaperexchangeComInc_20000322_S-1A_EX-10.4_5202103_EX-10.4_Co-Branding Agreement__Non-Compete",
+      "title": "PaperexchangeComInc_20000322_S-1A_EX-10.4_5202103_EX-10.4_Co-Branding Agreement",
+      "answer_offsets": [
+        {
+          "start": 9358,
+          "end": 10199
+        },
+        {
+          "start": 21043,
+          "end": 21177
+        },
+        {
+          "start": 26326,
+          "end": 26635
+        },
+        {
+          "start": 13121,
+          "end": 13573
+        },
+        {
+          "start": 26709,
+          "end": 27038
+        },
+        {
+          "start": 20808,
+          "end": 21022
+        },
+        {
+          "start": 16746,
+          "end": 16920
+        },
+        {
+          "start": 25099,
+          "end": 26305
+        }
+      ]
+    },
+    "cuad-native-doc-038-02": {
+      "source_qa_id": "PaperexchangeComInc_20000322_S-1A_EX-10.4_5202103_EX-10.4_Co-Branding Agreement__Uncapped Liability",
+      "title": "PaperexchangeComInc_20000322_S-1A_EX-10.4_5202103_EX-10.4_Co-Branding Agreement",
+      "answer_offsets": [
+        {
+          "start": 58913,
+          "end": 59267
+        },
+        {
+          "start": 58338,
+          "end": 58912
+        }
+      ]
+    },
+    "cuad-native-doc-038-01": {
+      "source_qa_id": "PaperexchangeComInc_20000322_S-1A_EX-10.4_5202103_EX-10.4_Co-Branding Agreement__Cap On Liability",
+      "title": "PaperexchangeComInc_20000322_S-1A_EX-10.4_5202103_EX-10.4_Co-Branding Agreement",
+      "answer_offsets": [
+        {
+          "start": 50977,
+          "end": 51351
+        },
+        {
+          "start": 58913,
+          "end": 59267
+        },
+        {
+          "start": 58338,
+          "end": 58912
+        }
+      ]
+    },
+    "cuad-native-doc-039-00": {
+      "source_qa_id": "BEYONDCOMCORP_08_03_2000-EX-10.2-CO-HOSTING AGREEMENT__Governing Law",
+      "title": "BEYONDCOMCORP_08_03_2000-EX-10.2-CO-HOSTING AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 28343,
+          "end": 28514
+        }
+      ]
+    },
+    "cuad-native-doc-039-05": {
+      "source_qa_id": "BEYONDCOMCORP_08_03_2000-EX-10.2-CO-HOSTING AGREEMENT__Non-Compete",
+      "title": "BEYONDCOMCORP_08_03_2000-EX-10.2-CO-HOSTING AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 5624,
+          "end": 5860
+        }
+      ]
+    },
+    "cuad-native-doc-039-02": {
+      "source_qa_id": "BEYONDCOMCORP_08_03_2000-EX-10.2-CO-HOSTING AGREEMENT__Uncapped Liability",
+      "title": "BEYONDCOMCORP_08_03_2000-EX-10.2-CO-HOSTING AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 25569,
+          "end": 25719
+        }
+      ]
+    },
+    "cuad-native-doc-039-01": {
+      "source_qa_id": "BEYONDCOMCORP_08_03_2000-EX-10.2-CO-HOSTING AGREEMENT__Cap On Liability",
+      "title": "BEYONDCOMCORP_08_03_2000-EX-10.2-CO-HOSTING AGREEMENT",
+      "answer_offsets": [
+        {
+          "start": 25569,
+          "end": 25719
+        }
+      ]
+    },
+    "cuad-native-doc-040-00": {
+      "source_qa_id": "HertzGroupRealtyTrustInc_20190920_S-11A_EX-10.8_11816941_EX-10.8_Trademark License Agreement__Governing Law",
+      "title": "HertzGroupRealtyTrustInc_20190920_S-11A_EX-10.8_11816941_EX-10.8_Trademark License Agreement",
+      "answer_offsets": [
+        {
+          "start": 10467,
+          "end": 10693
+        }
+      ]
+    },
+    "cuad-native-doc-040-03": {
+      "source_qa_id": "HertzGroupRealtyTrustInc_20190920_S-11A_EX-10.8_11816941_EX-10.8_Trademark License Agreement__Termination For Convenience",
+      "title": "HertzGroupRealtyTrustInc_20190920_S-11A_EX-10.8_11816941_EX-10.8_Trademark License Agreement",
+      "answer_offsets": [
+        {
+          "start": 5966,
+          "end": 6073
+        }
+      ]
+    },
+    "cuad-native-doc-040-06": {
+      "source_qa_id": "HertzGroupRealtyTrustInc_20190920_S-11A_EX-10.8_11816941_EX-10.8_Trademark License Agreement__Change Of Control",
+      "title": "HertzGroupRealtyTrustInc_20190920_S-11A_EX-10.8_11816941_EX-10.8_Trademark License Agreement",
+      "answer_offsets": [
+        {
+          "start": 6078,
+          "end": 6352
+        }
+      ]
+    },
+    "cuad-native-doc-040-01": {
+      "source_qa_id": "HertzGroupRealtyTrustInc_20190920_S-11A_EX-10.8_11816941_EX-10.8_Trademark License Agreement__Cap On Liability",
+      "title": "HertzGroupRealtyTrustInc_20190920_S-11A_EX-10.8_11816941_EX-10.8_Trademark License Agreement",
+      "answer_offsets": [
+        {
+          "start": 7710,
+          "end": 8148
+        }
+      ]
+    }
+  }
+}

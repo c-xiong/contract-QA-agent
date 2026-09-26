@@ -99,6 +99,16 @@ why stub/provisional results cannot become resume claims.
 
 ## Current results
 
+**Retrieval update (2026-09-26):** the optional `legal_query_coverage_rerank` arm raises
+document-aware evidence recall@5 from **45.8% (BM25) / 61.1% (previous hybrid + rerank)
+to 72.7%** on 36 development questions (15/2/19 and 9/2/25 wins/losses/ties).
+On **119 original CUAD questions across 23 development-disjoint contracts**, it scores
+**71.8%**, versus 65.2% / 70.2% for those baselines (19/15/85 and 5/6/108).
+One trial, same corpus, scopes and five original chunks throughout. Independent gains
+are modest and uncertain; category regressions remain. This is evidence-location
+recall, not answer accuracy. See [full ablations, complete-span metrics and failures](docs/retrieval-improvement-results.md)
+and [résumé wording](docs/resume-bullets.md). Existing runtime defaults are preserved.
+
 All results below use `hand-v1`, the current 6,270-chunk corpus, k=5 and one trial.
 This is a small development benchmark, not an unseen test set or a production SLA.
 See [the artifact index](results/README.md), [generated tables](results/RESULTS.md), and

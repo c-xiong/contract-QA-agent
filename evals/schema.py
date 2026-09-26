@@ -76,7 +76,7 @@ class EvalTask(BaseModel):
     capability_order: list[tuple[str, str]] = Field(default_factory=list)
     expected_date: str | None = None
     rubric_version: str = "legacy-hand-v1"
-    review_status: Literal["author-reviewed", "provisional"] = "author-reviewed"
+    review_status: Literal["author-reviewed", "source-annotated", "provisional"] = "author-reviewed"
 
     # Provenance of the QUESTION, recorded per task rather than in a footnote.
     #

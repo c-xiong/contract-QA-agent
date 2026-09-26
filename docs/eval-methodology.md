@@ -75,3 +75,32 @@ exclude taxes and provider adjustments. Source: [Anthropic pricing](https://plat
 
 Inspect at least three failures/disagreements. Small samples and one trial support counts
 and descriptive tradeoffs, not significance or broad generalization claims.
+
+## September 2026 retrieval improvement
+
+See [the complete ablation and validation report](retrieval-improvement-results.md).
+Historical `evidence_span_recall` remains unchanged. New reports additionally use:
+
+- `document_aware_evidence_recall@1`: the same normalized 60-character probe, but
+  only chunks from the gold document can match. This is an evidence-location proxy,
+  not proof of complete evidence or a correct answer.
+- `evidence_fragment_recall@1`: full normalized annotated fragments must occur in
+  correct-document chunks. Split only explicit `<omitted>` markers; no fuzzy matches.
+- `evidence_complete_span_recall@1`: all fragments of an annotation must be found.
+  A span split across chunk boundaries can fail this conservative diagnostic.
+
+Scores are macro-averaged over answerable questions, not pooled over individual
+annotations. All arms use the same original corpus, document scopes and final k=5.
+The new retriever retains a 40-candidate cross-encoder budget; query expansion and
+per-document retrieval add local search work but no hosted model calls.
+
+`cuad-source-questions-v1` contains 119 original CUAD questions on 23 indexed source
+documents absent from development suites. Questions and all answer spans were
+transcribed verbatim, with source-offset roundtrips. The manifest was frozen before
+validation; configuration selection used `hand-v1` only. This validates templated
+single-document clause extraction, not conversational or cross-document QA. It has
+`review_status=source-annotated`, not a claim of new author review. Document-group
+bootstrap intervals are reported; they do not establish significant improvements.
+
+Reranker score memoization in the experiment reuses only exact model/query/text
+inputs. Recorded wall times include caching and are not serving-latency claims.

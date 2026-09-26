@@ -24,6 +24,9 @@ from evals.schema import EvalTask
 DOCUMENT_RECALL_VERSION = "document_recall@1"
 EVIDENCE_RECALL_VERSION = "evidence_span_recall@1"
 MRR_VERSION = "mrr@1"
+DOCUMENT_AWARE_EVIDENCE_VERSION = "document_aware_evidence_recall@1"
+EVIDENCE_FRAGMENT_VERSION = "evidence_fragment_recall@1"
+EVIDENCE_COMPLETE_SPAN_VERSION = "evidence_complete_span_recall@1"
 
 # DECISION: a span counts as retrieved when a normalized 60-character window of it
 # appears in a retrieved chunk.
@@ -187,3 +190,108 @@ def grade_retrieval(task: EvalTask, retrieved: list[RetrievedChunk], k: int) -> 
         evidence_span_recall(task, retrieved, k),
         reciprocal_rank(task, retrieved),
     ]
+
+
+def _document_texts(retrieved: list[RetrievedChunk], k: int) -> dict[str, list[str]]:
+    if k < 0:
+        raise ValueError("k must be nonnegative")
+    texts: dict[str, list[str]] = {}
+    for item in retrieved[:k]:
+        texts.setdefault(item.document_id, []).append(normalize_for_matching(item.chunk.text))
+    return texts
+
+
+def evidence_fragments(span_text: str) -> list[str]:
+    """Literal annotated fragments, with only CUAD's explicit omission marker removed.
+
+    DECISION: do not split punctuation, paraphrase, or infer missing evidence. Each
+    nonempty fragment must occur in full in a retrieved chunk from its own document.
+    This conservative diagnostic can miss a clause split across chunk boundaries;
+    it must not be relabelled semantic answer correctness or compared with legacy
+    prefix-probe recall as if the metric had remained unchanged.
+    """
+    return [
+        normalized
+        for part in span_text.split("<omitted>")
+        if (normalized := normalize_for_matching(part))
+    ]
+
+
+def document_aware_evidence_recall(
+    task: EvalTask, retrieved: list[RetrievedChunk], k: int
+) -> GradeResult:
+    """Legacy 60-character evidence probe with correct-document identity enforced."""
+    texts = _document_texts(retrieved, k)
+    spans = [span for span in task.expected_evidence if span.span_text]
+    hits: list[bool] = []
+    for span in spans:
+        assert span.span_text is not None
+        probe = normalize_for_matching(span.span_text)[:SPAN_PROBE_CHARS]
+        hits.append(bool(probe) and any(probe in text for text in texts.get(span.document_id, [])))
+    score = sum(hits) / len(hits) if hits else 1.0
+    return GradeResult(
+        name="document_aware_evidence_recall",
+        version=DOCUMENT_AWARE_EVIDENCE_VERSION,
+        score=score,
+        passed=score == 1.0,
+        detail=f"{sum(hits)}/{len(hits)} document-matched probes in top {k}"
+        if hits
+        else "no expected spans; not applicable",
+        data={
+            "k": k,
+            "probe_chars": SPAN_PROBE_CHARS,
+            "span_hits": hits,
+            "expected_spans": len(hits),
+        },
+    )
+
+
+def _fragment_hits(task: EvalTask, retrieved: list[RetrievedChunk], k: int) -> list[list[bool]]:
+    texts = _document_texts(retrieved, k)
+    return [
+        [
+            any(fragment in text for text in texts.get(span.document_id, []))
+            for fragment in evidence_fragments(span.span_text)
+        ]
+        for span in task.expected_evidence
+        if span.span_text
+    ]
+
+
+def evidence_fragment_recall(
+    task: EvalTask, retrieved: list[RetrievedChunk], k: int
+) -> GradeResult:
+    """Fraction of complete, document-matched annotated fragments in top k chunks."""
+    spans = _fragment_hits(task, retrieved, k)
+    hits = [hit for fragments in spans for hit in fragments]
+    score = sum(hits) / len(hits) if hits else 1.0
+    return GradeResult(
+        name="evidence_fragment_recall",
+        version=EVIDENCE_FRAGMENT_VERSION,
+        score=score,
+        passed=score == 1.0,
+        detail=f"{sum(hits)}/{len(hits)} complete annotated fragments in top {k}"
+        if hits
+        else "no expected fragments; not applicable",
+        data={"k": k, "fragment_hits": spans, "expected_fragments": len(hits)},
+    )
+
+
+def evidence_complete_span_recall(
+    task: EvalTask, retrieved: list[RetrievedChunk], k: int
+) -> GradeResult:
+    """Fraction of spans whose every explicit fragment was found in the correct doc."""
+    spans = _fragment_hits(task, retrieved, k)
+    # An empty/malformed annotation must not count as a completely retrieved span.
+    hits = [bool(fragments) and all(fragments) for fragments in spans]
+    score = sum(hits) / len(hits) if hits else 1.0
+    return GradeResult(
+        name="evidence_complete_span_recall",
+        version=EVIDENCE_COMPLETE_SPAN_VERSION,
+        score=score,
+        passed=score == 1.0,
+        detail=f"{sum(hits)}/{len(hits)} completely covered spans in top {k}"
+        if hits
+        else "no expected spans; not applicable",
+        data={"k": k, "span_hits": hits, "expected_spans": len(hits)},
+    )

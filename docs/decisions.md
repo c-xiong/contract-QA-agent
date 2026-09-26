@@ -101,3 +101,28 @@ whole graph node to return, so model/tool start events remain visible during slo
 Only whitelisted tool metadata, evidence locators and budget counters reach progress
 events. Mode/arm switches preserve the effective live/stub setting, including degraded
 startup. The existing single-file UI uses V2 progress events without new dependencies.
+
+## Retrieval follow-up: selected query expansion, rejected window-index adoption
+
+The user authorized an additional retrieval optimization phase after V2 closeout.
+Original query results are fused with bounded domain-vocabulary expansions, using
+the existing BM25, MiniLM and cross-encoder models. For explicit comparisons only,
+candidate construction balances requested documents and final selection preserves
+their coverage within five original chunks. The total reranker pool stays at 40.
+Expansion adds local retrieval work, no hosted model calls or new dependencies.
+
+The selected arm achieves 72.7% document-aware evidence-probe recall@5 on 36
+development questions versus 61.1% previously (9 wins, 2 losses, 25 ties). Independently,
+119 source-authored CUAD queries on 23 development-disjoint documents score 71.8%
+versus 70.2% (5/6/108); uncertainty intervals include zero. It is an explicit API
+option, not a silent replacement of existing defaults. Full-span diagnostics and
+failed categories are reported alongside the legacy probe.
+
+Actual tokenizer measurements confirmed long input truncation, but the window-vector
+ablation fell to 58.3% on development. Keep that implementation and separate index
+for reproduction only; do not require it for the selected arm. No larger model,
+fine-tuning, top-k inflation or paid evaluation was necessary. Source questions and
+answers for independent validation were transcribed verbatim; no generated evaluation
+content supplies résumé claims. Configuration was frozen before inspecting validation.
+
+See [the full result and failure report](retrieval-improvement-results.md).
