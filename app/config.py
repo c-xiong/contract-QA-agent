@@ -5,8 +5,8 @@ Nothing reads ``os.environ`` directly; a value that is not in this file is not a
 configuration value, it is a hardcoded constant and should look like one.
 
 Precedence: constructor argument > environment variable > ``.env`` file > default.
-All variables use the ``CRA_`` prefix except ``ANTHROPIC_API_KEY``, which keeps its
-conventional name so the Anthropic SDK and this file read the same thing.
+Application variables use the ``CRA_`` prefix; provider credentials and Langfuse
+connection settings keep their conventional ``ANTHROPIC_`` / ``LANGFUSE_`` names.
 """
 
 from __future__ import annotations
@@ -69,6 +69,27 @@ class Settings(BaseSettings):
     agent_mode: Literal["v1", "v2"] = "v1"
     runs_dir: Path = Path("runs")
 
+    # --- Telemetry --------------------------------------------------------
+    telemetry_export: bool = Field(
+        default=False,
+        description="Export V2 runs as OTLP traces (needs the `otel` extra). Endpoint and "
+        "headers come from Langfuse settings or the standard OTEL_EXPORTER_OTLP_* environment.",
+    )
+    telemetry_timeout_s: float = Field(
+        default=5.0, gt=0, description="Upper bound for one OTLP export attempt."
+    )
+    langfuse_base_url: str | None = Field(
+        default=None,
+        validation_alias="LANGFUSE_BASE_URL",
+        description="Langfuse host URL, for example https://cloud.langfuse.com.",
+    )
+    langfuse_public_key: SecretStr | None = Field(
+        default=None, validation_alias="LANGFUSE_PUBLIC_KEY"
+    )
+    langfuse_secret_key: SecretStr | None = Field(
+        default=None, validation_alias="LANGFUSE_SECRET_KEY"
+    )
+
     # --- Retrieval --------------------------------------------------------
     retrieval_top_k: int = Field(
         default=5,
@@ -95,7 +116,9 @@ class Settings(BaseSettings):
         description="Heuristic divisor for token estimation. Approximate by construction.",
     )
 
-    @field_validator("anthropic_api_key", mode="after")
+    @field_validator(
+        "anthropic_api_key", "langfuse_public_key", "langfuse_secret_key", mode="after"
+    )
     @classmethod
     def blank_key_is_no_key(cls, value: SecretStr | None) -> SecretStr | None:
         """Treat an empty or whitespace-only key as absent.
@@ -108,6 +131,11 @@ class Settings(BaseSettings):
         if value is None:
             return None
         return value if value.get_secret_value().strip() else None
+
+    @field_validator("langfuse_base_url", mode="after")
+    @classmethod
+    def blank_langfuse_url_is_no_url(cls, value: str | None) -> str | None:
+        return value.strip().rstrip("/") or None if value is not None else None
 
     @computed_field  # type: ignore[prop-decorator]
     @property

@@ -85,3 +85,41 @@ def test_settings_are_frozen() -> None:
 
 def test_get_settings_is_cached() -> None:
     assert get_settings() is get_settings()
+
+
+def test_langfuse_settings_load_from_dotenv_without_exposing_credentials(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import os
+
+    for key in ("LANGFUSE_BASE_URL", "LANGFUSE_PUBLIC_KEY", "LANGFUSE_SECRET_KEY"):
+        monkeypatch.delenv(key, raising=False)
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        "LANGFUSE_BASE_URL=https://cloud.langfuse.com/\n"
+        "LANGFUSE_PUBLIC_KEY=pk-synthetic\n"
+        "LANGFUSE_SECRET_KEY=sk-synthetic\n"
+        "CRA_TELEMETRY_EXPORT=1\n"
+    )
+    settings = Settings(_env_file=env_file)
+    assert settings.telemetry_export is True
+    assert settings.langfuse_base_url == "https://cloud.langfuse.com"
+    assert settings.langfuse_public_key is not None
+    assert settings.langfuse_public_key.get_secret_value() == "pk-synthetic"
+    assert settings.langfuse_secret_key is not None
+    assert settings.langfuse_secret_key.get_secret_value() == "sk-synthetic"
+    assert "pk-synthetic" not in repr(settings) and "sk-synthetic" not in repr(settings)
+    assert "LANGFUSE_SECRET_KEY" not in os.environ
+
+
+def test_blank_langfuse_settings_are_absent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    for key in ("LANGFUSE_BASE_URL", "LANGFUSE_PUBLIC_KEY", "LANGFUSE_SECRET_KEY"):
+        monkeypatch.delenv(key, raising=False)
+    env_file = tmp_path / ".env"
+    env_file.write_text('LANGFUSE_BASE_URL=" "\nLANGFUSE_PUBLIC_KEY=" "\nLANGFUSE_SECRET_KEY=" "\n')
+    settings = Settings(_env_file=env_file)
+    assert settings.langfuse_base_url is None
+    assert settings.langfuse_public_key is None
+    assert settings.langfuse_secret_key is None

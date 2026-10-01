@@ -1,0 +1,19 @@
+{
+  "experiment_id": "v2-standalone-hand-live-1",
+  "phase": "application",
+  "model_id": "claude-sonnet-5",
+  "currency": "USD",
+  "input_price_per_million_tokens": null,
+  "output_price_per_million_tokens": null,
+  "max_attempts": 492,
+  "max_input_tokens_per_call": 60000,
+  "max_output_tokens_per_call": 2048,
+  "max_total_input_tokens": null,
+  "max_total_output_tokens": null,
+  "max_cost": null,
+  "stop_conditions": [
+    "Any cumulative cap would be exceeded by the next reservation",
+    "Frozen configuration changed between start and resume"
+  ],
+  "notes": "41 hand-v1 cases x max_model_calls 12. Fill prices from the provider's current price page and set token/currency caps before copying to v2-hand-application.json."
+}

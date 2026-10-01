@@ -13,7 +13,9 @@ import hashlib
 import json
 import time
 from collections import defaultdict
+from collections.abc import Callable, Iterable
 from pathlib import Path
+from typing import TypedDict
 
 import numpy as np
 
@@ -30,6 +32,7 @@ from evals.graders.retrieval import (
 )
 from evals.loader import load_suite
 from evals.provenance import capture_provenance
+from evals.schema import EvalTask
 
 NEW_GRADERS = (
     document_aware_evidence_recall,
@@ -38,7 +41,25 @@ NEW_GRADERS = (
 )
 
 
-def paired(left: dict, right: dict, metric: str, tasks: list) -> dict:
+class TaskResult(TypedDict):
+    category: str
+    scores: dict[str, float]
+    candidate_scores: dict[str, float]
+    chunk_ids: list[str]
+    candidate_chunk_ids: list[str]
+    returned_estimated_tokens: int
+    wall_seconds_with_cache: float
+
+
+class ArmResult(TypedDict):
+    means: dict[str, float]
+    by_category: dict[str, dict[str, float]]
+    per_task: dict[str, TaskResult]
+
+
+def paired(
+    left: dict[str, TaskResult], right: dict[str, TaskResult], metric: str, tasks: list[EvalTask]
+) -> dict[str, object]:
     differences = [
         left[t.task_id]["scores"][metric] - right[t.task_id]["scores"][metric] for t in tasks
     ]
@@ -77,6 +98,8 @@ async def run(args: argparse.Namespace) -> None:
         top_k=5,
         model_id="local-minilm",
     )
+    arms: dict[str, ArmResult] = {}
+    comparisons: dict[str, dict[str, dict[str, object]]] = {}
     payload.update(
         task_count=len(tasks),
         trials=1,
@@ -84,8 +107,8 @@ async def run(args: argparse.Namespace) -> None:
         final_budget="five original chunks",
         respect_allowlist=True,
         rerank_depth=40,
-        arms={},
-        comparisons={},
+        arms=arms,
+        comparisons=comparisons,
         timing_note="Exact query/text scores memoized across arms; wall times are NOT serving latency.",
     )
     versions: dict[str, str] = {}
@@ -101,8 +124,12 @@ async def run(args: argparse.Namespace) -> None:
             model_id = retriever.model_id
 
             def cached_predict(
-                pairs, *, show_progress_bar=False, _predict=original_predict, _model_id=model_id
-            ):
+                pairs: list[tuple[str, str]],
+                *,
+                show_progress_bar: bool = False,
+                _predict: Callable[..., Iterable[float]] = original_predict,
+                _model_id: str = model_id,
+            ) -> list[float]:
                 keys = [
                     hashlib.sha256(json.dumps([_model_id, q, t]).encode()).hexdigest()
                     for q, t in pairs
@@ -119,7 +146,7 @@ async def run(args: argparse.Namespace) -> None:
                 return [cache[key] for key in keys]
 
             model.predict = cached_predict
-        rows = {}
+        rows: dict[str, TaskResult] = {}
         print(f"ARM {arm} n={len(tasks)}", flush=True)
         for index, task in enumerate(tasks, 1):
             filters = (
@@ -171,16 +198,16 @@ async def run(args: argparse.Namespace) -> None:
             }
             for category in sorted({t.category for t in tasks})
         }
-        payload["arms"][arm] = {"means": means, "by_category": by_category, "per_task": rows}
+        arms[arm] = {"means": means, "by_category": by_category, "per_task": rows}
         payload["grader_versions"] = versions
         args.output.write_text(json.dumps(payload, indent=2) + "\n")
         print(f"RESULT {arm}: {means}", flush=True)
     for arm in args.arms[1:]:
         for baseline in args.arms[: args.arms.index(arm)]:
-            payload["comparisons"][f"{arm} vs {baseline}"] = {
+            comparisons[f"{arm} vs {baseline}"] = {
                 m: paired(
-                    payload["arms"][arm]["per_task"],
-                    payload["arms"][baseline]["per_task"],
+                    arms[arm]["per_task"],
+                    arms[baseline]["per_task"],
                     m,
                     tasks,
                 )

@@ -1,6 +1,14 @@
 # Evaluation methodology
 
-Updated 2026-09-16. Measurements live in `results/`; this defines their meaning.
+Scope: definitions for the historical V1 experiments in `results/` and the September
+2026 retrieval follow-up in `reports/`. This document explains how scores are computed;
+it does not report live V2 answer quality. The standalone V2 evaluation infrastructure
+is implemented, but its live run and human-reviewed quality report remain pending.
+
+Start with [the project guide](project-guide.md) for a plain-language explanation of
+36 versus 41 questions and the evaluation layers. See [the documentation index](README.md)
+for reading order and [the V2 execution protocol](evaluation_protocol.md) for the current
+standalone workflow. Historical experiment definitions below were updated 2026-09-16.
 
 ## Corpus and task provenance
 
@@ -11,7 +19,12 @@ CUAD labels are attorney-supervised; ContractNLI supplies expert Entailment, Con
 and NotMentioned labels. Annotation span indices resolve through the document span table
 before slicing text; round-trip tests guard this distinction.
 
-`hand-v1` has 41 author-written/reviewed questions, including five expected abstentions.
+`hand-v1` has **41 author-written/reviewed questions: 35 expected full answers,
+one expected partial answer, and five expected abstentions**. The 36 non-abstention
+questions have reference evidence, including the partial-answer comparison whose
+redacted source limits what can be concluded. Retrieval Experiment A scores those
+36; end-to-end experiments retain all 41 so refusal behavior is evaluated too.
+These questions are separate from ordinary `pytest` software tests.
 Questions, labels, required points and evidence are frozen. Corrections require a new
 version. This suite was used during development, so it is not a held-out benchmark.
 Generated questions, expected answers or rubrics carry a `provisional-generated-*` version
@@ -19,6 +32,13 @@ and an explicit suite README. Expert evidence does not make generated questions 
 authored. Such supplementary runs cannot supply resume or headline capability claims.
 
 ## Metrics and boundaries
+
+Each question can contain several reference evidence spans. For retrieval, its score
+is the fraction of those spans found in the returned chunks; the reported mean gives
+each question equal weight. For example, finding one of one span on question A and
+one of two spans on question B gives `(1 + 0.5) / 2 = 75%` macro recall. It does not
+mean that 75% of questions were completely answered. `@5` means five chunks, not five
+contracts. Finding the right contract alone also does not mean finding its right clause.
 
 | Metric | Meaning |
 |---|---|
@@ -35,6 +55,20 @@ runtime verdict. They do not semantically classify baseline prose. A completed r
 can still say evidence is missing; delivery counts must not be called successful answers.
 The raw citation exposure metric also counts uncited extracted sentences, not just bad
 locations, and is not an independently measured hallucination rate.
+
+The low-level retrieval graders return a noted `1.0` when a task has no expected
+documents or spans. That is a not-applicable placeholder, not evidence of successful
+retrieval or refusal. Experiment A excludes the five expected-abstention cases before
+averaging. Historical B–D aggregate tables use all 41 cases and can include these
+placeholders; their retrieval means must not be compared directly with A's 36-case
+means. New V2 diagnostics use `null` for evidence recall on expected-abstention cases.
+
+For refusal behavior, keep the denominators separate: five expected-abstention cases
+measure correct refusals or unsupported answering; 36 non-abstention cases measure
+false refusals, including the expected partial answer. Infrastructure failures remain
+failures. Citation/support metrics use their own citation or claim counts, not a fixed
+41-question denominator. Human-reviewed task success uses all executed, reviewed
+cases, including failures; unexecuted cases are listed explicitly.
 
 Historical `claim_support@1` checked the whole selected-evidence pool and is not comparable
 with version 2. Report answerable-only support and evaluated-claim counts with aggregates.
@@ -69,9 +103,13 @@ Live runs need `CRA_LIVE_MODEL=1` and an API key; use `--limit` and an explicit 
 Answerability adds at most one model call per task; offline support adds calls per factual
 sentence. Record judge costs separately from application tokens and latency.
 
-For the 2026-09-16 closeout, Sonnet 5 standard rates are $2 per million input tokens and
-$10 per million output tokens; the scheduled September increase was cancelled. Estimates
-exclude taxes and provider adjustments. Source: [Anthropic pricing](https://platform.claude.com/docs/en/about-claude/pricing).
+Historical cost assumptions recorded for the **2026-09-16 closeout** were Sonnet 5
+at $2 per million input tokens and $10 per million output tokens, with the scheduled
+September increase described as cancelled at that time. These dated assumptions are
+retained to interpret those artifacts; they are not a current price quote. Estimates
+exclude taxes and provider adjustments. The recorded source was
+[Anthropic pricing](https://platform.claude.com/docs/en/about-claude/pricing).
+Verify current provider prices and fill the live-run preflight before a new paid run.
 
 Inspect at least three failures/disagreements. Small samples and one trial support counts
 and descriptive tradeoffs, not significance or broad generalization claims.

@@ -375,8 +375,12 @@ async def check_answer(
     client: ModelClient,
     *,
     live: bool,
+    max_model_claims: int | None = None,
 ) -> list[ClaimVerdict]:
     """Check every factual claim using only evidence at its cited locations.
+
+    `max_model_claims` caps judge calls per answer for a declared budget. Claims beyond
+    it are never truncated: they are returned as `unknown`, routed to human review.
 
     DECISION: the three citation defects below are decided in code, before any model call.
       A factual claim with no citation, a malformed citation, and a citation naming a
@@ -394,6 +398,7 @@ async def check_answer(
     """
     lookup = build_evidence_lookup(evidence)
     verdicts: list[ClaimVerdict] = []
+    model_checked = 0
     for claim in extract_cited_claims(answer):
         if claim.malformed_citations:
             verdicts.append(
@@ -421,5 +426,19 @@ async def check_answer(
                 )
             )
             continue
+        if max_model_claims is not None and model_checked >= max_model_claims:
+            verdicts.append(
+                ClaimVerdict(
+                    claim.text,
+                    "unknown",
+                    "",
+                    "routed to human review: exceeds the declared per-answer claim ceiling",
+                    False,
+                    tuple(citation.render() for citation in claim.citations),
+                    tuple(item.evidence_id for item in cited_evidence),
+                )
+            )
+            continue
+        model_checked += 1
         verdicts.append(await check_claim(claim, cited_evidence, client, live=live))
     return verdicts

@@ -13,6 +13,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from app.agent.tool_registry import digest
+from app.observability import telemetry
 
 
 def json_value(value: Any) -> Any:
@@ -49,6 +50,9 @@ def emit(state: Any, event_type: str, node: str, **data: Any) -> dict[str, Any]:
         handle.write(json.dumps(event, ensure_ascii=False) + "\n")
         handle.flush()
         os.fsync(handle.fileno())
+    if event_type in telemetry.TERMINAL:
+        # Export is a projection of the durable record, after it is safely written.
+        telemetry.on_terminal(path)
     return event
 
 

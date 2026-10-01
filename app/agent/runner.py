@@ -10,12 +10,13 @@ from typing import cast
 from app.agent.answerability import AnswerabilityDecision
 from app.agent.execution import v2_states
 from app.agent.graph import build_graph
-from app.agent.llm import build_client
+from app.agent.llm import ModelClient, build_client
 from app.agent.state import Budget, ResearchState, TraceEvent, initial_state
 from app.config import Settings
 from app.evidence.citation_verifier import CitationVerifier
 from app.ingestion.store import ChunkStore
 from app.observability.events import index_hash, recover_interrupted
+from app.observability.telemetry import configure as configure_telemetry
 from app.retrieval.base import Retriever
 from app.retrieval.bm25 import Bm25Retriever
 from app.schemas.evidence import Citation, CitationError, Evidence
@@ -69,14 +70,21 @@ class ResearchAgent:
         retriever: Retriever | None = None,
         *,
         answerability_gate: bool | None = None,
+        client: ModelClient | None = None,
     ):
         if settings.agent_mode == "v2":
+            configure_telemetry(
+                settings.telemetry_export,
+                timeout_seconds=settings.telemetry_timeout_s,
+                settings=settings,
+            )
             recover_interrupted(settings.runs_dir)
         self.store = store
         self.settings = settings
         self.retriever = retriever or Bm25Retriever(store)
         self.verifier = CitationVerifier(store)
-        self.client = build_client(settings)
+        # An injected client lets experiments wrap live calls in a budget ledger.
+        self.client = client or build_client(settings)
         self.answerability_gate = (
             settings.answerability_gate if answerability_gate is None else answerability_gate
         )

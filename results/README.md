@@ -1,6 +1,12 @@
 # Results
 
-Closeout completed 2026-09-16. Current runs use 56 documents / 6,270 chunks and the frozen
+> V1 controlled-comparison artifact index. "Current" in the original A–D records means
+> the September 16 closeout revision, not a live V2 evaluation or the latest retrieval
+> experiment. Later retrieval work is linked below; its artifacts and the offline V2
+> validation live in `reports/`. Preserve these records and their original provenance.
+> Start with the [project guide](../docs/project-guide.md) for the evaluation map.
+
+V1 closeout completed 2026-09-16. Those runs use 56 documents / 6,270 chunks and the frozen
 `hand-v1` development suite. B–D use Sonnet 5, one trial and no fault injection.
 
 | Current artifact | Measurement | Tasks / arms |

@@ -61,19 +61,35 @@ def offline_runtime(monkeypatch: pytest.MonkeyPatch, request: pytest.FixtureRequ
     def denied(*args: object, **kwargs: object) -> NoReturn:
         raise AssertionError("Network/model access is disabled in the default test suite")
 
+    # `loopback` tests may reach an in-process receiver on 127.0.0.1/::1, nothing else.
+    loopback = request.node.get_closest_marker("loopback") is not None
+    local_hosts = ("127.0.0.1", "::1", "localhost")
+
+    def is_local(args: tuple[object, ...]) -> bool:
+        address = args[0] if args else None
+        host = address[0] if isinstance(address, tuple) else address
+        return loopback and host in local_hosts
+
     for method in ("connect", "connect_ex", "sendto", "sendmsg"):
         original = getattr(socket.socket, method, None)
         if original is None:
             continue
 
         def guard(sock: socket.socket, *args: object, _original=original, **kwargs: object):
-            if sock.family in (socket.AF_INET, socket.AF_INET6):
+            if sock.family in (socket.AF_INET, socket.AF_INET6) and not is_local(args):
                 denied()
             return _original(sock, *args, **kwargs)
 
         monkeypatch.setattr(socket.socket, method, guard)
     for method in ("getaddrinfo", "gethostbyname", "gethostbyname_ex", "gethostbyaddr"):
-        monkeypatch.setattr(socket, method, denied)
+        original_lookup = getattr(socket, method)
+
+        def lookup(*args: object, _original=original_lookup, **kwargs: object):
+            if not is_local(args):
+                denied()
+            return _original(*args, **kwargs)
+
+        monkeypatch.setattr(socket, method, lookup)
 
     # Blocking constructors also detects accidental cache-dependent model loading.
     monkeypatch.setattr("app.retrieval.embeddings.SentenceTransformer", denied)

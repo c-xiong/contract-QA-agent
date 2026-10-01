@@ -1,0 +1,33 @@
+{
+  "grader_version": "claim_support@2",
+  "rule": "C = maximum cited-claim count over all historical live hand-v1 answers, counted by extract_cited_claims. Answers above C are not truncated; claims beyond C route to human review and are counted as such.",
+  "C": 7,
+  "answers": 82,
+  "distribution": {
+    "1": 11,
+    "2": 25,
+    "3": 31,
+    "4": 8,
+    "5": 2,
+    "6": 4,
+    "7": 1
+  },
+  "median": 3,
+  "sources": [
+    {
+      "path": "results/eval-hand-bm25.json",
+      "sha256": "9a6fac1497a79d3a5d3f107ac5a15bdde1c09039ee37fa1251ab93fd9fc57de8",
+      "model_id": "claude-sonnet-5",
+      "suite": "hand",
+      "answers": 41
+    },
+    {
+      "path": "results/eval-hand-rerank.json",
+      "sha256": "551d3db131b566c11da109d8376180ac6d0a490b24b338a8633de5346499365a",
+      "model_id": "claude-sonnet-5",
+      "suite": "hand",
+      "answers": 41
+    }
+  ],
+  "limitation": "Historical answers came from the V1 writer; V2 answers may be longer."
+}

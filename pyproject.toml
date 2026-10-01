@@ -15,6 +15,13 @@ dependencies = [
     "sentence-transformers>=3.3",
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
+    "mcp>=2.2.0",
+]
+
+[project.optional-dependencies]
+otel = [
+    "opentelemetry-exporter-otlp-proto-http>=1.45.0",
+    "opentelemetry-sdk>=1.45.0",
 ]
 
 [dependency-groups]
@@ -75,7 +82,7 @@ show_error_codes = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["rank_bm25.*", "pymupdf.*", "faiss.*", "sentence_transformers.*"]
+module = ["rank_bm25.*", "pymupdf.*", "faiss.*", "sentence_transformers.*", "opentelemetry.sdk.*", "opentelemetry.exporter.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
@@ -94,6 +101,7 @@ markers = [
     "live_model: hits a real model API; skipped unless CRA_LIVE_MODEL=1",
     "model_download: loads real Hugging Face models; opt in with -m model_download",
     "corpus: requires a downloaded corpus; opt in with -m corpus",
+    "loopback: may connect to an in-process receiver on 127.0.0.1 only",
 ]
 filterwarnings = [
     "error",

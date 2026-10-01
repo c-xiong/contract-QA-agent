@@ -1,0 +1,97 @@
+{
+  "split_version": "judge-split-v1",
+  "dataset_version": "hand-v1",
+  "dataset_sha256": "a4e70da987e1e18a7afd01814e11848f065e43824a1eabfdd664b39d9388d4dc",
+  "task_count": 41,
+  "seed": 20260928,
+  "rule": "Group by category; shuffle each group's sorted task_ids with random.Random(seed). Even groups split evenly; odd groups give the extra case to audit. Then move cases from audit to calibration by one seeded draw over the sorted audit ids until calibration has 20 cases.",
+  "made_before_live_v2_outputs": true,
+  "limitations": [
+    "Evaluates the judge only; hand-v1 remains a development regression set.",
+    "The author inspected historical hand-v1 outputs before this split; audit results are not a held-out or blind validation of the judge."
+  ],
+  "calibration": [
+    "conflict-002",
+    "crossdoc-002",
+    "crossdoc-003",
+    "crossdoc-005",
+    "crossdoc-006",
+    "crossdoc-007",
+    "distractor-002",
+    "injection-001",
+    "lookup-003",
+    "lookup-006",
+    "lookup-007",
+    "lookup-008",
+    "lookup-009",
+    "refine-001",
+    "refine-002",
+    "unanswerable-003",
+    "unanswerable-004",
+    "unsupported-001",
+    "xref-003",
+    "xref-004"
+  ],
+  "audit": [
+    "conflict-001",
+    "conflict-003",
+    "crossdoc-001",
+    "crossdoc-004",
+    "crossdoc-008",
+    "distractor-001",
+    "injection-002",
+    "lookup-001",
+    "lookup-002",
+    "lookup-004",
+    "lookup-005",
+    "lookup-010",
+    "refine-003",
+    "refine-004",
+    "unanswerable-001",
+    "unanswerable-002",
+    "unanswerable-005",
+    "unsupported-002",
+    "unsupported-003",
+    "xref-001",
+    "xref-002"
+  ],
+  "balance": {
+    "calibration": {
+      "n": 20,
+      "category": {
+        "claim_unsupported": 1,
+        "conflicting_versions": 1,
+        "cross_document_comparison": 5,
+        "cross_reference": 2,
+        "prompt_injection": 1,
+        "query_refinement": 2,
+        "similar_document_distractors": 1,
+        "single_document_fact_lookup": 5,
+        "unanswerable": 2
+      },
+      "expected_behavior": {
+        "abstain": 2,
+        "answer": 18
+      }
+    },
+    "audit": {
+      "n": 21,
+      "category": {
+        "claim_unsupported": 2,
+        "conflicting_versions": 2,
+        "cross_document_comparison": 3,
+        "cross_reference": 2,
+        "prompt_injection": 1,
+        "query_refinement": 2,
+        "similar_document_distractors": 1,
+        "single_document_fact_lookup": 5,
+        "unanswerable": 3
+      },
+      "expected_behavior": {
+        "abstain": 3,
+        "answer": 17,
+        "partial": 1
+      }
+    }
+  }
+}

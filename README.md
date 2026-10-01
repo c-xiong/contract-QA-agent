@@ -3,12 +3,26 @@
 A bounded contract QA system over public CUAD/ContractNLI data and labelled synthetic
 variants, with deterministic citation checks and an auditable evaluation workflow.
 
-**V2 is available via `CRA_AGENT_MODE=v2`.** It adds model-selected typed tools,
-code-enforced document/snapshot scope, execution budgets, a mandatory citation gate,
-and persistent local traces. V1 remains the default baseline until live V2 evaluation
-and independent manual review are complete. The existing **41-question author-reviewed
+Start with the [plain-language project guide](docs/project-guide.md) to understand
+the agent and its evaluations. The [documentation index](docs/README.md) separates
+current instructions from historical plans; the [UI and Langfuse walkthrough](docs/ui-langfuse-walkthrough.md)
+provides a hands-on exercise.
+
+**V2 is the actively developed path; select it with `CRA_AGENT_MODE=v2`.** It adds
+model-selected typed tools, code-enforced document/snapshot scope, execution budgets, a
+mandatory citation gate, and persistent local traces. The same tools are also served to
+external agents through a [local read-only MCP server](#use-the-tools-from-an-mcp-client).
+V1 remains the runtime default and the historical comparison baseline until live V2
+evaluation is complete; it receives no new features. The V1 reference revision is commit
+`01a04f8`, reproducible with `git checkout 01a04f8 && uv sync --locked` and the commands
+in [Reproduce the comparisons](#reproduce-the-comparisons). Result tables below that
+predate V2 describe that V1 path. The existing **41-question author-reviewed
 regression suite** is unchanged; **24 new provisional cases** exercise definitions,
 snapshot comparison, date calculations, and unsupported inputs.
+
+The **36 retrieval questions are the answerable subset of those same 41 cases**;
+the other five expect abstention and have no evidence to retrieve. The separate
+119-question CUAD suite validates retrieval on development-disjoint documents.
 
 See [V2 implementation and limitations](docs/v2_design.md),
 [measured validation status](reports/v2_results.md), and
@@ -96,6 +110,101 @@ planner call per decision (up to the shared 12-model-call ceiling, including wri
 repair); calls and tokens are recorded. No paid V2 run was used for the checked-in offline
 report. The [evaluation protocol](docs/evaluation_protocol.md) explains human labels and
 why stub/provisional results cannot become resume claims.
+
+## Use the tools from an MCP client
+
+`app/mcp_server.py` serves the five V2 tools, plus `session_info`, over local stdio. It
+calls no model. Scope is granted when the server starts, never by a tool argument, and it
+refuses to start without a grant:
+
+```bash
+# Scripted external client: launches the server as a subprocess and exercises every tool,
+# then shows refused requests and what the server cannot enforce.
+CRA_LIVE_MODEL=0 uv run python scripts/mcp_demo.py --doc doc-001
+
+# Register with Claude Code (any stdio MCP host takes the same command).
+claude mcp add contract-research -- \
+  uv run --directory "$PWD" python -m app.mcp_server --allow doc-001 --allow doc-011
+```
+
+Options: `--allow DOC_ID` (repeatable) or `--allow-all`; `--pin DOC_ID=VERSION` refuses
+to serve if the indexed snapshot changed; `--retriever` (default `bm25`); `--call-timeout`
+(default 30 s); optional `--session-lifetime`; `--max-tool-calls`/`--max-searches`
+(defaults match the graph's budget).
+
+Guarantees and limits:
+
+| Enforced by the server | Outside the server's control |
+| --- | --- |
+| Granted documents/snapshots; arguments only narrow them | The external model's own calls and token spend |
+| Tool/search budgets, per-call timeout, no refunds on failure | The external agent's overall deadline |
+| Evidence admission and provenance; fabricated or other-session IDs rejected | Whether the client calls `verify_citation` at all |
+| Returned text bounded by the admitted-evidence limits | Whether the client uses the verification result |
+| Date arithmetic linked to admitted evidence; business-day calendars rejected | Whether that evidence is the governing rule |
+| Per-session quotas within one process | Usage across reconnects: a new process starts fresh |
+
+`verify_citation` reports `structurally_valid` and `semantic_support: "not_assessed"`:
+a citation that resolves to admitted text may still not support the claim. The graph's
+mandatory final-answer gate does not apply to MCP clients. Policy is not duplicated: both
+the graph and the MCP adapter call the same executor (`app/agent/tool_session.py`). The
+MCP SDK is pinned in `uv.lock` (mcp 2.2.0); the tested stdio connection negotiated protocol
+revision `2026-07-28`. The scripted SDK client is the verified external client; the Claude
+Code registration above is documented but not part of automated tests.
+
+## Export V2 traces to Langfuse (optional)
+
+Every V2 run already writes a durable local journal (`runs/<id>/events.jsonl`). With the
+optional `otel` extra, a finished run is also projected into one OpenTelemetry trace:
+an `invoke_agent` root span, one `chat` span per model call, one `execute_tool` span per
+tool attempt (with admitted-evidence events), and a `verify_citations` span. Timings come
+from the journal. Export is off by default and needs no network in tests.
+
+```bash
+uv sync --locked --all-groups --extra otel
+```
+
+Fill the Langfuse project settings in your gitignored `.env` (replace the key
+placeholders), then restart the process:
+
+```dotenv
+LANGFUSE_BASE_URL=https://cloud.langfuse.com
+LANGFUSE_PUBLIC_KEY=YOUR_PUBLIC_KEY
+LANGFUSE_SECRET_KEY=YOUR_SECRET_KEY
+CRA_TELEMETRY_EXPORT=1
+```
+
+The base URL is the host, without `/api/public/otel`. Typed settings construct the
+OTLP endpoint and authentication directly; no shell header encoding is needed. Keep
+export disabled while keys are blank. Generic OTLP backends remain supported through
+the standard `OTEL_EXPORTER_OTLP_*` shell environment when all three Langfuse fields
+are absent. Do not put undeclared OTEL variables in the application's `.env`.
+
+```bash
+CRA_LIVE_MODEL=0 CRA_AGENT_MODE=v2 uv run python -m scripts.demo --docs doc-001 "What is the termination notice period?"
+# Or export runs that already finished (each run is exported at most once):
+uv run python -m scripts.export_run_telemetry --latest 3
+```
+
+Only allowlisted metadata leaves the machine: run/call/evidence IDs, locators, counts,
+statuses, timings, token usage and version hashes. Questions, prompts, answers, contract
+text, tool arguments and exception messages are never exported, so Langfuse shows the
+shape, cost and latency of a run, not its content. `runs/<id>/telemetry.json` records the
+exported trace ID; search Langfuse for the `cra.run_id` attribute to go the other way. A
+failed or slow collector cannot change a run: export happens after the terminal event is
+written, in a bounded background queue. The local journal and inspector stay the source
+of record. Attribute names follow the OpenTelemetry GenAI conventions (`gen_ai.*`), with
+project fields under `cra.*`.
+
+## Standalone V2 evaluation workflow
+
+`experiments/v2_standalone.py` runs V2 alone over hand-v1, saving each case as it finishes.
+It resumes safely and records unexecuted cases. `experiments/v2_judge.py` runs
+`claim_support@2` and a criterion-level answer-rubric judge; their verdicts are sealed
+until human labels are frozen with `scripts/v2_labels.py`. Paid runs need a budget
+preflight (`evals/preflight/`), enforced per provider attempt by a persisted ledger. The
+[standalone protocol](docs/evaluation_protocol.md#standalone-v2-evaluation-hand-v1) has the
+frozen split, the claim ceiling `C = 7`, the call ceilings and the full command sequence.
+No live V2 evaluation has been run yet; no V2 quality number is reported.
 
 ## Current results
 
@@ -232,10 +341,16 @@ production-readiness or held-out generalization claim is made.
 
 ## Maintained documentation
 
-- [Closeout checklist](docs/IMPLEMENTATION_PLAN.md): deliverables and the stopping point.
+- [Documentation index](docs/README.md): reading order, current references and archives.
+- [Project guide](docs/project-guide.md): plain-language architecture and evaluation map.
+- [UI and Langfuse walkthrough](docs/ui-langfuse-walkthrough.md): run an example and inspect its trace.
+- [V2 extension plan](docs/V2_EXTENSION_AND_EVALUATION_PLAN.md): MCP, evaluation and
+  telemetry scope with acceptance criteria.
 - [Evaluation methodology](docs/eval-methodology.md): data provenance, metrics and limitations.
 - [Design decisions](docs/decisions.md): architecture tradeoffs and interview walkthrough.
 - [Data and attribution](data/README.md): public sources, sampling and licences.
+- [Historical V1 closeout](docs/archive/IMPLEMENTATION_PLAN.md): September 16 deliverables
+  and validation, preserved as a record of that revision.
 
 Code is MIT ([LICENSE](LICENSE)). CUAD and ContractNLI annotations are CC BY 4.0; corpus
 files are acquired from their public releases and are not distributed in this repository.

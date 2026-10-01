@@ -21,6 +21,9 @@ from app.agent.answerability import ANSWERABILITY_SYSTEM, AnswerabilityDecision,
 from app.config import Settings
 from app.schemas.evidence import Evidence
 
+# Output ceiling for every live call; budget preflights must reserve at least this much.
+MAX_OUTPUT_TOKENS = 2048
+
 
 class ModelError(RuntimeError):
     """The model call failed, timed out, or returned something unusable."""
@@ -142,7 +145,7 @@ class AnthropicClient:
             message = await asyncio.wait_for(
                 self._client.messages.create(
                     model=self.model_id,
-                    max_tokens=2048,
+                    max_tokens=MAX_OUTPUT_TOKENS,
                     system=system,
                     messages=[{"role": "user", "content": user}],
                 ),

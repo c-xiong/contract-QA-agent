@@ -1,5 +1,10 @@
 # V2 offline failure inspection
 
+> Historical inspection of the 2026-09-20 deterministic-stub artifacts linked from
+> [the V2 validation snapshot](v2_results.md). These observations are preserved for
+> that revision and do not measure the current agent's live answer quality.
+> See the [project guide](../docs/project-guide.md) for the current evaluation map.
+
 These are three inspected deterministic-stub behaviors, not human labels for a live
 model. They explain why structural verification cannot stand in for semantic success.
 The complete cases and counters are in the paired report artifacts.

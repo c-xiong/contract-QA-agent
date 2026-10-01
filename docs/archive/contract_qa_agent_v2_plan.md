@@ -1,5 +1,11 @@
 # Contract QA Agent V2: Bounded Tool-Using Agent
 
+> Historical V2 design proposal. Its alternatives, proposed file layout and unchecked
+> acceptance criteria are preserved as design history, not current implementation status.
+> See the [implemented design](../v2_design.md),
+> [active extension roadmap](../V2_EXTENSION_AND_EVALUATION_PLAN.md), and
+> [documentation index](../README.md) for the current project.
+
 **Purpose.** Turn the existing LangGraph Contract QA service from a fixed retrieval workflow into a bounded, observable, tool-using agent. The output of this work is a running system, one honest evaluation, and inspectable traces. It is not a paper, not a product, and not a multi-agent framework.
 
 **What this version is trying to prove.** That the system can select actions based on what it actually retrieved, that every action is authorized and accounted for by code rather than by the model, and that every step of a run can be reconstructed afterwards.

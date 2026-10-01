@@ -28,17 +28,13 @@ from app.agent.tool_registry import (
     TOOL_VERSION,
     Action,
     AuthorizationError,
-    DateCalculation,
-    EvidenceRef,
     Search,
-    ToolError,
     ToolRegistry,
-    ToolResult,
     digest,
 )
+from app.agent.tool_session import ExecutionLimits, ToolExecutor, ToolSession
 from app.observability.events import code_hash, emit
-from app.schemas.evidence import Citation, CitationError, Evidence
-from app.schemas.retrieval import RetrievedChunk
+from app.schemas.evidence import Citation, CitationError
 from evals.provenance import git_state
 
 PLANNER_VERSION = "v2-planner-1"
@@ -64,6 +60,7 @@ class V2Runtime:
         index_fingerprint: str | None = None,
     ):
         self.registry, self.client, self.runs_dir = registry, client, runs_dir
+        self.executor = ToolExecutor(registry)
         self.index_fingerprint = index_fingerprint
         self.source_hash = code_hash()
         self.git_revision, self.worktree_dirty = git_state()
@@ -88,6 +85,50 @@ class V2Runtime:
 
     def expired(self, state: ResearchState) -> bool:
         return monotonic() >= state["deadline_at"]
+
+    def session(self, state: ResearchState) -> ToolSession:
+        """A tool session over this run's state; `sync` writes it back before events."""
+        budget = state["budget"]
+        return ToolSession(
+            allowed=tuple(state["allowed_document_ids"] or []),
+            versions=state["requested_versions"],
+            # DECISION: the graph reserves one tool call for its mandatory final
+            # verification gate; the shared executor enforces that reserve for it.
+            limits=ExecutionLimits(
+                max_tool_calls=budget.max_tool_calls,
+                max_searches=budget.max_searches,
+                max_retries=budget.max_retries,
+                max_chunks_per_query=budget.max_chunks_per_query,
+                max_evidence_items=budget.max_evidence_items,
+                max_evidence_chars=budget.max_evidence_chars,
+                reserved_tool_calls=1,
+            ),
+            evidence_by_id=state["evidence_by_id"],
+            retrieved=list(state["retrieved_chunks"]),
+            evidence=list(state["evidence"]),
+            tool_results=state["tool_results_by_call_id"],
+            calculations=list(state["calculations"]),
+            search_queries=list(state["search_queries"]),
+            tool_calls=state["tool_calls"],
+            searches_used=state["searches_used"],
+            retries=state["retries"],
+        )
+
+    @staticmethod
+    def sync(state: ResearchState, session: ToolSession) -> None:
+        state.update(
+            ResearchState(
+                evidence_by_id=session.evidence_by_id,
+                retrieved_chunks=session.retrieved,
+                evidence=session.evidence,
+                tool_results_by_call_id=session.tool_results,
+                calculations=session.calculations,
+                search_queries=session.search_queries,
+                tool_calls=session.tool_calls,
+                searches_used=session.searches_used,
+                retries=session.retries,
+            )
+        )
 
     async def initialize(self, state: ResearchState) -> ResearchState:
         run_id = state.get("run_id") or uuid4().hex
@@ -273,17 +314,7 @@ class V2Runtime:
             state["status"] = "writing"
             return state
         try:
-            payload = self.registry.validate(
-                action,
-                state["allowed_document_ids"] or [],
-                state["requested_versions"],
-                state["budget"].max_chunks_per_query,
-            )
-            if isinstance(payload, DateCalculation) and (
-                not action.rule_evidence_ids
-                or not set(action.rule_evidence_ids) <= state["evidence_by_id"].keys()
-            ):
-                raise AuthorizationError("missing_governing_evidence")
+            payload = self.executor.authorize(self.session(state), action)
         except AuthorizationError:
             return self.stop(state, "scope_or_provenance_violation", failed=True)
         except (ValidationError, KeyError):
@@ -310,129 +341,23 @@ class V2Runtime:
     async def execute(self, state: ResearchState) -> ResearchState:
         action = Action.model_validate(state["next_action"])
         payload = SCHEMAS[action.tool].model_validate(state["validated_arguments"])
-        budget = state["budget"]
-        for attempt in range(min(1, max(0, budget.max_retries)) + 1):
-            if self.expired(state):
-                return self.stop(state, "deadline_exhausted", failed=True)
-            if state["tool_calls"] >= budget.max_tool_calls - 1:
-                return self.stop(state, "tool_budget_exhausted", failed=True)
-            if isinstance(payload, Search) and state["searches_used"] >= budget.max_searches:
-                return self.stop(state, "search_budget_exhausted", failed=True)
-            state["tool_calls"] += 1
-            if attempt:
-                state["retries"] += 1
-            if isinstance(payload, Search):
-                state["searches_used"] += 1
-                state["search_queries"] = [*state["search_queries"], payload.query]
-            call_id = uuid4().hex
-            emit(
-                state,
-                "tool_started",
-                "execute",
-                call_id=call_id,
-                tool=action.tool,
-                attempt=attempt,
-                arguments_hash=digest(state["validated_arguments"]),
-            )
-            started = perf_counter()
-            try:
-                result = await asyncio.wait_for(
-                    self.registry.execute(
-                        payload,
-                        allowed=state["allowed_document_ids"] or [],
-                        versions=state["requested_versions"],
-                        evidence={
-                            k: EvidenceRef.model_validate(v)
-                            for k, v in state["evidence_by_id"].items()
-                        },
-                        retrieved=state["retrieved_chunks"],
-                        call_id=call_id,
-                    ),
-                    timeout=max(0.001, state["deadline_at"] - monotonic()),
-                )
-            except AuthorizationError:
-                emit(state, "tool_failed", "execute", call_id=call_id, code="scope_violation")
-                return self.stop(state, "tool_scope_violation", failed=True)
-            except (TimeoutError, ConnectionError) as exc:
-                result = ToolResult(
-                    call_id=call_id,
-                    status="error",
-                    error=ToolError(
-                        code="read_timeout"
-                        if isinstance(exc, TimeoutError)
-                        else "read_unavailable",
-                        retryable=True,
-                        safe_message="Read failed.",
-                    ),
-                )
-            except RuntimeError:
-                result = ToolResult(
-                    call_id=call_id,
-                    status="error",
-                    error=ToolError(code="tool_unavailable", safe_message="Tool failed."),
-                )
-            result = result.model_copy(
-                update={
-                    "elapsed_ms": (perf_counter() - started) * 1000,
-                    "result_hash": result.result_hash or digest(result.model_dump(mode="json")),
-                }
-            )
-            state["tool_results_by_call_id"][call_id] = result.model_dump(mode="json") | {
-                "tool": action.tool,
-                "attempt": attempt,
-            }
-            emit(
-                state,
-                "tool_failed" if result.status == "error" else "tool_completed",
-                "execute",
-                call_id=call_id,
-                result_hash=result.result_hash,
-            )
-            if not (
-                result.error and result.error.retryable and attempt < min(1, budget.max_retries)
-            ):
-                break
-        if (
-            result.status == "error"
-            and result.error
-            and (result.error.retryable or result.error.code == "tool_unavailable")
-        ):
-            return self.stop(state, "tool_unavailable", failed=True)
-        for raw in result.data.get("hits", []):
-            hit = RetrievedChunk.model_validate(raw)
-            ref = self.registry.ref(hit.chunk)
-            if ref.evidence_id in state["evidence_by_id"]:
-                continue
-            used = sum(len(e.excerpt) for e in state["evidence"])
-            if (
-                len(state["evidence_by_id"]) >= budget.max_evidence_items
-                or used + len(hit.chunk.text) > budget.max_evidence_chars
-            ):
-                continue
-            state["evidence_by_id"][ref.evidence_id] = ref.model_dump(mode="json")
-            state["retrieved_chunks"] = [*state["retrieved_chunks"], hit]
-            c = hit.chunk
-            state["evidence"] = [
-                *state["evidence"],
-                Evidence(
-                    evidence_id=ref.evidence_id,
-                    topic=hit.retrieval_query,
-                    document_id=c.document_id,
-                    document_title=c.document_title,
-                    section_path=c.section_path,
-                    section_title=c.section_title,
-                    page_number=c.page_number,
-                    excerpt=c.text,
-                    source_chunk_id=c.chunk_id,
-                    pulled_by=hit.pulled_by,
-                ),
-            ]
-            emit(state, "evidence_added", "execute", evidence_id=ref.evidence_id)
-        if action.tool == "calculate_date" and result.status == "ok":
-            state["calculations"] = [
-                *state["calculations"],
-                result.data | {"rule_evidence_ids": action.rule_evidence_ids},
-            ]
+        session = self.session(state)
+
+        def on_event(event_type: str, **data: Any) -> None:
+            self.sync(state, session)
+            emit(state, event_type, "execute", **data)
+
+        outcome = await self.executor.execute(
+            session,
+            action.tool,
+            payload,
+            deadline_at=state["deadline_at"],
+            rule_evidence_ids=action.rule_evidence_ids,
+            on_event=on_event,
+        )
+        self.sync(state, session)
+        if outcome.stop_reason:
+            return self.stop(state, outcome.stop_reason, failed=True)
         return state
 
     async def verify(self, state: ResearchState) -> ResearchState:

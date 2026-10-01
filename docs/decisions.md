@@ -126,3 +126,94 @@ answers for independent validation were transcribed verbatim; no generated evalu
 content supplies résumé claims. Configuration was frozen before inspecting validation.
 
 See [the full result and failure report](retrieval-improvement-results.md).
+
+## V2 mainline: one tool executor, a local MCP server
+
+V2 is now the only path receiving new features; V1 stays runnable as the historical
+baseline at commit `01a04f8`. See the [extension plan](V2_EXTENSION_AND_EVALUATION_PLAN.md).
+
+Before exposing tools over MCP, tool policy moved out of the graph's `execute` node into
+`app/agent/tool_session.py`. `ToolExecutor` validates scope, reserves tool/search
+capacity under a short lock before dispatch, applies the deadline, retries once,
+rejects out-of-scope or altered retriever output, and admits evidence within item and
+character limits. The graph and the MCP adapter both call it, so there is one policy
+implementation. We rejected an MCP wrapper directly over `ToolRegistry`: it would have
+bypassed budgets and admission, or copied them. Planning, model budgets, repair routing,
+duplicate-action detection and the final-answer gate remain in the graph.
+
+`ToolSession` is the single mutable store while a call runs. The graph rebuilds one from
+its durable state for each execute node and writes it back before every emitted event,
+so per-event trace snapshots are unchanged. A characterization test records normalized
+event sequences and counters for 19 scenarios before the refactor. The existing V2 tests
+and that golden pass without changed assertions.
+
+The MCP server (`app/mcp_server.py`) is a stdio adapter using the official `mcp` SDK. It is
+a main dependency because the server is a supported entry point. Scope comes from startup
+flags and fails closed; tool arguments only narrow it. One process is one session:
+evidence and counters die with it, and reconnecting resets quotas. That is a state
+boundary, not identity or abuse protection. Unlike the graph, MCP reserves no call for
+final verification, because nothing forces a client to verify. `verify_citation` says
+explicitly that it checks structure, not semantic support. Date calculations must cite
+admitted evidence; the server cannot check that it is the governing rule. `session_info`
+is an adapter-only addition: it exposes granted snapshot IDs and remaining budgets so a
+client does not have to guess version IDs.
+
+Errors are MCP `isError` results carrying structured `{code, retryable, message}` and
+current usage. Validation errors name fields only, never the rejected values. Logs go to
+stderr; stdout carries only protocol frames. Tested with mcp 2.2.0 over stdio; the
+connection negotiated protocol revision `2026-07-28`. That revision is stateless per
+request, but over stdio the process still maps to exactly one connection.
+
+## Telemetry as a projection of the durable journal
+
+OpenTelemetry export (`app/observability/telemetry.py`, optional `otel` extra) converts a
+finished run's `events.jsonl` into spans, using the recorded timestamps. It runs after the
+terminal event is written. We rejected live spans inside graph nodes, which would have
+duplicated every `emit()` site and put an exporter in the runtime's control path. The
+cost is latency: a trace appears when the run ends, not while it streams. The local
+inspector covers live viewing.
+
+Attributes follow an explicit allowlist: IDs, locators, counts, statuses, timings, token
+usage, version hashes. Questions, prompts, answers, contract text, tool arguments and
+exception strings are never exported, including on error paths. A private
+`TracerProvider` keeps library-emitted spans (the MCP SDK has OTel hooks) out of the
+export. A `telemetry.json` marker makes export idempotent per run and records the trace
+ID for correlation. OTLP/HTTP keeps Langfuse one interchangeable backend. Tests validate
+the exporter against an in-process receiver and never need Langfuse. Dataset sync,
+score upload and online evaluation in Langfuse are out of scope. Repository artifacts
+remain the reporting source of record.
+
+The local `.env` setup uses typed `LANGFUSE_BASE_URL`, `LANGFUSE_PUBLIC_KEY` and
+`LANGFUSE_SECRET_KEY` fields. This is necessary because Settings rejects undeclared
+fields, and reading a dotenv file does not populate the process environment used by
+the OTel SDK. Keys use `SecretStr`; the application constructs the endpoint and
+authentication headers and passes them directly to the exporter, without mutating
+global environment variables. Generic `OTEL_EXPORTER_OTLP_*` environment settings
+remain available when all three Langfuse fields are absent. The provider is cached
+per process, so configuration changes require a server restart.
+
+On 2026-10-01, manual stub and live V2 UI smoke traces were confirmed in Langfuse
+Cloud. This checks delivery and execution visibility; it is not a completed live
+answer-quality evaluation.
+
+## Standalone V2 evaluation infrastructure (no completed live quality run yet)
+
+The judge calibration split (20/21, seeded, stratified by category) and the claim
+ceiling `C = 7` were fixed and checked in before the standalone live V2 evaluation. `C` came
+from the grader's own claim extractor over 82 historical live answers. Batching claims
+per judge call was rejected because it would have redefined `claim_support@2`. Claims
+beyond `C` are routed to humans, never truncated.
+
+Paid runs go through `evals/budget.py`. It reserves worst-case tokens and currency before
+each provider attempt, keeps the reservation when usage is unknown, and persists after
+every change, so a crash or resume cannot reset spend. Prices are never built in: the
+preflight must state them. The ledger wraps only live clients; the offline stub makes no
+provider calls, and wrapping it would break the graph's stub routing.
+
+Human labels are the reported answer-quality outcome. Judge verdicts are written to
+sealed files and compared only after labels are complete and frozen by hash. Every
+unseal is logged; post-freeze corrections are adjudication records. This is procedural,
+not cryptographic, and is disclosed as such. The new answer-rubric judge
+(`answer_rubric@1-provisional`) gives criterion-level verdicts. Its pass criteria were
+drafted with coding-agent assistance, so per `.claude/rules/evals.md` a `TODO(author)`
+flag blocks the live frozen pass until the author reviews them.

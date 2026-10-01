@@ -1,10 +1,21 @@
 # V2 implementation
 
+Scope: the implemented V2 runtime, its boundaries and deliberate limitations. For a
+plain-language walkthrough, start with [the project guide](project-guide.md); use
+[the documentation index](README.md) to find demonstrations and measured reports.
+V2 is the active development path; V1 remains the runtime default and historical
+reference. MCP and optional OTel export are implemented. Live V2 answer quality
+has not yet been measured with the standalone human-review protocol.
+
 ## Corpus decision
 
 Option B: retain the existing ingested corpus and index. The frozen `hand-v1` suite is
-unchanged. Historical retrieval results remain V1 measurements; new V2 cases and
-regression cases have separate artifacts and denominators. No expanded-corpus claim.
+unchanged: 41 cases comprise 35 expected answers, one expected partial answer and five
+expected abstentions. Retrieval-only evaluation scores the 36 evidence-bearing cases;
+end-to-end evaluation keeps all 41. Historical retrieval results are separate from
+live V2 answer-quality measurements; the 24 provisional V2 fixtures and the 119-query
+CUAD retrieval validation also have separate artifacts and denominators. No expanded-
+corpus claim.
 
 ## Execution
 
@@ -13,6 +24,12 @@ writer/repair prompts, model adapter, retriever, source store and citation verif
 `V2Runtime` adds initialize → decide → authorize → execute → decide conditional routing;
 draft → mandatory verify → terminal or bounded repair shares the existing writer.
 There is no second retrieval framework or multi-agent topology.
+
+The graph and local read-only MCP server share `ToolSession`/`ToolExecutor` for scope,
+reservations, timeouts and original-evidence admission. The graph additionally owns
+planning, model-call limits and final delivery. An external MCP client can skip or
+ignore citation verification; server tool budgets do not cap that client's model calls
+or token spending. See [the MCP entry point](../README.md#use-the-tools-from-an-mcp-client).
 
 The planner emits one Pydantic `Action`; it cannot write arbitrary graph state. Python
 validates schemas and scope, clamps top-k, reserves counters before dispatch, admits
@@ -74,15 +91,27 @@ source membership, strict budgets, empty drafts, repair exhaustion, tool-verifie
 SSE redaction/cancellation, native-work deadlines and dead-process detection. Three
 scripted synthetic fixtures demonstrate distinct paths. They are not live model evidence.
 
-The paired runner retains every case and creates blank independent-review forms.
-Deterministic diagnostics are available; task success, semantic support and useful calls
-remain unscored until reviewed. `reports/v2_results.md` records actual validation.
+The historical paired runner retains every case and creates blank review forms.
+The current standalone runner saves cases incrementally, enforces cumulative live-run
+budgets, resumes under the same frozen configuration and prepares human review plus
+judge calibration/audit. Deterministic diagnostics are available; semantic task success
+and citation support require reviewed outputs. [The dated offline report](../reports/v2_results.md)
+records earlier implementation validation, not current live capability or a current
+test-count claim.
 
-Remaining before the plan's full evaluation definition of done:
-- Author replacement/review of the generated new cases and rubric, with a new dataset version.
-- Frozen live-model paired runs on both suites under matching retrieval/model settings.
-- Independent manual labels, auditing every apparent V2 win and classifying each failure.
-- A final capability report and CV wording based on those reviewed results.
+Remaining for the current standalone evaluation:
 
-No higher task-success claim is required to complete that experiment; a null or negative
-result is valid. V2 remains opt-in while these steps are pending.
+- Review the provisional answer-rubric judge and freeze the reporting configuration.
+- Fill price/token/currency preflight and execute a bounded live V2 run on all 41
+  `hand-v1` cases, including expected abstentions and execution failures.
+- Human-label every output before exposing judge verdicts; calibrate on 20 cases and
+  audit the frozen judge on 21. This split tests the judge, not QA generalization.
+- Publish human-label quality metrics, separate judge-agreement/error metrics and
+  inspected failures. Describe author review and independent review accurately.
+- Review/replace the 24 generated cases under a new version before using them for any
+  additional capability claims; they are not required for the initial `hand-v1` run.
+
+[The evaluation protocol](evaluation_protocol.md#standalone-v2-evaluation-hand-v1) is
+primary. A paired live comparison is optional unless claiming that V2 improves over V1.
+No higher task-success claim is required to complete evaluation; a null or negative
+result is valid. V2 remains opt-in while the live report is pending.

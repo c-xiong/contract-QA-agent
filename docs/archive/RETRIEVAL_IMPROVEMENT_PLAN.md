@@ -1,5 +1,10 @@
 # Retrieval improvement plan
 
+> Historical plan for the retrieval experiments completed 2026-09-26. The protocol
+> and completed outcome are preserved here; current measurements and limitations are
+> in the [retrieval result report](../retrieval-improvement-results.md).
+> Use the [documentation index](../README.md) for current navigation.
+
 ## Objective and reporting contract
 
 Improve evidence retrieval at a fixed five-original-chunk output budget. Report
@@ -47,5 +52,5 @@ experiment are complete. The selected arm scores 72.7% versus 61.1% on developme
 the frozen 119-question independent validation scores 71.8% versus 70.2%. The latter
 gain is modest and uncertain, so the arm is optional rather than a default replacement.
 The failed window-index experiment is retained only for reproducibility. All required
-checks passed. See [the result report](retrieval-improvement-results.md) and
-[the finished résumé bullets](resume-bullets.md).
+checks passed. See [the result report](../retrieval-improvement-results.md) and
+[the finished résumé bullets](../resume-bullets.md).

@@ -1,5 +1,10 @@
 # Project closeout
 
+> Historical V1 closeout, completed 2026-09-16. This record describes that revision's
+> deliverables and documentation layout; it is not the current project status.
+> Start with the [documentation index](../README.md) and
+> [project guide](../project-guide.md) for the maintained workflow.
+
 Updated 2026-09-16. Replaces the superseded sprint plans and specification.
 
 ## Scope and checklist
@@ -44,12 +49,12 @@ Explicitly set `CRA_LIVE_MODEL=0` for offline commands: local `.env` may enable 
 access. Low cross-document recall, depth-one references, sentence-level claim extraction
 and the small development benchmark are documented limitations, not another phase.
 
-See [methodology](eval-methodology.md), [decisions](decisions.md), and
-[result artifacts](../results/README.md).
+See [methodology](../eval-methodology.md), [decisions](../decisions.md), and
+[result artifacts](../../results/README.md).
 
 ## Final acceptance evidence
 
-- Current A–D artifacts are pinned in `results/`; [analysis](../results/ANALYSIS.md)
+- Current A–D artifacts are pinned in `results/`; [analysis](../../results/ANALYSIS.md)
   includes three inspected disagreements/failures and the decision to leave the gate off.
 - Default suite: **408 passed, 3 deselected**, with blocked external sockets and model
   loading. Separate cached real-model/corpus integration: **3 passed**.

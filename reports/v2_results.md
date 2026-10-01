@@ -1,5 +1,13 @@
 # V2 validation report
 
+> Historical offline validation snapshot from 2026-09-20. Counts, outcomes and remaining
+> work below describe that implementation revision; later MCP, shared-executor, telemetry
+> and standalone-evaluation additions are not included in its test totals.
+> See the [project guide](../docs/project-guide.md) for current status and the
+> [evaluation protocol](../docs/evaluation_protocol.md#standalone-v2-evaluation-hand-v1)
+> for the current standalone workflow. A live V1/V2 comparison is needed for a V2-over-V1
+> improvement claim; it is not required to measure V2 by itself.
+
 Date: 2026-09-20. This is an implementation/offline validation report, **not a live-model
 capability evaluation**. V2 remains opt-in. No paid V2 calls were made for these artifacts.
 

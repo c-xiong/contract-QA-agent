@@ -57,6 +57,33 @@ jobs:
       # Everything above runs against the deterministic stub and synthetic fixtures.
       # No network, no API key, no cost -- CI exercises the whole system for free.
 
+  telemetry:
+    # The default install excludes the optional OTel extra; this job validates the
+    # exporter offline against an in-process OTLP receiver on 127.0.0.1.
+    name: telemetry extra (OTLP exporter, loopback only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install dependencies with the otel extra
+        run: uv sync --locked --all-groups --extra otel
+
+      - name: Mypy with real OTel types
+        run: uv run mypy app/observability
+
+      - name: Telemetry tests
+        env:
+          CRA_LIVE_MODEL: "0"
+        run: uv run pytest tests/unit/test_telemetry.py -rs
+
   retrieval-models:
     name: real retrieval models (downloads allowed)
     runs-on: ubuntu-latest
