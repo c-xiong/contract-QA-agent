@@ -19,6 +19,7 @@ in filename order.
 | V2 agent | Typed tools, bounded execution, source evidence, mandatory structural citation gate | No completed live V2 answer-quality evaluation |
 | Retrieval | BM25/dense fusion, reranking, optional legal query expansion and document coverage | Development results do not establish general answer accuracy |
 | MCP | Local stdio adapter and shared tool executor | External clients can skip final citation verification |
+| A2A | Authenticated JSON-RPC/SSE adapter over the unchanged V2 agent; card, streaming, adapter-level input-required, orchestrator demo | Static shared token; in-memory tasks; demo uses the stub unless live mode is enabled |
 | Observability | Durable local journals, SSE inspector, optional metadata-only OTLP export; manual stub and live V2 traces viewed in Langfuse Cloud on 2026-10-01 | A successful smoke run does not guarantee delivery of future traces or establish answer quality |
 | V2 evaluation | Resumable runner, budget ledger, label freezing, separate LLM judges | Live outputs, human labels, judge calibration, and final quality report are pending |
 
@@ -32,6 +33,7 @@ cannot demonstrate answer quality.
 |---|---|
 | Install, run, current results | [Repository README](../README.md) |
 | Architecture and runtime limits | [V2 design](v2_design.md), [tool contracts](tool_contracts.md) |
+| A2A entrypoint design and review | [A2A design](a2a_design.md) |
 | Reasons for design choices | [Decision log](decisions.md) |
 | Dataset roles and provenance | [Dataset index](../evals/datasets/README.md), [source data](../data/README.md) |
 | Metric meanings and denominators | [Evaluation methodology](eval-methodology.md) |

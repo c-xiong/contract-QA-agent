@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+from collections.abc import Callable
 from contextlib import aclosing
 from dataclasses import dataclass
 from time import perf_counter
@@ -21,6 +23,8 @@ from app.retrieval.base import Retriever
 from app.retrieval.bm25 import Bm25Retriever
 from app.schemas.evidence import Citation, CitationError, Evidence
 from app.schemas.retrieval import RetrievedChunk
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -108,7 +112,19 @@ class ResearchAgent:
         allowed_document_ids: list[str] | None = None,
         budget: Budget | None = None,
         requested_versions: dict[str, str] | None = None,
+        progress: Callable[[ResearchState], None] | None = None,
+        external_ref: dict[str, str] | None = None,
     ) -> ResearchResult:
+        """Run one question to a terminal state.
+
+        `progress` and `external_ref` exist for protocol adapters (app/a2a) and are V2-only.
+
+        DECISION: `progress` is a synchronous observer, called with each merged V2 state
+          and never awaited, so a slow consumer cannot spend the run's deadline. If it
+          raises, it is logged and disabled; the exception never reaches `v2_states`,
+          which would otherwise journal the run as interrupted. Alternative rejected: an
+          async callback, which would let a stalled stream consumer stall the graph.
+        """
         state = initial_state(
             question,
             allowed_document_ids=allowed_document_ids,
@@ -116,6 +132,8 @@ class ResearchAgent:
         )
         if requested_versions is not None:
             state["requested_versions"] = requested_versions
+        if external_ref:
+            state["external_ref"] = dict(external_ref)
         # ainvoke returns the merged state dict; LangGraph types it as dict[str, Any].
         started = perf_counter()
         if self.settings.agent_mode == "v2":
@@ -123,6 +141,15 @@ class ResearchAgent:
             async with aclosing(v2_states(self.graph, state, self.settings.runs_dir)) as states:
                 async for merged in states:
                     final = merged
+                    if progress is not None:
+                        try:
+                            progress(merged)
+                        except Exception:  # noqa: BLE001 -- an observer never fails a run
+                            logger.warning(
+                                "Progress observer failed; disabled for run %s",
+                                merged.get("run_id"),
+                            )
+                            progress = None
         else:
             final = cast(
                 ResearchState, await self.graph.ainvoke(state, config={"recursion_limit": 100})

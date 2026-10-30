@@ -103,6 +103,9 @@ class ResearchState(TypedDict, total=False):
     trace_path: str
     deadline_at: float
     requested_versions: dict[str, str]
+    # Correlation IDs from an outer protocol (A2A task/context). IDs only; copied into
+    # the run manifest and exported as span attributes, never read by graph routing.
+    external_ref: dict[str, str]
     evidence_by_id: dict[str, Any]
     tool_results_by_call_id: dict[str, Any]
     next_action: dict[str, Any]

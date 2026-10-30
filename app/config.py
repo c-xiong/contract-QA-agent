@@ -90,6 +90,13 @@ class Settings(BaseSettings):
         default=None, validation_alias="LANGFUSE_SECRET_KEY"
     )
 
+    # --- A2A entrypoint ---------------------------------------------------
+    a2a_token: SecretStr | None = Field(
+        default=None,
+        description="Bearer token the A2A server requires (CRA_A2A_TOKEN). The server "
+        "refuses to start without one; the orchestrator demo sends it.",
+    )
+
     # --- Retrieval --------------------------------------------------------
     retrieval_top_k: int = Field(
         default=5,
@@ -117,7 +124,7 @@ class Settings(BaseSettings):
     )
 
     @field_validator(
-        "anthropic_api_key", "langfuse_public_key", "langfuse_secret_key", mode="after"
+        "anthropic_api_key", "langfuse_public_key", "langfuse_secret_key", "a2a_token", mode="after"
     )
     @classmethod
     def blank_key_is_no_key(cls, value: SecretStr | None) -> SecretStr | None:

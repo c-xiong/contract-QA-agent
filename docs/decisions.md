@@ -217,3 +217,36 @@ not cryptographic, and is disclosed as such. The new answer-rubric judge
 (`answer_rubric@1-provisional`) gives criterion-level verdicts. Its pass criteria were
 drafted with coding-agent assistance, so per `.claude/rules/evals.md` a `TODO(author)`
 flag blocks the live frozen pass until the author reviews them.
+
+## A2A entrypoint: the agent as a delegate, the tools stay on MCP (2026-10-30)
+
+The author wanted the agent reachable by other agents, alongside the existing MCP tool
+server. `app/a2a/` is a protocol adapter over the unchanged V2 graph, built on `a2a-sdk`
+1.3 (spec 1.0; the public LangGraph sample still targets the 0.3 API and was used only for
+structure). Division of labour: MCP serves passive, typed tools that an external model
+orchestrates; A2A serves the whole agent as an opaque collaborator that owns its plan,
+budgets and citation gate and reports a task lifecycle.
+
+- **Separate process and port**, not routes on the inspector app: the inspector is
+  read-only and unauthenticated, while this surface takes tasks and requires a token.
+  It mirrors the MCP server being its own process. V2 is forced, because run journals,
+  telemetry and cancel journaling exist only there.
+- **`input-required` is an adapter scope policy.** The V2 planner never asks questions;
+  it abstains. With one indexed snapshot per document, version ambiguity cannot occur;
+  the real ambiguity is which contract. A request with no `document_ids` is asked for them
+  before any model call. Rejected: mapping abstention to `input-required` (an abstention
+  is a correct answer, rule 3), and a planner "clarify" action (changes the core and the
+  frozen suites).
+- **`context_id` carries no memory** (rule 6). Clarification reply text is ignored, and
+  the question is always the task's first user message.
+- **Two additive hooks on `ResearchAgent.research()`:** a synchronous, exception-guarded
+  `progress` observer, and `external_ref` IDs copied into the manifest and onto the root
+  span. Graph topology, prompts, retrieval, budgets and citation checks are untouched.
+- **Static bearer token, fail closed.** This authenticates a caller; it is not per-user
+  authorization. OAuth2 or mTLS would replace it in a real deployment, and the card format
+  already supports declaring that.
+
+Limits: an in-memory task store, no push notifications, and runless tasks traced only in
+the server log. Design and review record: Claude Code authored the design and the
+implementation, and Codex reviewed the design (two rounds). The author then narrowed the
+scope.

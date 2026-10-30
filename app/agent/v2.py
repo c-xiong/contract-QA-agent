@@ -183,6 +183,7 @@ class V2Runtime:
             "budget": asdict(state["budget"]),
             "config_hash": digest(asdict(state["budget"])),
             "cache": "no tool-result cache",
+            "external_ref": state.get("external_ref"),
         }
         path = directory / "manifest.json"
         path.write_text(json.dumps(manifest, indent=2) + "\n")

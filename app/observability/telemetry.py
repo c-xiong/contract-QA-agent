@@ -51,6 +51,7 @@ MANIFEST_FIELDS = (
     "retriever",
     "config_hash",
 )
+EXTERNAL_REF_FIELDS = ("a2a.task_id", "a2a.context_id")
 
 
 class TelemetrySetupError(RuntimeError):
@@ -109,6 +110,10 @@ class RunExporter:
         for field in MANIFEST_FIELDS:
             if manifest.get(field) is not None:
                 root_attributes[f"cra.{field}"] = str(manifest[field])
+        # Outer-protocol correlation (A2A task/context IDs): IDs only, never content.
+        for key, value in (manifest.get("external_ref") or {}).items():
+            if key in EXTERNAL_REF_FIELDS:
+                root_attributes[f"cra.{key}"] = str(value)
         if not simulated:
             root_attributes["gen_ai.provider.name"] = "anthropic"
 

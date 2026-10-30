@@ -11,7 +11,8 @@ provides a hands-on exercise.
 **V2 is the actively developed path; select it with `CRA_AGENT_MODE=v2`.** It adds
 model-selected typed tools, code-enforced document/snapshot scope, execution budgets, a
 mandatory citation gate, and persistent local traces. The same tools are also served to
-external agents through a [local read-only MCP server](#use-the-tools-from-an-mcp-client).
+external agents through a [local read-only MCP server](#use-the-tools-from-an-mcp-client),
+and the agent itself accepts delegated tasks [over A2A](#delegate-to-the-agent-over-a2a).
 V1 remains the runtime default and the historical comparison baseline until live V2
 evaluation is complete; it receives no new features. The V1 reference revision is commit
 `01a04f8`, reproducible with `git checkout 01a04f8 && uv sync --locked` and the commands
@@ -150,6 +151,74 @@ the graph and the MCP adapter call the same executor (`app/agent/tool_session.py
 MCP SDK is pinned in `uv.lock` (mcp 2.2.0); the tested stdio connection negotiated protocol
 revision `2026-07-28`. The scripted SDK client is the verified external client; the Claude
 Code registration above is documented but not part of automated tests.
+
+## Delegate to the agent over A2A
+
+MCP exposes the **tools**; A2A (Agent2Agent) exposes the **agent**. Tools go over MCP
+because they are passive, typed, bounded functions that the caller orchestrates. The agent
+goes over A2A because it is an opaque collaborator: it owns its own plan, budgets and
+guardrails and reports a task lifecycle, not a return value.
+
+```text
+scripts/a2a_orchestrator.py ── HTTP JSON-RPC + SSE, bearer token ──▶ app/a2a (python -m app.a2a)
+   discover card → send task → stream status        Agent Card  /.well-known/agent-card.json
+   → answer input-required → read artifact          ContractQAExecutor (protocol adapter)
+                                                              │
+                                                              ▼
+                                           ResearchAgent.research()  (unchanged V2 LangGraph)
+                                                              │
+external MCP client ── stdio ──▶ app/mcp_server.py ──▶ ToolExecutor → ToolRegistry (same tools)
+```
+
+```bash
+uv sync --locked --extra a2a
+# Put one token in .env (CRA_A2A_TOKEN=...) so both terminals share it, or export the
+# same value in each. The server refuses to start without one.
+echo "CRA_A2A_TOKEN=$(openssl rand -hex 32)" >> .env
+
+# Terminal 1: the A2A server (forces V2; 127.0.0.1:8100)
+CRA_LIVE_MODEL=0 uv run --extra a2a python -m app.a2a
+
+# Terminal 2: discovery, streaming, an input-required round trip, and the cited artifact
+uv run --extra a2a python scripts/a2a_orchestrator.py \
+  "Which law governs this agreement?" --clarify-with doc-002
+```
+
+The demo sends the question without a document scope. The agent replies `input-required`
+and lists the corpus documents. The orchestrator answers on the same task with
+`{"document_ids": ["doc-002"]}`. The task then streams `working` updates ("Searching
+clauses", "Drafting answer", "Verifying citations") and returns a `contract_answer`
+artifact: the answer text plus a data part with `status`, `run_id`, `stop_reason`,
+`citations`, and `simulated`. With `CRA_LIVE_MODEL=0` the answer comes from the
+deterministic stub and is labelled as such; it exercises the protocol, not answer quality.
+
+| A2A state | When |
+| --- | --- |
+| `input-required` | No `document_ids` and more than one document in the corpus. Asked before any model call; after two unanswered asks the task fails with `scope_not_provided`. |
+| `completed` + artifact | The agent answered (`status: completed`) or abstained (`status: abstained`). An abstention is a correct answer, not a failure. |
+| `failed` | The run failed (budget/deadline exhausted, scope violation, model unavailable, internal error) or `document_ids` are unknown. The status message carries the `stop_reason`. |
+| `canceled` | `tasks/cancel`. The run journal records `run_cancelled`. |
+
+Guarantees and limits:
+
+- The adapter adds no prompt text and re-decides no policy. The caller can only narrow
+  scope with `document_ids`. Prompt injection, scope checks, budgets and the citation gate
+  are the same V2 code as every other entrypoint (`tests/unit/test_a2a.py` compares the
+  injection outcome with a direct call).
+- `input-required` is an **adapter scope policy**, not a model judgement: the V2 agent
+  itself never asks questions; it abstains. Each indexed document has a single snapshot,
+  so the real ambiguity is *which contract*.
+- `context_id` groups tasks but carries no memory between them, and text in a
+  clarification reply is ignored.
+- Auth is one static bearer token (constant-time compare; the card is public, everything
+  else returns 401). This authenticates a caller; it is not per-user authorization.
+- Tracing: the task and context IDs are written to the run manifest and, with
+  `CRA_TELEMETRY_EXPORT=1`, to the root span as `cra.a2a.task_id`/`cra.a2a.context_id`, so
+  a Langfuse search by task ID finds the full run. Tasks that end without a run
+  (`input-required` with no reply, unknown IDs) appear only in the server log.
+- Tasks are held in memory (`InMemoryTaskStore`): a restart drops them. No push
+  notifications or gRPC. Built on `a2a-sdk` 1.3 (A2A spec 1.0), pinned in `uv.lock`.
+  Design and review record: [docs/a2a_design.md](docs/a2a_design.md).
 
 ## Export V2 traces to Langfuse (optional)
 
