@@ -38,6 +38,8 @@ cannot demonstrate answer quality.
 | Dataset roles and provenance | [Dataset index](../evals/datasets/README.md), [source data](../data/README.md) |
 | Metric meanings and denominators | [Evaluation methodology](eval-methodology.md) |
 | Current V2 evaluation procedure | [Evaluation protocol](evaluation_protocol.md#standalone-v2-evaluation-hand-v1) |
+| Paired V1/V2 comparison procedure | [Evaluation protocol](evaluation_protocol.md#budgeted-paired-v1v2-comparison-hand-v1), [plan](V1_V2_COMPARISON_PLAN.md) |
+| Labelling the blind V1/V2 answers | [Labelling guide](labeling_guide.md) |
 | Remaining work and acceptance criteria | [V2 extension roadmap](V2_EXTENSION_AND_EVALUATION_PLAN.md) |
 | September retrieval measurements | [Retrieval results](retrieval-improvement-results.md) |
 | Historical V1 comparisons and original artifacts | [Results index](../results/README.md) |

@@ -53,6 +53,22 @@ class Settings(BaseSettings):
         gt=0,
         description="Per-call wall clock ceiling. Enforced in code, not requested in a prompt.",
     )
+    model_backend: Literal["api", "claude_code"] = Field(
+        default="api",
+        description="Transport for live calls: the Anthropic API, or the local Claude Code CLI "
+        "(`claude -p`, subscription-billed). Same provider and models; see docs/decisions.md.",
+    )
+    claude_code_path: str = Field(default="claude", description="Claude Code executable.")
+    claude_code_effort: Literal["low", "medium", "high", "xhigh", "max"] = Field(
+        default="high",
+        description="Pinned effort for the CLI backend; `high` matches the API default the "
+        "AnthropicClient gets by omitting effort.",
+    )
+    claude_code_timeout_s: float = Field(
+        default=300.0,
+        gt=0,
+        description="Per-call wall clock ceiling for the CLI backend, including process start.",
+    )
     live_model: bool = Field(
         default=False,
         description=(

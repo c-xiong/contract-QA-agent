@@ -599,6 +599,7 @@ def corpus(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
 
 def runner_args(output: Path, **overrides: Any) -> argparse.Namespace:
     values = {
+        "mode": "v2",
         "suite": "hand",
         "arm": "bm25",
         "limit": 2,
@@ -645,7 +646,9 @@ async def test_live_runner_requires_preflight(
         await v2_standalone.run(runner_args(tmp_path / "live" / "r.json"))
 
 
-@pytest.mark.parametrize("name", ["v2-hand-application", "v2-hand-judge"])
+@pytest.mark.parametrize(
+    "name", ["v2-hand-application", "v2-hand-judge", "v1-hand-application", "v1-hand-judge"]
+)
 def test_unfilled_preflight_templates_cannot_be_used(name: str) -> None:
     from pydantic import ValidationError
 
@@ -655,5 +658,6 @@ def test_unfilled_preflight_templates_cannot_be_used(name: str) -> None:
     with pytest.raises(ValidationError, match="price"):
         load_preflight(path)
     ceiling = json.loads(Path("evals/datasets/hand/claim_ceiling-v1.json").read_text())["C"]
-    expected = 41 * 12 if "application" in name else (2 * 20 + 41) * (ceiling + 1)
+    calibration_rounds = 2 if name.startswith("v2") else 0  # V1 gets only the frozen pass
+    expected = 41 * 12 if "application" in name else (calibration_rounds * 20 + 41) * (ceiling + 1)
     assert json.loads(path.read_text())["max_attempts"] == expected

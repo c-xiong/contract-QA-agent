@@ -1,4 +1,4 @@
-"""Standalone V2 evaluation run: no V1 execution, incremental, budgeted and resumable.
+"""Standalone evaluation run of one agent mode: incremental, budgeted and resumable.
 
 Offline (default) this is a wiring check with the deterministic stub and makes no
 provider calls. A live run requires CRA_LIVE_MODEL=1 and an application-phase preflight;
@@ -8,6 +8,10 @@ every provider attempt then passes through a persisted budget ledger.
     CRA_LIVE_MODEL=1 uv run python -m experiments.v2_standalone --suite hand \
         --arm rrf_hybrid_rerank --preflight evals/preflight/v2-hand-application.json \
         --output reports/v2-standalone-hand-live.json [--resume]
+
+`--mode v1` runs the V1 pipeline through the same ledger, resume and failure accounting,
+so a V1 report can be paired with a V2 report (scripts/paired_review.py,
+scripts/compare_v1_v2.py). V2 is the default; its configuration is otherwise unchanged.
 
 Semantic quality is not scored here. Human labels (see scripts/v2_label_sheet.py) are
 the reported answer-quality outcome; the offline judge is measured against them.
@@ -27,7 +31,15 @@ from pathlib import Path
 from statistics import median
 from typing import Any
 
-from app.agent.llm import MAX_OUTPUT_TOKENS, AnthropicClient, ModelClient
+from app.agent.llm import (
+    MAX_OUTPUT_TOKENS,
+    ClaudeCodeClient,
+    ModelClient,
+    claude_code_version,
+)
+from app.agent.llm import (
+    build_client as build_live_client,
+)
 from app.agent.runner import ResearchAgent
 from app.agent.state import Budget
 from app.agent.tool_registry import TOOL_VERSION, digest
@@ -43,6 +55,8 @@ from evals.provenance import capture_provenance
 
 SPLIT = Path("evals/datasets/hand/judge_split-v1.json")
 CLAIM_CEILING = Path("evals/datasets/hand/claim_ceiling-v1.json")
+# Interrupted, not executed: these rows are re-run by --resume and never summarized.
+RERUN = frozenset({"budget_stopped", "provider_limit_stopped"})
 
 
 def sha256(path: Path) -> str | None:
@@ -101,6 +115,7 @@ def frozen_config(
     """Everything that must not change between a run and its resumption."""
     return {
         "suite": args.suite,
+        "agent_mode": args.mode,
         "dataset_sha256": sha256(suite_path(args.suite)),
         "split_sha256": sha256(SPLIT) if args.suite == "hand" else None,
         "claim_ceiling_sha256": sha256(CLAIM_CEILING),
@@ -108,7 +123,11 @@ def frozen_config(
         "budget": asdict(budget),
         "live_model": settings.live_model,
         "model_id": settings.model_id if settings.live_model else "stub",
-        "planner_version": PLANNER_VERSION,
+        "model_backend": settings.model_backend if settings.live_model else "stub",
+        "claude_code_effort": settings.claude_code_effort
+        if settings.live_model and settings.model_backend == "claude_code"
+        else None,
+        "planner_version": PLANNER_VERSION if args.mode == "v2" else None,
         "tool_version": TOOL_VERSION,
         "corpus_hash": digest([d.model_dump(mode="json") for d in store.documents]),
         "index_hash": index_hash(settings.index_dir),
@@ -132,7 +151,7 @@ def build_client(
             f"max_output_tokens_per_call must cover the client's {MAX_OUTPUT_TOKENS}-token ceiling"
         )
     ledger = Ledger(preflight, output.with_suffix(".ledger.json"))
-    return BudgetedClient(AnthropicClient(settings), ledger), ledger
+    return BudgetedClient(build_live_client(settings), ledger), ledger
 
 
 def load_rows(path: Path) -> list[dict[str, Any]]:
@@ -142,12 +161,12 @@ def load_rows(path: Path) -> list[dict[str, Any]]:
 
 
 async def run(args: argparse.Namespace) -> Path:
-    settings = Settings().model_copy(update={"agent_mode": "v2"})
+    settings = Settings().model_copy(update={"agent_mode": args.mode})
     tasks = load_suite(args.suite)
     if args.limit:
         tasks = tasks[: args.limit]
     mode = "live" if settings.live_model else "offline"
-    output = Path(args.output or f"reports/v2-standalone-{args.suite}-{mode}.json")
+    output = Path(args.output or f"reports/{args.mode}-standalone-{args.suite}-{mode}.json")
     output.parent.mkdir(parents=True, exist_ok=True)
     predictions = output.with_suffix(".predictions.jsonl")
     config_path = output.with_suffix(".config.json")
@@ -169,12 +188,14 @@ async def run(args: argparse.Namespace) -> Path:
         store, settings, retriever=retriever, answerability_gate=False, client=client
     )
     sides = split_sides(args.suite)
-    done = {r["task_id"] for r in load_rows(predictions) if r["execution"] != "budget_stopped"}
+    inner = client.inner if isinstance(client, BudgetedClient) else client
+    cli = inner if isinstance(inner, ClaudeCodeClient) else None
+    done = {r["task_id"] for r in load_rows(predictions) if r["execution"] not in RERUN}
     with predictions.open("a") as handle:
         for task in tasks:
             if task.task_id in done:
                 continue
-            if ledger and ledger.exhausted:
+            if (ledger and ledger.exhausted) or (cli and cli.limit_reached):
                 break
             refused_before = ledger.state.refused if ledger else 0
             result = await agent.research(
@@ -188,7 +209,10 @@ async def run(args: argparse.Namespace) -> Path:
                 text = await asyncio.to_thread(Path(result.trace_path).read_text)
                 snapshot = json.loads(text.splitlines()[-1])["state"]
             execution = "completed"
-            if ledger and ledger.exhausted:
+            if cli and cli.limit_reached:
+                # A subscription/rate limit interrupted this case; it is re-run on resume.
+                execution = "provider_limit_stopped"
+            elif ledger and ledger.exhausted:
                 # The experiment cap interrupted this case; it is re-run on resume.
                 execution = "budget_stopped"
             elif ledger and ledger.state.refused > refused_before:
@@ -196,6 +220,7 @@ async def run(args: argparse.Namespace) -> Path:
                 execution = "budget_refused_call"
             row = {
                 "task_id": task.task_id,
+                "mode": args.mode,
                 "category": task.category,
                 "split": sides.get(task.task_id),
                 "dataset_version": task.dataset_version,
@@ -211,11 +236,16 @@ async def run(args: argparse.Namespace) -> Path:
     for row in load_rows(predictions):
         latest[row["task_id"]] = row
     rows = [latest[t.task_id] for t in tasks if t.task_id in latest]
-    executed = {r["task_id"] for r in rows if r["execution"] != "budget_stopped"}
+    executed = {r["task_id"] for r in rows if r["execution"] not in RERUN}
+    reason = "not_reached"
+    if cli and cli.limit_reached:
+        reason = "provider_limit"
+    elif ledger and ledger.exhausted:
+        reason = "budget_exhausted"
     unexecuted = [
         {
             "task_id": t.task_id,
-            "reason": "budget_exhausted" if ledger and ledger.exhausted else "not_reached",
+            "reason": reason,
         }
         for t in tasks
         if t.task_id not in executed
@@ -242,11 +272,16 @@ async def run(args: argparse.Namespace) -> Path:
                 for t in tasks
             ),
             "human_review_complete": False,
+            # Recorded, not frozen: the CLI can self-update between an interrupted run and
+            # its resumption. A version change between arms is disclosed in the comparison.
+            "claude_code_version": claude_code_version(settings)
+            if config["model_backend"] == "claude_code"
+            else None,
         }
     )
     report = {
         "provenance": provenance,
-        "summary": summarize([r for r in rows if r["execution"] != "budget_stopped"]),
+        "summary": summarize([r for r in rows if r["execution"] not in RERUN]),
         "unexecuted": unexecuted,
         "budget_ledger": ledger.summary() if ledger else "offline: no provider calls",
         "answer_quality": "Pending human labels; stub results are wiring checks only.",
@@ -262,6 +297,7 @@ async def run(args: argparse.Namespace) -> Path:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--mode", choices=["v1", "v2"], default="v2")
     parser.add_argument("--suite", choices=["hand", "v2"], default="hand")
     parser.add_argument("--arm", choices=ARM_NAMES, default="bm25")
     parser.add_argument("--limit", type=int)

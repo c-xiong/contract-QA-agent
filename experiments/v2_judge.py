@@ -29,7 +29,13 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from app.agent.llm import MAX_OUTPUT_TOKENS, AnthropicClient, ModelClient, StubClient
+from app.agent.llm import (
+    MAX_OUTPUT_TOKENS,
+    ClaudeCodeClient,
+    ModelClient,
+    StubClient,
+    build_client,
+)
 from app.config import Settings
 from app.evidence.claim_support import CLAIM_SUPPORT_SYSTEM, CLAIM_SUPPORT_VERSION, check_answer
 from app.schemas.evidence import Evidence
@@ -44,6 +50,7 @@ from evals.loader import load_suite
 
 CLAIM_CEILING = Path("evals/datasets/hand/claim_ceiling-v1.json")
 MAX_CALIBRATION_ROUNDS = 2
+PROVIDER_LIMIT = "provider_limit"
 
 
 def prompt_hashes() -> dict[str, str]:
@@ -106,7 +113,7 @@ async def run(args: argparse.Namespace) -> Path:
     if not rows:
         raise SystemExit("No rows for this phase; is this a hand-v1 standalone report?")
     output = sealed_path(args.report, args.phase, args.round)
-    if output.exists():
+    if output.exists() and not args.resume:
         raise SystemExit(f"{output} exists; judge passes are append-only records.")
 
     client: ModelClient = StubClient()
@@ -121,7 +128,7 @@ async def run(args: argparse.Namespace) -> Path:
             raise SystemExit("max_output_tokens_per_call must cover the client's ceiling")
         # One ledger for every judge phase of this report: the ceiling is cumulative.
         ledger = Ledger(preflight, args.report.with_suffix(".judge-ledger.json"))
-        client = BudgetedClient(AnthropicClient(settings), ledger)
+        client = BudgetedClient(build_client(settings), ledger)
 
     tasks = {t.task_id: t for t in load_suite(report["provenance"]["frozen_config"]["suite"])}
     header = {
@@ -132,13 +139,37 @@ async def run(args: argparse.Namespace) -> Path:
         "claim_ceiling": ceiling,
         "prompt_sha256": prompt_hashes(),
         "judge_model": settings.model_id if settings.live_model else "stub",
+        "judge_backend": settings.model_backend if settings.live_model else "stub",
         "answer_rubric_author_reviewed": ANSWER_RUBRIC_AUTHOR_REVIEWED,
         "live": settings.live_model,
     }
+    inner = client.inner if isinstance(client, BudgetedClient) else client
+    cli = inner if isinstance(inner, ClaudeCodeClient) else None
+    done: set[str] = set()
+    if output.exists():
+        # Resume after a provider limit: same header, then append the cases not yet judged.
+        # Records are never rewritten; readers keep the last record per task.
+        lines = output.read_text().splitlines()
+        if json.loads(lines[0]) != header:
+            raise SystemExit("Judge configuration or source report changed; not resuming.")
+        done = {
+            r["task_id"]
+            for r in map(json.loads, lines[1:])
+            if r.get("not_judged") != PROVIDER_LIMIT
+        }
     stopped = 0
-    with output.open("w") as handle:
-        handle.write(json.dumps(header) + "\n")
+    with output.open("a") as handle:
+        if not done and output.stat().st_size == 0:
+            handle.write(json.dumps(header) + "\n")
         for row in rows:
+            if row["task_id"] in done:
+                continue
+            if cli and cli.limit_reached:
+                stopped += 1
+                handle.write(
+                    json.dumps({"task_id": row["task_id"], "not_judged": PROVIDER_LIMIT}) + "\n"
+                )
+                continue
             if ledger and ledger.exhausted:
                 stopped += 1
                 handle.write(json.dumps({"task_id": row["task_id"], "not_judged": "budget"}) + "\n")
@@ -146,9 +177,14 @@ async def run(args: argparse.Namespace) -> Path:
             verdict = await judge_row(
                 row, tasks[row["task_id"]], client, live=settings.live_model, ceiling=ceiling
             )
+            if cli and cli.limit_reached:
+                # Calls in this row hit the limit: re-judge it on resume, never keep unknowns.
+                verdict = {"task_id": row["task_id"], "not_judged": PROVIDER_LIMIT}
+                stopped += 1
             handle.write(json.dumps(verdict) + "\n")
             handle.flush()
-    records = [json.loads(line) for line in output.read_text().splitlines()[1:]]
+    latest = {r["task_id"]: r for r in map(json.loads, output.read_text().splitlines()[1:])}
+    records = list(latest.values())
     outcomes = Counter(r.get("not_judged") or r["answer_rubric"]["verdict"] for r in records)
     print(
         f"Sealed {len(records)} verdicts to {output}: {dict(outcomes)}"
@@ -158,6 +194,11 @@ async def run(args: argparse.Namespace) -> Path:
             else ""
         )
         + ". Do not open it before labels are frozen."
+        + (
+            f" {stopped} cases hit the provider limit; rerun with --resume later."
+            if cli and cli.limit_reached
+            else ""
+        )
     )
     return output
 
@@ -168,6 +209,9 @@ def main() -> None:
     parser.add_argument("--phase", choices=["calibration", "frozen"], required=True)
     parser.add_argument("--round", type=int)
     parser.add_argument("--preflight", type=Path)
+    parser.add_argument(
+        "--resume", action="store_true", help="continue a pass stopped by a provider limit"
+    )
     asyncio.run(run(parser.parse_args()))
 
 

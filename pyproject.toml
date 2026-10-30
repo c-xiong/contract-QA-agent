@@ -83,6 +83,9 @@ strict = true
 warn_unreachable = true
 show_error_codes = true
 plugins = ["pydantic.mypy"]
+# scripts/ is not a package, but scripts import each other as `scripts.*`; resolve
+# module names from the repository root so a file is never seen under two names.
+explicit_package_bases = true
 
 [[tool.mypy.overrides]]
 module = ["rank_bm25.*", "pymupdf.*", "faiss.*", "sentence_transformers.*", "opentelemetry.sdk.*", "opentelemetry.exporter.*"]

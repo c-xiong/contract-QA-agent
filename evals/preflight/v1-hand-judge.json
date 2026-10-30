@@ -1,0 +1,22 @@
+{
+  "experiment_id": "v1-standalone-hand-cc-judge-1",
+  "phase": "judge",
+  "model_id": "claude-opus-5-5",
+  "currency": "USD list-price equivalent (notional; billed to a Claude subscription via the Claude Code CLI)",
+  "input_price_per_million_tokens": 4.0,
+  "output_price_per_million_tokens": 20.0,
+  "max_attempts": 328,
+  "max_input_tokens_per_call": 31000,
+  "max_output_tokens_per_call": 32000,
+  "max_total_input_tokens": 11000000,
+  "max_total_output_tokens": 11000000,
+  "max_cost": 150.0,
+  "per_call_input_overhead_tokens": 1000,
+  "stop_conditions": [
+    "Any cumulative cap would be exceeded by the next reservation",
+    "Any calibration round on the V1 report (the judge is calibrated on V2 only)",
+    "Frozen pass requested before the answer-rubric prompt is author-reviewed",
+    "Claude Code subscription/rate limit reached (pass stops; --resume later)"
+  ],
+  "notes": "Frozen pass only, 41 x (C+1) = 328, with judge prompts frozen after V2 calibration. Judge claude-opus-5-5; list prices notional."
+}

@@ -218,6 +218,43 @@ not cryptographic, and is disclosed as such. The new answer-rubric judge
 drafted with coding-agent assistance, so per `.claude/rules/evals.md` a `TODO(author)`
 flag blocks the live frozen pass until the author reviews them.
 
+## Paired V1/V2 comparison from two standalone runs (2026-10-06)
+
+To understand where V2 differs from V1, both modes now run through the same standalone
+runner (`--mode v1|v2`), ledger, resume, label-freezing and judge pipeline, and are
+paired afterwards by `evals/paired.py`. The older interleaved runner
+(`experiments/v2_comparison.py`) had no budget ledger, resume or label binding; rather
+than add those twice, it stays as a historical reproduction path. Pairing refuses
+reports whose frozen configurations differ outside `agent_mode`/`planner_version`.
+
+Both arms are labelled on one seeded A/B sheet so the reviewer does not see mode names,
+stop reasons or traces. Answer text is not masked, because the reviewer has to judge
+it; V2's fixed abstention wording and answer style can still reveal the mode, and this
+partial blinding is disclosed in every comparison report. The judge is calibrated on V2
+only and then frozen for one pass per report. Human task success is the paired outcome,
+reported as win/loss/tie with discordant pairs; the exact sign test and paired bootstrap
+are descriptive for one trial over 41 development cases. Development assistance from a
+coding agent is disclosed here; the comparison code adds no new model provider.
+
+## Claude Code CLI as a live-call transport (2026-10-06)
+
+The author asked to run live evaluation on a Claude subscription instead of the paid
+API. `ClaudeCodeClient` (`CRA_MODEL_BACKEND=claude_code`) sends each completion through
+one `claude -p` process. It is the same provider and models over a different transport,
+so rule 6 ("no new model providers") holds; Codex/OpenAI was rejected for that reason and
+because it would change the model under test. The Agent SDK and `--bare` mode were
+rejected because both require an API key. Isolation is in code: the system prompt is
+replaced, all tools, MCP servers, skills, user/project settings and session persistence
+are disabled, the working directory is empty, and API credentials are removed from the
+child environment. Claude Code still prepends a fixed environment/account preamble of
+about 650 tokens; it is identical across arms and disclosed. Every call checks that the
+served model equals the requested one. Because the CLI cannot cap output tokens and
+counts adaptive thinking as output, preflights for this backend declare a 32k per-call
+output ceiling and a per-call input overhead, so neither reads as a ledger overrun.
+Subscription limits are classified as `ProviderLimitReached`; runners stop and resume
+instead of scoring an infrastructure interruption as a model failure.
+
+
 ## A2A entrypoint: the agent as a delegate, the tools stay on MCP (2026-10-30)
 
 The author wanted the agent reachable by other agents, alongside the existing MCP tool

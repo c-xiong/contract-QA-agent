@@ -1,0 +1,21 @@
+{
+  "experiment_id": "v2-standalone-hand-cc-1",
+  "phase": "application",
+  "model_id": "claude-sonnet-5",
+  "currency": "USD list-price equivalent (notional; billed to a Claude subscription via the Claude Code CLI)",
+  "input_price_per_million_tokens": 2.0,
+  "output_price_per_million_tokens": 10.0,
+  "max_attempts": 492,
+  "max_input_tokens_per_call": 61000,
+  "max_output_tokens_per_call": 32000,
+  "max_total_input_tokens": 30000000,
+  "max_total_output_tokens": 16000000,
+  "max_cost": 250.0,
+  "per_call_input_overhead_tokens": 1000,
+  "stop_conditions": [
+    "Any cumulative cap would be exceeded by the next reservation",
+    "Frozen configuration changed between start and resume",
+    "Claude Code subscription/rate limit reached (run stops; resume later)"
+  ],
+  "notes": "v2 arm of the paired comparison, CRA_MODEL_BACKEND=claude_code, effort high. Prices are Anthropic list prices for claude-sonnet-5 from the claude-api reference (cached 2026-09-25), used only as a notional spend scale. The 32000-token output ceiling covers adaptive thinking, which the CLI cannot cap; the 1000-token overhead covers the CLI's ~650-token per-call preamble."
+}

@@ -14,8 +14,13 @@ exercised without paying a model to misbehave.
 from __future__ import annotations
 
 import asyncio
+import json
+import os
+import shutil
+import subprocess
+import tempfile
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Any, Protocol
 
 from app.agent.answerability import ANSWERABILITY_SYSTEM, AnswerabilityDecision, EvidenceQuote
 from app.config import Settings
@@ -27,6 +32,11 @@ MAX_OUTPUT_TOKENS = 2048
 
 class ModelError(RuntimeError):
     """The model call failed, timed out, or returned something unusable."""
+
+
+class ProviderLimitReached(ModelError):
+    """The subscription/rate limit refused a call. Runners stop and resume later instead
+    of scoring the affected case as a model failure."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -174,6 +184,146 @@ class AnthropicClient:
         )
 
 
+# The CLI must not see the project, its CLAUDE.md, tools, MCP servers, skills or saved
+# sessions; it should behave as a single system+user completion.
+CLAUDE_CODE_FLAGS = (
+    "--tools",
+    "",
+    "--setting-sources",
+    "",
+    "--strict-mcp-config",
+    "--disable-slash-commands",
+    "--no-session-persistence",
+    "--output-format",
+    "json",
+)
+# Credentials removed from the child environment so the CLI authenticates with the
+# subscription login rather than silently billing an API key.
+_API_CREDENTIAL_VARS = ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "CRA_ANTHROPIC_API_KEY")
+_LIMIT_MARKERS = ("usage limit", "rate limit", "rate_limit", "overloaded", "limit reached")
+
+
+class ClaudeCodeClient:
+    """Live model access through the local Claude Code CLI, billed to a subscription.
+
+    DECISION: a transport over the same provider and models, not a new provider. Each call
+    is one `claude -p` process with the caller's system prompt replacing Claude Code's,
+    every tool disabled, user/project settings and MCP servers ignored, and an empty
+    working directory, so no project file or CLAUDE.md reaches the model. Claude Code
+    still adds a small fixed preamble (environment details and the account email, about
+    650 input tokens) to every call; it is identical across arms and disclosed.
+    Alternatives rejected: the Agent SDK or `--bare` (both need an API key, defeating
+    subscription use) and an OpenAI-compatible shim (a different provider).
+
+    The CLI has no max_tokens control, and adaptive thinking tokens count as output, so
+    budget preflights for this backend declare a larger per-call output ceiling. The
+    served model is checked against the requested one on every call.
+    """
+
+    def __init__(self, settings: Settings) -> None:
+        executable = shutil.which(settings.claude_code_path)
+        if executable is None:
+            raise ModelError(
+                f"CRA_MODEL_BACKEND=claude_code but `{settings.claude_code_path}` is not on PATH"
+            )
+        self.executable = executable
+        self.model_id = settings.model_id
+        self.effort = settings.claude_code_effort
+        self._timeout = settings.claude_code_timeout_s
+        self._workdir = tempfile.mkdtemp(prefix="cra-claude-code-")
+        self._env = {k: v for k, v in os.environ.items() if k not in _API_CREDENTIAL_VARS}
+        self.limit_reached = False
+
+    def command(self, system: str) -> list[str]:
+        return [
+            self.executable,
+            "-p",
+            "--model",
+            self.model_id,
+            "--effort",
+            self.effort,
+            "--system-prompt",
+            system,
+            *CLAUDE_CODE_FLAGS,
+        ]
+
+    async def complete(self, system: str, user: str) -> ModelResponse:
+        process = await asyncio.create_subprocess_exec(
+            *self.command(system),
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            cwd=self._workdir,
+            env=self._env,
+        )
+        try:
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(user.encode()), timeout=self._timeout
+            )
+        except (TimeoutError, asyncio.CancelledError) as exc:
+            process.kill()
+            await process.wait()
+            if isinstance(exc, asyncio.CancelledError):
+                raise
+            raise ModelError(f"Claude Code call exceeded {self._timeout}s") from exc
+        return self.parse(stdout.decode(errors="replace"), stderr.decode(errors="replace"))
+
+    def parse(self, stdout: str, stderr: str) -> ModelResponse:
+        payload: dict[str, Any] | None = None
+        for line in reversed(stdout.strip().splitlines()):
+            try:
+                candidate = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(candidate, dict) and candidate.get("type") == "result":
+                payload = candidate
+                break
+        if payload is None:
+            detail = " ".join((stderr or stdout).split())[:200]
+            self._flag_limit(detail)
+            raise ModelError(f"Claude Code returned no result: {detail or 'empty output'}")
+        text = str(payload.get("result") or "")
+        if payload.get("is_error") or payload.get("subtype") != "success":
+            status = payload.get("api_error_status")
+            self._flag_limit(text, status)
+            raise ModelError(f"Claude Code call failed (status {status}): {text[:200]}")
+        served = sorted(payload.get("modelUsage") or {})
+        if served != [self.model_id]:
+            raise ModelError(f"Claude Code served {served}, not the requested {self.model_id}")
+        usage = payload.get("usage") or {}
+        if not text.strip():
+            raise ModelError("Model returned no text content")
+        return ModelResponse(
+            text=text,
+            input_tokens=sum(
+                int(usage.get(key) or 0)
+                for key in (
+                    "input_tokens",
+                    "cache_creation_input_tokens",
+                    "cache_read_input_tokens",
+                )
+            ),
+            output_tokens=int(usage.get("output_tokens") or 0),
+            model_id=self.model_id,
+        )
+
+    def _flag_limit(self, detail: str, status: Any = None) -> None:
+        if status in (429, 529) or any(m in detail.lower() for m in _LIMIT_MARKERS):
+            self.limit_reached = True
+            raise ProviderLimitReached(f"Claude Code usage/rate limit: {detail[:200]}")
+
+
+def claude_code_version(settings: Settings) -> str | None:
+    """The CLI version, recorded in provenance; None when the CLI is unavailable."""
+    executable = shutil.which(settings.claude_code_path)
+    if executable is None:
+        return None
+    result = subprocess.run(
+        [executable, "--version"], capture_output=True, text=True, timeout=30, check=False
+    )
+    return result.stdout.strip() or None
+
+
 def _render_citation(evidence: Evidence) -> str:
     """Render evidence in the internal citation format.
 
@@ -193,5 +343,7 @@ def _render_citation(evidence: Evidence) -> str:
 def build_client(settings: Settings) -> ModelClient:
     """Return the live client if explicitly enabled, otherwise the stub."""
     if settings.live_model:
+        if settings.model_backend == "claude_code":
+            return ClaudeCodeClient(settings)
         return AnthropicClient(settings)
     return StubClient()

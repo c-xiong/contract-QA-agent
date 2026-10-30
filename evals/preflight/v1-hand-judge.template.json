@@ -1,0 +1,20 @@
+{
+  "experiment_id": "v1-standalone-hand-judge-1",
+  "phase": "judge",
+  "model_id": "claude-sonnet-5",
+  "currency": "USD",
+  "input_price_per_million_tokens": null,
+  "output_price_per_million_tokens": null,
+  "max_attempts": 328,
+  "max_input_tokens_per_call": 30000,
+  "max_output_tokens_per_call": 2048,
+  "max_total_input_tokens": null,
+  "max_total_output_tokens": null,
+  "max_cost": null,
+  "stop_conditions": [
+    "Any cumulative cap would be exceeded by the next reservation",
+    "Any calibration round on the V1 report (the judge is calibrated on V2 only)",
+    "Frozen pass requested before the answer-rubric prompt is author-reviewed"
+  ],
+  "notes": "C = 7: the V1 report gets only the frozen pass with the judge prompts frozen after V2 calibration, 41 x (C+1) = 328."
+}

@@ -53,6 +53,9 @@ class Preflight(BaseModel):
     max_total_input_tokens: int = Field(ge=0)
     max_total_output_tokens: int = Field(ge=0)
     max_cost: float = Field(ge=0)
+    # Fixed input tokens a transport adds to every call (the Claude Code CLI preamble);
+    # reserved on top of the character estimate so it cannot read as an overrun.
+    per_call_input_overhead_tokens: int = Field(default=0, ge=0)
     stop_conditions: list[str] = Field(default_factory=list)
     notes: str = ""
 
@@ -143,7 +146,9 @@ class Ledger:
 
     def reserve(self, prompt_chars: int) -> tuple[int, int, float]:
         p, s = self.preflight, self.state
-        input_estimate = math.ceil(prompt_chars / CHARS_PER_TOKEN_BOUND)
+        input_estimate = (
+            math.ceil(prompt_chars / CHARS_PER_TOKEN_BOUND) + p.per_call_input_overhead_tokens
+        )
         output_ceiling = p.max_output_tokens_per_call
         cost = p.cost(input_estimate, output_ceiling)
         with self._lock:

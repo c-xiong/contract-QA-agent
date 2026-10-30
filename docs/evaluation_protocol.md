@@ -19,8 +19,11 @@ version. The separate 119-query CUAD validation measures retrieval on developmen
 disjoint documents, not V2 answer quality.
 
 Use [standalone V2 evaluation](#standalone-v2-evaluation-hand-v1) for current work.
-The [paired V1/V2 procedure](#historicaloptional-paired-v1v2-protocol) remains available
-for reproducing earlier runs or a separately designed comparative study.
+To understand how V2 differs from V1 on the same cases, use the
+[budgeted paired V1/V2 comparison](#budgeted-paired-v1v2-comparison-hand-v1), which reuses
+the standalone runner, labels and judges for both arms. The
+[original paired procedure](#historicaloptional-paired-v1v2-protocol) remains available
+for reproducing earlier runs.
 
 ## Standalone V2 evaluation (hand-v1)
 
@@ -187,6 +190,73 @@ per-call or cumulative cap breach, and stop subsequent attempts after any reserv
 overrun. Unknown usage is not zero: retain its estimated reservation. Persist partial results
 and mark unexecuted cases explicitly. Never restart a partial run by resetting its
 cumulative budget. Judge failures/overflow cases route to human review, not a pass.
+
+## Budgeted paired V1/V2 comparison (hand-v1)
+
+Added 2026-10-06 ([plan](V1_V2_COMPARISON_PLAN.md)). This runs the standalone workflow
+twice, once per agent mode, and pairs the two reports only after both label sets are
+frozen. It is for understanding where the designs differ; V2 capability statements still
+come from the standalone V2 report. No live comparison has been run yet.
+
+- **Same frozen inputs.** `experiments.v2_standalone --mode v1|v2` records `agent_mode`
+  in the frozen config. Pairing refuses reports whose frozen configs differ in anything
+  except `agent_mode` and `planner_version` (model, arm, budget, dataset, split, corpus,
+  index), or that still have unexecuted cases.
+- **Separate budgets.** Each arm has its own application preflight and ledger
+  (`v1-hand-application`, `v2-hand-application`; 492 attempts each).
+- **Blind labels.** `scripts.paired_review sheet` shows each case's two answers as A/B in
+  a seeded order and binds both report hashes; `unblind` writes each report's labels.
+  Mode names, stop reasons, traces and versions are hidden. Answer style, V2's fixed
+  abstention wording, evidence lists and run status can still reveal the mode, so the
+  blinding is partial and disclosed.
+- **Judges.** Calibrate on the 20 V2 calibration cases exactly as in the standalone
+  protocol, then run one frozen pass on each report (`v1-hand-judge`: 41 × (C + 1) = 328
+  attempts). The V1 pass is an additional evaluator-agreement set, never a tuning set.
+- **Report.** `scripts.compare_v1_v2` requires both label sets frozen against the exact
+  report bytes. Human task success is the paired outcome: V2 win/loss/tie overall and
+  per category, the outcome transition matrix, and every win, loss and shared failure
+  with its labels. An exact sign test and a seeded paired bootstrap interval are
+  descriptive context for one trial, not a significance claim. Deterministic diagnostics
+  (evidence recall, answer/abstain decision, structural gate) and costs are paired over
+  cases where both values are known; V1 tool calls stay null.
+
+```bash
+CRA_LIVE_MODEL=0 uv run python -m experiments.v2_standalone --mode v1 --suite hand
+CRA_LIVE_MODEL=0 uv run python -m experiments.v2_standalone --mode v2 --suite hand
+# Paid, after filling both application preflights with the same model and prices:
+CRA_LIVE_MODEL=1 uv run python -m experiments.v2_standalone --mode v1 --suite hand \
+    --arm rrf_hybrid_rerank --preflight evals/preflight/v1-hand-application.json \
+    --output reports/v1-standalone-hand-live.json
+CRA_LIVE_MODEL=1 uv run python -m experiments.v2_standalone --mode v2 --suite hand \
+    --arm rrf_hybrid_rerank --preflight evals/preflight/v2-hand-application.json \
+    --output reports/v2-standalone-hand-live.json
+uv run python -m scripts.paired_review sheet reports/v1-standalone-hand-live.json \
+    reports/v2-standalone-hand-live.json --output reports/v1v2-hand-live
+#  ... label reports/v1v2-hand-live.blind-labels.jsonl from reports/v1v2-hand-live.review.md
+uv run python -m scripts.paired_review unblind reports/v1v2-hand-live
+uv run python -m scripts.v2_labels freeze reports/v1-standalone-hand-live.json
+uv run python -m scripts.v2_labels freeze reports/v2-standalone-hand-live.json
+# Judge steps 4-7 of the standalone workflow on the V2 report; then the V1 frozen pass:
+CRA_LIVE_MODEL=1 uv run python -m experiments.v2_judge reports/v1-standalone-hand-live.json \
+    --phase frozen --preflight evals/preflight/v1-hand-judge.json
+uv run python -m scripts.compare_v1_v2 reports/v1-standalone-hand-live.json \
+    reports/v2-standalone-hand-live.json --output reports/v1v2-hand-live \
+    --v1-sealed reports/v1-standalone-hand-live.judge-frozen.sealed.jsonl \
+    --v2-sealed reports/v2-standalone-hand-live.judge-frozen.sealed.jsonl
+```
+
+**Subscription backend.** The 2026-10-06 runs use the Claude Code CLI
+(`CRA_MODEL_BACKEND=claude_code`, writer `CRA_MODEL_ID=claude-sonnet-5`, effort `high`;
+judge passes with `CRA_MODEL_ID=claude-opus-5-5`). The checked-in
+`evals/preflight/*-hand-*.json` files carry notional list prices, a 32k per-call output
+ceiling (thinking is not capped by the CLI) and a 1,000-token per-call preamble
+allowance. A usage/rate limit stops a run as `provider_limit_stopped` (or a judge case as
+`not_judged: provider_limit`); rerun the same command with `--resume`. Interrupted cases
+are never scored. The backend, effort and CLI version are recorded in provenance.
+
+The treatment is the whole V2 design (planner, typed tools, stricter structural citation
+gate, routing), not agentic retrieval alone. The two arms run sequentially, not
+interleaved per case; record the run dates and disclose any provider change between them.
 
 ## Historical/optional paired V1/V2 protocol
 
